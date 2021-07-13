@@ -16,3 +16,19 @@ describe("dhedge", () => {
     expect(pool.poolLogic.address).toBe(myPool);
   });
 });
+
+
+
+describe("dhedge", () => {
+  it("loads factory", () => {
+    const dhedge = new Dhedge();
+    const factory = dhedge.factory;
+    expect(factory.address).toBe(factoryAddress[walletConfig.network]);
+  });
+
+  it("create a pool", async () => {
+    const dhedge = new Dhedge();
+    const pool = await dhedge.createPool(false, "Batman", "Gotham Pool");
+    expect(pool.poolLogic.address).toBe(pool.address);
+  });
+});
