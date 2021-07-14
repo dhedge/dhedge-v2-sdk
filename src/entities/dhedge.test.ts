@@ -20,7 +20,7 @@ describe("dhedge", () => {
 
   it("create a pool", async () => {
     const dhedge = new Dhedge();
-    const pool = await dhedge.createPool(false, "Batman", "Gotham Pool");
+    const pool = await dhedge.createPool(false, "Batman", "Gotham Pool", "DHHH");
     expect(pool.poolLogic.address).toBe(pool.address);
   });
 });

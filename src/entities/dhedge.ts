@@ -37,15 +37,16 @@ export class Dhedge {
    * @param {boolean} privatePool
    * @param {string} managerName
    * @param {string} poolName
+   * @param {string} symbol
    * @param {tuple[]} supportedAssets
    * @param {number|BigNumber} managerFeeNumerator
    * @returns {Promise<Pool>}
    */
   public async createPool(
-    privatePool: false,
-    managerName: "Batman",
-    poolName: "Gotham Pool",
-    symbol = "DHPT",
+    privatePool: boolean,
+    managerName: string,
+    poolName: string,
+    symbol: string,
     supportedAssets = [[usdc, true]],
     managerFeeNumerator = 100
   ): Promise<Pool> {
