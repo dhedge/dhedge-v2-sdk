@@ -37,25 +37,6 @@ export class Pool {
       deadline
     ]);
 
-    // const txFromApp =
-    //   "0x38ed173900000000000000000000000000000000000000000000000000000000000f424000000000000000000000000000000000000000000000000000016b09eef38e0500000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000fb1314b51b4f117c77dd03c3486b4a4f3ee0f25d0000000000000000000000000000000000000000000000000000000060ebe55600000000000000000000000000000000000000000000000000000000000000020000000000000000000000009d4dc547d9c1822aed5b6e19025894d1b7a5403600000000000000000000000021d867e9089d07570c682b9186697e2e326cec8a";
-
-    // const decoded = iUniswapV2Router.decodeFunctionData(
-    //   Transaction.SWAP,
-    //   txFromApp
-    // );
-
-    // console.log("shouldbe", decoded);
-
-    // const decoded2 = iUniswapV2Router.decodeFunctionData(
-    //   Transaction.SWAP,
-    //   txFromApp
-    // );
-
-    // console.log("is", decoded2.deadline.toString().toString());
-
-    // console.log(routerAddress[walletConfig.network][dapp]);
-
     const tx = await this.poolLogic.execTransaction(
       routerAddress[walletConfig.network][dapp],
       swapTxData
@@ -63,4 +44,29 @@ export class Pool {
 
     return tx.hash;
   }
+
+  // async addLiquidity(
+  //   dapp: Dapp,
+  //   assetA: string,
+  //   assetB: string,
+  //   amountA: string
+  //   amountB: string
+  // ): Promise<string> {
+  //   const iUniswapV2Router = new ethers.utils.Interface(IUniswapV2Router.abi);
+  //   const deadline = Math.floor(Date.now() / 1000) + 60 * 20; // 20 minutes from the current Unix time
+  //   const swapTxData = iUniswapV2Router.encodeFunctionData(Transaction.SWAP, [
+  //     amount,
+  //     0,
+  //     [assetFrom, assetTo],
+  //     this.address,
+  //     deadline
+  //   ]);
+
+  //   const tx = await this.poolLogic.execTransaction(
+  //     routerAddress[walletConfig.network][dapp],
+  //     swapTxData
+  //   );
+
+  //   return tx.hash;
+  // }
 }
