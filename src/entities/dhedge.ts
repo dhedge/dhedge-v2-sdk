@@ -37,7 +37,7 @@ export class Dhedge {
    * @param {boolean} privatePool
    * @param {string} managerName
    * @param {string} poolName
-   * @param {tuple[]} supportedAssets //not sure if correct.. maybe {string[]} supportedAssets
+   * @param {tuple[]} supportedAssets
    * @param {number|BigNumber} managerFeeNumerator
    * @returns {Promise<Pool>}
    */
@@ -46,7 +46,7 @@ export class Dhedge {
     managerName: "Batman",
     poolName: "Gotham Pool",
     symbol = "DHPT",
-    supportedAssets = [[usdc, true]], // [{ address: usdc, isDeposited: false }],
+    supportedAssets = [[usdc, true]],
     managerFeeNumerator = 100
   ): Promise<Pool> {
     const pool = await this.factory.createFund(
