@@ -8,6 +8,7 @@ import { walletConfig, factoryAddress } from "../config";
 import { Pool } from "./pool";
 
 const usdc = "0x9D4Dc547d9c1822aEd5b6e19025894d1B7A54036";
+const weth = "0x21d867E9089d07570c682B9186697E2E326CEc8a";
 
 export class Dhedge {
   public signer: Wallet;
@@ -47,7 +48,7 @@ export class Dhedge {
     managerName: string,
     poolName: string,
     symbol: string,
-    supportedAssets = [[usdc, true]],
+    supportedAssets = [[usdc, true], [weth, true]],
     managerFeeNumerator = 100
   ): Promise<Pool> {
     const pool = await this.factory.createFund(
@@ -83,7 +84,6 @@ export class Dhedge {
    * @param address pool address
    */
   public async loadPool(address: string): Promise<Pool> {
-    //await this.validatePool(address);
     const poolLogic = new Contract(address, PoolLogic.abi, this.signer);
     const managerLogicAddress = await poolLogic.poolManagerLogic();
     const managerLogic = new Contract(
@@ -92,7 +92,10 @@ export class Dhedge {
       this.signer
     );
 
-    return new Pool(this.signer, poolLogic, managerLogic);
+    let pool = new Pool(this.signer, poolLogic, managerLogic);
+    await pool.getComposition(address);
+    
+    return pool;
   }
 
   /**
