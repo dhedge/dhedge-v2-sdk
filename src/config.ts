@@ -15,8 +15,8 @@ if (!envFound) {
 }
 
 export const factoryAddress: AddressNetworkMap = {
-  [Network.MUMBAI]: "0x03D20ef9bdc19736F5e8Baf92D02C8661a5941F7",
-  [Network.POLYGON]: ""
+  [Network.MUMBAI]: "0xeec15f2716c7a98fFe14F7aD0dEeC93962aF4437",
+  [Network.POLYGON]: "0x4e86b7555dB05FEA5A5bc1f9d2e9Df3EAc3E5112"
 };
 
 export const walletConfig: WalletConfig = {

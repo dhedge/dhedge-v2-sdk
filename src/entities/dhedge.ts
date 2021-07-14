@@ -46,13 +46,10 @@ export class Dhedge {
     managerName: "Batman",
     poolName: "Gotham Pool",
     symbol = "DHPT",
-    supportedAssets = [ usdc ], // [{ address: usdc, isDeposited: false }],
+    supportedAssets = [[usdc, true]], // [{ address: usdc, isDeposited: false }],
     managerFeeNumerator = 100
   ): Promise<Pool> {
-    // const factoryContract = new Contract(this.factory.getAddress, PoolFactory.abi, this.signer);
-    const factoryContract = new Contract("0x03D20ef9bdc19736F5e8Baf92D02C8661a5941F7", PoolFactory.abi, this.signer);
-    
-    const pool = await factoryContract.createFund(
+    const pool = await this.factory.createFund(
       privatePool,
       this.signer.getAddress(),
       managerName,
@@ -61,12 +58,14 @@ export class Dhedge {
       managerFeeNumerator,
       supportedAssets
     );
-    let receipt = await pool.wait(1)
+    const receipt = await pool.wait(1);
 
-    let creationEvent = receipt.events.find((item: { event: string; }) => item.event === "FundCreated");
-    if (!creationEvent) throw new Error('Fund not created');
+    const creationEvent = receipt.events.find(
+      (item: { event: string }) => item.event === "FundCreated"
+    );
+    if (!creationEvent) throw new Error("Fund not created");
 
-    let poolAddress = creationEvent.args.fundAddress;
+    const poolAddress = creationEvent.args.fundAddress;
     const poolLogic = new Contract(poolAddress, PoolLogic.abi, this.signer);
     const managerLogicAddress = await poolLogic.poolManagerLogic();
     const managerLogic = new Contract(
