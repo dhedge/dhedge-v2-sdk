@@ -2,7 +2,7 @@ import { Contract, ethers, Wallet } from "ethers";
 
 import IUniswapV2Router from "../abi/IUniswapV2Router.json";
 import { walletConfig, routerAddress } from "../config";
-import { Dapp, Transaction } from "../types";
+import { Dapp, Transaction, FundComposition, AssetEnabled } from "../types";
 
 export class Pool {
   public readonly poolLogic: Contract;
@@ -66,5 +66,24 @@ export class Pool {
     );
 
     return tx.hash;
+  }
+  //   return tx.hash;
+  // }
+
+  async getComposition(): Promise<FundComposition[]> {
+    const result = await this.managerLogic.getFundComposition();
+
+    const fundComposition: FundComposition[] = result[0].map(
+      (item: AssetEnabled, index: string | number) => {
+        const { asset, isDeposit } = item;
+        return {
+          asset: asset,
+          isDeposit: isDeposit,
+          balance: result[1][index],
+          rate: result[2][index]
+        };
+      }
+    );
+    return fundComposition;
   }
 }
