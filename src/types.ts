@@ -12,7 +12,8 @@ export enum Dapp {
 }
 
 export enum Transaction {
-  SWAP = "swapExactTokensForTokens"
+  SWAP = "swapExactTokensForTokens",
+  ADD_LIQUIDITY = "addLiquidity"
 }
 
 export type WalletConfig = {

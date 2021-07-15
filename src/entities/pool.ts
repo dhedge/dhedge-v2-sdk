@@ -45,28 +45,28 @@ export class Pool {
     return tx.hash;
   }
 
-  // async addLiquidity(
-  //   dapp: Dapp,
-  //   assetA: string,
-  //   assetB: string,
-  //   amountA: string
-  //   amountB: string
-  // ): Promise<string> {
-  //   const iUniswapV2Router = new ethers.utils.Interface(IUniswapV2Router.abi);
-  //   const deadline = Math.floor(Date.now() / 1000) + 60 * 20; // 20 minutes from the current Unix time
-  //   const swapTxData = iUniswapV2Router.encodeFunctionData(Transaction.SWAP, [
-  //     amount,
-  //     0,
-  //     [assetFrom, assetTo],
-  //     this.address,
-  //     deadline
-  //   ]);
+  async addLiquidity(
+    dapp: Dapp,
+    assetA: string,
+    assetB: string,
+    amountA: string,
+    amountB: string
+  ): Promise<string> {
+    const iUniswapV2Router = new ethers.utils.Interface(IUniswapV2Router.abi);
+    const deadline = Math.floor(Date.now() / 1000) + 60 * 20; // 20 minutes from the current Unix time
 
-  //   const tx = await this.poolLogic.execTransaction(
-  //     routerAddress[walletConfig.network][dapp],
-  //     swapTxData
-  //   );
+    const addLiquidityTxData = iUniswapV2Router.encodeFunctionData(
+      Transaction.ADD_LIQUIDITY,
+      [assetA, assetB, amountA, amountB, 0, 0, this.address, deadline]
+    );
 
+    const tx = await this.poolLogic.execTransaction(
+      routerAddress[walletConfig.network][dapp],
+      addLiquidityTxData
+    );
+
+    return tx.hash;
+  }
   //   return tx.hash;
   // }
 
