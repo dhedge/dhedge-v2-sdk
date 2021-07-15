@@ -72,7 +72,7 @@ export class Pool {
   //   return tx.hash;
   // }
 
-  public async getComposition(address: string): Promise<FundComposition[]> {
+  async getComposition(address: string): Promise<FundComposition[]> {
     const poolLogic = new Contract(address, PoolLogic.abi, this.signer);
     const managerLogicAddress = await poolLogic.poolManagerLogic();
     const managerLogic = new Contract(
@@ -81,12 +81,11 @@ export class Pool {
       this.signer
     );
 
-    let composition = {} as any;
     let result = await managerLogic.getFundComposition();
-
-    let fundComposition = result[0].map((item: AssetEnabled, index: string | number) => {
+    
+    let fundComposition: FundComposition[] = result[0].map((item: AssetEnabled, index: string | number) => {
       const { asset, isDeposit } = item;
-      return composition[asset] = {
+      return {
         asset: asset,
         isDeposit: isDeposit,
         balance: result[1][index],
