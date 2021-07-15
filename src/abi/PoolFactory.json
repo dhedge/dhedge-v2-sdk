@@ -6,11 +6,11 @@
         {
           "indexed": false,
           "internalType": "address",
-          "name": "dao",
+          "name": "daoAddress",
           "type": "address"
         }
       ],
-      "name": "DaoAddressSet",
+      "name": "DAOAddressSet",
       "type": "event"
     },
     {
@@ -123,6 +123,19 @@
       "anonymous": false,
       "inputs": [
         {
+          "indexed": false,
+          "internalType": "address",
+          "name": "governanceAddress",
+          "type": "address"
+        }
+      ],
+      "name": "GovernanceAddressSet",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
           "indexed": true,
           "internalType": "address",
           "name": "manager",
@@ -202,6 +215,83 @@
         {
           "indexed": false,
           "internalType": "address",
+          "name": "assetHandler",
+          "type": "address"
+        }
+      ],
+      "name": "SetAssetHandler",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "numerator",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "denominator",
+          "type": "uint256"
+        }
+      ],
+      "name": "SetMaximumManagerFee",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "SetMaximumManagerFeeNumeratorChange",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "numerator",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "denominator",
+          "type": "uint256"
+        }
+      ],
+      "name": "SetPoolManagerFee",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "code",
+          "type": "bytes32"
+        }
+      ],
+      "name": "SetTrackingCode",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
           "name": "account",
           "type": "address"
         }
@@ -271,6 +361,19 @@
       "type": "function"
     },
     {
+      "inputs": [],
+      "name": "daoAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [
         {
           "internalType": "bytes",
@@ -307,6 +410,44 @@
         {
           "internalType": "address",
           "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "name",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "destination",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "extContract",
+          "type": "address"
+        }
+      ],
+      "name": "getAssetGuard",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "guard",
           "type": "address"
         }
       ],
@@ -356,22 +497,9 @@
       "name": "getAssetType",
       "outputs": [
         {
-          "internalType": "uint8",
+          "internalType": "uint16",
           "name": "",
-          "type": "uint8"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "getDaoAddress",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
+          "type": "uint16"
         }
       ],
       "stateMutability": "view",
@@ -433,7 +561,7 @@
       "outputs": [
         {
           "internalType": "address",
-          "name": "",
+          "name": "guard",
           "type": "address"
         }
       ],
@@ -554,6 +682,19 @@
       "type": "function"
     },
     {
+      "inputs": [],
+      "name": "governanceAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [
         {
           "internalType": "address",
@@ -572,7 +713,12 @@
         },
         {
           "internalType": "address",
-          "name": "daoAddress",
+          "name": "_daoAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_governanceAddress",
           "type": "address"
         }
       ],
@@ -790,24 +936,6 @@
     {
       "inputs": [
         {
-          "internalType": "uint8",
-          "name": "assetType",
-          "type": "uint8"
-        },
-        {
-          "internalType": "address",
-          "name": "guardAddress",
-          "type": "address"
-        }
-      ],
-      "name": "setAssetGuard",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
           "internalType": "address",
           "name": "assetHandler",
           "type": "address"
@@ -822,29 +950,11 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "extContract",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "guardAddress",
+          "name": "_daoAddress",
           "type": "address"
         }
       ],
-      "name": "setContractGuard",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "daoAddress",
-          "type": "address"
-        }
-      ],
-      "name": "setDaoAddress",
+      "name": "setDAOAddress",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -876,6 +986,19 @@
         }
       ],
       "name": "setExitCooldown",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_governanceAddress",
+          "type": "address"
+        }
+      ],
+      "name": "setGovernanceAddress",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -1022,4 +1145,5 @@
       "type": "function"
     }
   ]
+  
 }
