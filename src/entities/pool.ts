@@ -1,8 +1,6 @@
 import { Contract, ethers, Wallet } from "ethers";
 
 import IUniswapV2Router from "../abi/IUniswapV2Router.json";
-import PoolLogic from "../abi/PoolLogic.json";
-import ManagerLogic from "../abi/PoolManagerLogic.json";
 import { walletConfig, routerAddress } from "../config";
 import { Dapp, Transaction, FundComposition, AssetEnabled } from "../types";
 
@@ -72,27 +70,41 @@ export class Pool {
   //   return tx.hash;
   // }
 
-  public async getComposition(address: string): Promise<FundComposition[]> {
-    const poolLogic = new Contract(address, PoolLogic.abi, this.signer);
-    const managerLogicAddress = await poolLogic.poolManagerLogic();
-    const managerLogic = new Contract(
-      managerLogicAddress,
-      ManagerLogic.abi,
-      this.signer
+  public async getComposition(): Promise<FundComposition[]> {
+    const result = await this.managerLogic.getFundComposition();
+
+    const fundComposition = result[0].map(
+      (item: AssetEnabled, index: string | number) => {
+        const { asset, isDeposit } = item;
+        return {
+          asset: asset,
+          isDeposit: isDeposit,
+          balance: result[1][index],
+          rate: result[2][index]
+        };
+      }
+    );
+    return fundComposition;
+  }
+
+  public async changeAssets(
+    assets: AssetEnabled[]
+  ): Promise<FundComposition[]> {
+    let currentAssetsEnabled = await this.getComposition();
+    const currentAssets = currentAssetsEnabled.map(e =>
+      e.asset.toLocaleLowerCase()
+    );
+    const newAssets = assets.map(e => e.asset.toLocaleLowerCase());
+    const removedAssets = currentAssets.filter(e => !newAssets.includes(e));
+    const changedAssets = assets.map(e => [e.asset, e.isDeposit]);
+    const receipt = await this.managerLogic.changeAssets(
+      changedAssets,
+      removedAssets
     );
 
-    let composition = {} as any;
-    let result = await managerLogic.getFundComposition();
+    await receipt.wait(1);
 
-    let fundComposition = result[0].map((item: AssetEnabled, index: string | number) => {
-      const { asset, isDeposit } = item;
-      return composition[asset] = {
-        asset: asset,
-        isDeposit: isDeposit,
-        balance: result[1][index],
-        rate: result[2][index] 
-      }
-    })
-    return fundComposition;
+    currentAssetsEnabled = await this.getComposition();
+    return currentAssetsEnabled;
   }
 }

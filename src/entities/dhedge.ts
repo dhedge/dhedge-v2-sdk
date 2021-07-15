@@ -48,7 +48,10 @@ export class Dhedge {
     managerName: string,
     poolName: string,
     symbol: string,
-    supportedAssets = [[usdc, true], [weth, true]],
+    supportedAssets = [
+      [usdc, true],
+      [weth, true]
+    ],
     managerFeeNumerator = 100
   ): Promise<Pool> {
     const pool = await this.factory.createFund(
@@ -92,9 +95,9 @@ export class Dhedge {
       this.signer
     );
 
-    let pool = new Pool(this.signer, poolLogic, managerLogic);
-    await pool.getComposition(address);
-    
+    const pool = new Pool(this.signer, poolLogic, managerLogic);
+    await pool.getComposition();
+
     return pool;
   }
 
