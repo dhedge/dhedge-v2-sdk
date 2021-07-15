@@ -10,7 +10,8 @@ export enum Dapp {
 }
 
 export enum Transaction {
-  SWAP = "swapExactTokensForTokens"
+  SWAP = "swapExactTokensForTokens",
+  ADD_LIQUIDITY = "addLiquidity"
 }
 
 export type WalletConfig = {
@@ -21,12 +22,12 @@ export type WalletConfig = {
   network: Network;
 };
 
-export type FactoryNetworkMap = Readonly<Record<Network, string>>;
+export type AddressNetworkMap = Readonly<Record<Network, string>>;
 
-export type RouterDappMap = {
+export type AddressDappMap = {
   [Dapp.SUSHISWAP]?: string;
   [Dapp.UNISWAP]?: string;
   [Dapp.AAVE]?: string;
 };
 
-export type NetworkRouterMap = Readonly<Record<Network, RouterDappMap>>;
+export type AddressDappNetworkMap = Readonly<Record<Network, AddressDappMap>>;
