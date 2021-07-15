@@ -1,8 +1,6 @@
 import { Contract, ethers, Wallet } from "ethers";
 
 import IUniswapV2Router from "../abi/IUniswapV2Router.json";
-import PoolLogic from "../abi/PoolLogic.json";
-import ManagerLogic from "../abi/PoolManagerLogic.json";
 import { walletConfig, routerAddress } from "../config";
 import { Dapp, Transaction, FundComposition, AssetEnabled } from "../types";
 
@@ -72,26 +70,20 @@ export class Pool {
   //   return tx.hash;
   // }
 
-  async getComposition(address: string): Promise<FundComposition[]> {
-    const poolLogic = new Contract(address, PoolLogic.abi, this.signer);
-    const managerLogicAddress = await poolLogic.poolManagerLogic();
-    const managerLogic = new Contract(
-      managerLogicAddress,
-      ManagerLogic.abi,
-      this.signer
-    );
+  async getComposition(): Promise<FundComposition[]> {
+    const result = await this.managerLogic.getFundComposition();
 
-    let result = await managerLogic.getFundComposition();
-    
-    let fundComposition: FundComposition[] = result[0].map((item: AssetEnabled, index: string | number) => {
-      const { asset, isDeposit } = item;
-      return {
-        asset: asset,
-        isDeposit: isDeposit,
-        balance: result[1][index],
-        rate: result[2][index] 
+    const fundComposition: FundComposition[] = result[0].map(
+      (item: AssetEnabled, index: string | number) => {
+        const { asset, isDeposit } = item;
+        return {
+          asset: asset,
+          isDeposit: isDeposit,
+          balance: result[1][index],
+          rate: result[2][index]
+        };
       }
-    })
+    );
     return fundComposition;
   }
 }

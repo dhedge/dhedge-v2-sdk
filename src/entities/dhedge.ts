@@ -5,6 +5,7 @@ import PoolLogic from "../abi/PoolLogic.json";
 import ManagerLogic from "../abi/PoolManagerLogic.json";
 import { walletConfig, factoryAddress } from "../config";
 import { SupportedAsset } from "../types";
+
 import { Pool } from "./pool";
 
 export class Dhedge {

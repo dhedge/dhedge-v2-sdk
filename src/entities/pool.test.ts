@@ -28,7 +28,7 @@ describe("pool", () => {
     const dhedge = new Dhedge();
     const pool = await dhedge.loadPool(myPool);
     try {
-      result = await pool.getComposition(myPool);
+      result = await pool.getComposition();
       console.log(result);
     } catch (e) {
       console.log(e);
