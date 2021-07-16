@@ -1,15 +1,19 @@
 // import { Dapp } from "../types";
 // import * as utils from "../utils";
 
-import { AssetEnabled } from "../types";
+//import { AssetEnabled } from "../types";
+
+import { FundComposition } from "../types";
 
 import { Dhedge } from "./dhedge";
 
-const myPool = "0x82e595a8b41e53CE67F6E3E4a59374A1E1253731";
+const myPool = "0xd63aA0Dce2311670608f1AB0667E43612F73340e";
 
-// const usdc = "0x9D4Dc547d9c1822aEd5b6e19025894d1B7A54036";
-// const usdt = "0x9B8D42B4BFD869f061bc6Be17e0669A9EB7653c6";
-// const weth = "0x21d867E9089d07570c682B9186697E2E326CEc8a";
+// const weth = "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
+// const usdt = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
+// const usdc = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174";
+//const sushi =  "0x0b3F868E0BE5597D5DB7fEB59E1CADBb0fdDa50a";
+//const lpUsdcWeth = "0x34965ba0ac2451A34a0471F04CCa3F990b8dea27";
 // const tradeAmountUsdc = "1000000";
 // const liquidityAmountUsdt = "1000000";
 
@@ -28,27 +32,28 @@ describe("pool", () => {
   //   expect(result).not.toBe(null);
   // });
 
-  // it("checks fund composition", async () => {
-  //   let result: any;
-  //   const dhedge = new Dhedge();
-  //   const pool = await dhedge.loadPool(myPool);
-  //   try {
-  //     result = await pool.getComposition();
-  //     console.log(result);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
+  it("checks fund composition", async () => {
+    let result: FundComposition[] = [];
+    const dhedge = new Dhedge();
+    const pool = await dhedge.loadPool(myPool);
+    try {
+      result = await pool.getComposition();
+      console.log(result);
+    } catch (e) {
+      console.log(e);
+    }
+    expect(result.length).toBeGreaterThan(0);
+  });
 
-  // it("adds USDT to enabled assets", async () => {
+  // it("adds LpUSDCWETH to enabled assets", async () => {
   //   let result: any;
   //   const dhedge = new Dhedge();
   //   const pool = await dhedge.loadPool(myPool);
   //   const newAssets: AssetEnabled[] = [
   //     { asset: usdc, isDeposit: true },
   //     { asset: weth, isDeposit: true },
-  //     { asset: usdt, isDeposit: true }
+  //     { asset: usdt, isDeposit: true },
+  //     { asset: lpUsdcWeth, isDeposit: false }
   //   ];
   //   try {
   //     result = await pool.changeAssets(newAssets);
@@ -59,21 +64,21 @@ describe("pool", () => {
   //   expect(result).not.toBe(null);
   // });
 
-  it("removes USDT from enabled assets and removes deposit from USDC", async () => {
-    let result: any;
-    const dhedge = new Dhedge();
-    const pool = await dhedge.loadPool(myPool);
-    const newAssets: AssetEnabled[] = [
-      { asset: usdc, isDeposit: false },
-      { asset: weth, isDeposit: true }
-    ];
-    try {
-      result = await pool.getComposition();
-    } catch (e) {
-      console.log(e);
-    }
-    expect(result).not.toBe(null);
-  });
+  // it("removes USDT from enabled assets and removes deposit from USDC", async () => {
+  //   let result: any;
+  //   const dhedge = new Dhedge();
+  //   const pool = await dhedge.loadPool(myPool);
+  //   const newAssets: AssetEnabled[] = [
+  //     { asset: usdc, isDeposit: false },
+  //     { asset: weth, isDeposit: true }
+  //   ];
+  //   try {
+  //     result = await pool.getComposition();
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  //   expect(result).not.toBe(null);
+  // });
 
   // it("adds Liquidity into a WETH/USDT pool on sushi", async () => {
   //   let result;
