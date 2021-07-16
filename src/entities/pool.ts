@@ -86,4 +86,25 @@ export class Pool {
     );
     return fundComposition;
   }
+
+  public async changeAssets(
+    assets: AssetEnabled[]
+  ): Promise<FundComposition[]> {
+    let currentAssetsEnabled = await this.getComposition();
+    const currentAssets = currentAssetsEnabled.map(e =>
+      e.asset.toLocaleLowerCase()
+    );
+    const newAssets = assets.map(e => e.asset.toLocaleLowerCase());
+    const removedAssets = currentAssets.filter(e => !newAssets.includes(e));
+    const changedAssets = assets.map(e => [e.asset, e.isDeposit]);
+    const receipt = await this.managerLogic.changeAssets(
+      changedAssets,
+      removedAssets
+    );
+
+    await receipt.wait(1);
+
+    currentAssetsEnabled = await this.getComposition();
+    return currentAssetsEnabled;
+  }
 }
