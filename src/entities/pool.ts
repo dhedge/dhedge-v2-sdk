@@ -1,5 +1,6 @@
 import { Contract, ethers, Wallet } from "ethers";
 
+import IERC20 from "../abi/IERC20.json";
 import IUniswapV2Router from "../abi/IUniswapV2Router.json";
 import { walletConfig, routerAddress } from "../config";
 import { Dapp, Transaction, FundComposition, AssetEnabled } from "../types";
@@ -19,6 +20,18 @@ export class Pool {
     this.address = poolLogic.address;
     this.managerLogic = mangerLogic;
     this.signer = signer;
+  }
+
+  async approve(dapp: Dapp, asset: string): Promise<string> {
+    const iERC20 = new ethers.utils.Interface(IERC20.abi);
+    const approveTxData = iERC20.encodeFunctionData("approve", [
+      routerAddress[walletConfig.network][dapp],
+      ethers.constants.MaxUint256
+    ]);
+
+    const tx = await this.poolLogic.execTransaction(asset, approveTxData);
+
+    return tx.hash;
   }
 
   async trade(

@@ -1,49 +1,59 @@
-// import { Dapp } from "../types";
+import { Dapp } from "../types";
 // import * as utils from "../utils";
 
 //import { AssetEnabled } from "../types";
-
-import { FundComposition } from "../types";
 
 import { Dhedge } from "./dhedge";
 
 const myPool = "0xd63aA0Dce2311670608f1AB0667E43612F73340e";
 
-// const weth = "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
+const weth = "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
 // const usdt = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
-// const usdc = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174";
+const usdc = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174";
 //const sushi =  "0x0b3F868E0BE5597D5DB7fEB59E1CADBb0fdDa50a";
 //const lpUsdcWeth = "0x34965ba0ac2451A34a0471F04CCa3F990b8dea27";
-// const tradeAmountUsdc = "1000000";
+const tradeAmountUsdc = "1000000";
 // const liquidityAmountUsdt = "1000000";
 
 jest.setTimeout(100000);
 
 describe("pool", () => {
-  // it("trades 1 USDC into WETH on sushiswap", async () => {
+  // it("approves unlimited USDC on sushiswap", async () => {
   //   let result;
   //   const dhedge = new Dhedge();
   //   const pool = await dhedge.loadPool(myPool);
   //   try {
-  //     result = await pool.trade(Dapp.SUSHISWAP, usdc, weth, tradeAmount);
+  //     result = await pool.approve(Dapp.SUSHISWAP, usdc);
   //   } catch (e) {
   //     console.log(e);
   //   }
   //   expect(result).not.toBe(null);
   // });
 
-  it("checks fund composition", async () => {
-    let result: FundComposition[] = [];
+  it("trades 1 USDC into WETH on sushiswap", async () => {
+    let result;
     const dhedge = new Dhedge();
     const pool = await dhedge.loadPool(myPool);
     try {
-      result = await pool.getComposition();
-      console.log(result);
+      result = await pool.trade(Dapp.SUSHISWAP, usdc, weth, tradeAmountUsdc);
     } catch (e) {
       console.log(e);
     }
-    expect(result.length).toBeGreaterThan(0);
+    expect(result).not.toBe(null);
   });
+
+  // it("checks fund composition", async () => {
+  //   let result: FundComposition[] = [];
+  //   const dhedge = new Dhedge();
+  //   const pool = await dhedge.loadPool(myPool);
+  //   try {
+  //     result = await pool.getComposition();
+  //     console.log(result);
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  //   expect(result.length).toBeGreaterThan(0);
+  // });
 
   // it("adds LpUSDCWETH to enabled assets", async () => {
   //   let result: any;
