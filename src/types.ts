@@ -12,7 +12,8 @@ export enum Dapp {
 }
 
 export enum Transaction {
-  SWAP = "swapExactTokensForTokens"
+  SWAP = "swapExactTokensForTokens",
+  ADD_LIQUIDITY = "addLiquidity"
 }
 
 export type WalletConfig = {
@@ -32,6 +33,8 @@ export type AddressDappMap = {
 };
 
 export type AddressDappNetworkMap = Readonly<Record<Network, AddressDappMap>>;
+
+export type SupportedAsset = [ string, boolean ]
 
 export type AssetEnabled = {
   asset: string;
