@@ -1,9 +1,11 @@
 import { Contract, ethers, Wallet, BigNumber } from "ethers";
 
 import IERC20 from "../abi/IERC20.json";
+import IMiniChefV2 from "../abi/IMiniChefV2.json";
 import IUniswapV2Router from "../abi/IUniswapV2Router.json";
-import { walletConfig, routerAddress } from "../config";
+import { walletConfig, routerAddress, stakingAddress } from "../config";
 import { Dapp, Transaction, FundComposition, AssetEnabled } from "../types";
+import { getLpPoolId } from "../utils";
 
 export class Pool {
   public readonly poolLogic: Contract;
@@ -22,10 +24,13 @@ export class Pool {
     this.signer = signer;
   }
 
-  async approve(dapp: Dapp, asset: string): Promise<string> {
+  async approve(dapp: Dapp, asset: string, staking = false): Promise<string> {
     const iERC20 = new ethers.utils.Interface(IERC20.abi);
+    const approver = staking
+      ? stakingAddress[walletConfig.network][dapp]
+      : routerAddress[walletConfig.network][dapp];
     const approveTxData = iERC20.encodeFunctionData("approve", [
-      routerAddress[walletConfig.network][dapp],
+      approver,
       ethers.constants.MaxUint256
     ]);
 
@@ -84,6 +89,26 @@ export class Pool {
     const tx = await this.poolLogic.execTransaction(
       routerAddress[walletConfig.network][dapp],
       addLiquidityTxData
+    );
+
+    return tx.hash;
+  }
+
+  async stake(dapp: Dapp, asset: string, amount: string): Promise<string> {
+    const iMiniChefV2 = new ethers.utils.Interface(IMiniChefV2.abi);
+
+    //to do: get LP pool id from asset
+    const poolId = await getLpPoolId(dapp, asset, this.signer);
+
+    const stakeTxData = iMiniChefV2.encodeFunctionData(Transaction.DEPOSIT, [
+      poolId,
+      amount,
+      this.address
+    ]);
+
+    const tx = await this.poolLogic.execTransaction(
+      stakingAddress[walletConfig.network][dapp],
+      stakeTxData
     );
 
     return tx.hash;

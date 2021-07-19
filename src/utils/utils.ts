@@ -1,8 +1,9 @@
 import { Contract, Wallet } from "ethers";
 
+import IMiniChefV2 from "../abi/IMiniChefV2.json";
 import UniswapV2Factory from "../abi/IUniswapV2Factory.json";
 import UniswapV2Pair from "../abi/IUniswapV2Pair.json";
-import { dappFactoryAddress, walletConfig } from "../config";
+import { dappFactoryAddress, stakingAddress, walletConfig } from "../config";
 import { Dapp } from "../types";
 
 /**
@@ -44,6 +45,42 @@ export async function calculateLpAmount(
         ? reserve1.mul(amountA).div(reserve0)
         : reserve0.mul(amountA).div(reserve1);
     return amountB.toString();
+  } else {
+    throw new Error("Dapp not supported on this network");
+  }
+}
+
+/**
+ * Returns the pool id of a liquidity pool
+ * @param dApp dApp like uniswap or sushiswap
+ * @param lpPoolAddress first token of the pool pair
+ * @throws if the dapp is not supported on the network
+ */
+
+export async function getLpPoolId(
+  dapp: Dapp,
+  poolAsset: string,
+  signer: Wallet
+): Promise<number> {
+  if (stakingAddress[walletConfig.network][dapp]) {
+    const masterChefV2 = new Contract(
+      stakingAddress[walletConfig.network][dapp] as string,
+      IMiniChefV2.abi,
+      signer
+    );
+
+    const poolLength = await masterChefV2.poolLength();
+    const idArray = Array.from({ length: poolLength.toNumber() }, (_, v) => v);
+    const lpPoolAddresses = await Promise.all(
+      idArray.map(e => masterChefV2.lpToken(e))
+    );
+    const poolId = lpPoolAddresses
+      .map(e => e.toLowerCase())
+      .indexOf(poolAsset.toLocaleLowerCase());
+    if (poolId === -1) {
+      throw new Error("Staking not supported for asset");
+    }
+    return poolId;
   } else {
     throw new Error("Dapp not supported on this network");
   }
