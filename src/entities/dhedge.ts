@@ -3,28 +3,19 @@ import { Contract, Wallet, ethers } from "ethers";
 import PoolFactory from "../abi/PoolFactory.json";
 import PoolLogic from "../abi/PoolLogic.json";
 import ManagerLogic from "../abi/PoolManagerLogic.json";
-import { walletConfig, factoryAddress } from "../config";
-import { SupportedAsset } from "../types";
+import { factoryAddress } from "../config";
+import { Network, SupportedAsset } from "../types";
 
 import { Pool } from "./pool";
 
 export class Dhedge {
   public signer: Wallet;
   public factory: Contract;
-  public constructor() {
-    const provider = new ethers.providers.JsonRpcProvider(
-      walletConfig.provider
-    );
-
-    this.signer = walletConfig.privateKey
-      ? new Wallet(walletConfig.privateKey, provider)
-      : Wallet.fromMnemonic(
-          walletConfig.mnemonic,
-          "m/44'/60'/0'/0/" + walletConfig.accountId
-        ).connect(provider);
+  public constructor(provider: unknown, network: Network, privateKey: string) {
+    this.signer = new Wallet(privateKey, provider as ethers.providers.Provider);
 
     this.factory = new Contract(
-      factoryAddress[walletConfig.network],
+      factoryAddress[network],
       PoolFactory.abi,
       this.signer
     );
