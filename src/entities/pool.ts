@@ -1,4 +1,4 @@
-import { Contract, ethers, Wallet } from "ethers";
+import { Contract, ethers, Wallet, BigNumber } from "ethers";
 
 import IERC20 from "../abi/IERC20.json";
 import IUniswapV2Router from "../abi/IUniswapV2Router.json";
@@ -30,6 +30,14 @@ export class Pool {
     ]);
 
     const tx = await this.poolLogic.execTransaction(asset, approveTxData);
+
+    return tx.hash;
+  }
+
+  async approveDeposit(asset: string): Promise<string> {
+    const iERC20 = new ethers.Contract(asset, IERC20.abi, this.signer);
+    const balance = await iERC20.balanceOf(this.signer.getAddress());
+    const tx = await iERC20.approve(this.address, balance);
 
     return tx.hash;
   }
@@ -80,8 +88,6 @@ export class Pool {
 
     return tx.hash;
   }
-  //   return tx.hash;
-  // }
 
   async getComposition(): Promise<FundComposition[]> {
     const result = await this.managerLogic.getFundComposition();
@@ -119,5 +125,20 @@ export class Pool {
 
     currentAssetsEnabled = await this.getComposition();
     return currentAssetsEnabled;
+  }
+
+  async deposit(asset: string, amount: string | number): Promise<string> {
+    if (!BigNumber.isBigNumber(amount) && typeof amount !== "string") {
+      throw new Error(
+        "Please pass numbers as strings or BigNumber objects to avoid precision errors."
+      );
+    }
+
+    const depositAmount = ethers.BigNumber.from(amount);
+    const tx = await this.poolLogic.deposit(asset, depositAmount);
+
+    await tx.wait(1);
+
+    return tx.hash;
   }
 }
