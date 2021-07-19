@@ -11,8 +11,9 @@ import { Pool } from "./pool";
 export class Dhedge {
   public signer: Wallet;
   public factory: Contract;
-  public constructor(provider: unknown, network: Network, privateKey: string) {
-    this.signer = new Wallet(privateKey, provider as ethers.providers.Provider);
+  public constructor(provider: string, network: Network, privateKey: string) {
+    const _provider = new ethers.providers.JsonRpcProvider(provider);
+    this.signer = new Wallet(privateKey, _provider);
 
     this.factory = new Contract(
       factoryAddress[network],
