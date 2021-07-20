@@ -17,14 +17,6 @@ export enum Transaction {
   DEPOSIT = "deposit"
 }
 
-export type WalletConfig = {
-  privateKey: string;
-  mnemonic: string;
-  accountId: string;
-  provider: string;
-  network: Network;
-};
-
 export type AddressNetworkMap = Readonly<Record<Network, string>>;
 
 export type AddressDappMap = {

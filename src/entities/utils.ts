@@ -3,17 +3,19 @@ import { Contract, Wallet } from "ethers";
 import IMiniChefV2 from "../abi/IMiniChefV2.json";
 import UniswapV2Factory from "../abi/IUniswapV2Factory.json";
 import UniswapV2Pair from "../abi/IUniswapV2Pair.json";
-import { dappFactoryAddress, stakingAddress, walletConfig } from "../config";
-import { Dapp } from "../types";
+import { dappFactoryAddress, stakingAddress } from "../config";
+import { Dapp, Network } from "../types";
 
 export class Utils {
+  network: Network;
   signer: Wallet;
 
-  public constructor(signer: Wallet) {
+  public constructor(network: Network, signer: Wallet) {
+    this.network = network;
     this.signer = signer;
   }
   /**
-   * Returns the amount of the other token that need to be provided to aliquidity pool
+   * Returns the amount of the other token that need to be provided to a liquidity pool
    * given the amount of one token
    * @param dApp dApp like uniswap or sushiswap
    * @param tokenA first token of the pool pair
@@ -27,9 +29,9 @@ export class Utils {
     tokenB: string,
     amountA: string
   ): Promise<string> {
-    if (dappFactoryAddress[walletConfig.network][dapp]) {
+    if (dappFactoryAddress[this.network][dapp]) {
       const uniswapV2Factory = new Contract(
-        dappFactoryAddress[walletConfig.network][dapp] as string,
+        dappFactoryAddress[this.network][dapp] as string,
         UniswapV2Factory.abi,
         this.signer
       );
@@ -60,14 +62,14 @@ export class Utils {
   /**
    * Returns the pool id of a liquidity pool
    * @param dApp dApp like uniswap or sushiswap
-   * @param lpPoolAddress first token of the pool pair
+   * @param lpPoolAddress token address of the pool pair
    * @throws if the dapp is not supported on the network
    */
 
   async getLpPoolId(dapp: Dapp, poolAsset: string): Promise<number> {
-    if (stakingAddress[walletConfig.network][dapp]) {
+    if (stakingAddress[this.network][dapp]) {
       const masterChefV2 = new Contract(
-        stakingAddress[walletConfig.network][dapp] as string,
+        stakingAddress[this.network][dapp] as string,
         IMiniChefV2.abi,
         this.signer
       );

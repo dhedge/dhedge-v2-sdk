@@ -1,61 +1,51 @@
 import { ethers } from "ethers";
 
-import { Dapp } from "../types";
+import { privateKey, providerUrl } from "../secrets";
+import { Dapp, Network } from "../types";
 
 import { Dhedge } from "./index";
 
 const weth = "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
 const usdt = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
-const lpUsdcWeth = "0x34965ba0ac2451A34a0471F04CCa3F990b8dea27";
+//const lpUsdcWeth = "0x34965ba0ac2451A34a0471F04CCa3F990b8dea27";
 const tradeAmountUsdt = "1000000";
 const tradeAmountWeth = "1000000000000000000";
+
+const provider = new ethers.providers.JsonRpcProvider(providerUrl);
+const wallet = new ethers.Wallet(privateKey, provider);
+let dhedge: Dhedge;
 
 jest.setTimeout(100000);
 
 describe("utils", () => {
-  const checkAlmostSame = (a: string, b: string): void => {
-    expect(
-      ethers.BigNumber.from(a).gt(
-        ethers.BigNumber.from(b)
-          .mul(99)
-          .div(100)
-      )
-    ).toBe(true);
-
-    expect(
-      ethers.BigNumber.from(a).lt(
-        ethers.BigNumber.from(b)
-          .mul(101)
-          .div(100)
-      )
-    ).toBe(true);
-  };
+  beforeAll(() => {
+    dhedge = new Dhedge(wallet, Network.POLYGON);
+  });
 
   it("calculates lp amount of WETH given 1 USDT to the USDT/WETH pool", async () => {
-    const dhedge = new Dhedge();
     const result = await dhedge.utils.calculateLpAmount(
       Dapp.SUSHISWAP,
       usdt,
       weth,
       tradeAmountUsdt
     );
-    checkAlmostSame(result, "545285106430725");
+    expect(Number(result)).toBeLessThan((1 / 800) * 1e18);
+    expect(Number(result)).toBeGreaterThan((1 / 5000) * 1e18);
   });
 
   it("calculates lp amount of USDT given 1 WETH to the USDT/WETH pool", async () => {
-    const dhedge = new Dhedge();
     const result = await dhedge.utils.calculateLpAmount(
       Dapp.SUSHISWAP,
       weth,
       usdt,
       tradeAmountWeth
     );
-    checkAlmostSame(result, "1833903013");
+    expect(Number(result)).toBeGreaterThan(800000000); //ETH price 800 USD
+    expect(Number(result)).toBeLessThan(5000000000); //ETH price 5000 USD
   });
 
-  it("gets pool Id of sushi LP pool for USDC/WETH pool", async () => {
-    const dhedge = new Dhedge();
-    const result = await dhedge.utils.getLpPoolId(Dapp.SUSHISWAP, lpUsdcWeth);
-    expect(result).toBe(1);
-  });
+  // it("gets pool Id of sushi LP pool for USDC/WETH pool", async () => {
+  //   const result = await dhedge.utils.getLpPoolId(Dapp.SUSHISWAP, lpUsdcWeth);
+  //   expect(result).toBe(1);
+  // });
 });
