@@ -7,19 +7,24 @@ import { factoryAddress } from "../config";
 import { Network, SupportedAsset } from "../types";
 
 import { Pool } from "./pool";
+import { Utils } from "./utils";
 
 export class Dhedge {
   public signer: Wallet;
   public factory: Contract;
-  public constructor(provider: string, network: Network, privateKey: string) {
-    const _provider = new ethers.providers.JsonRpcProvider(provider);
-    this.signer = new Wallet(privateKey, _provider);
+  public utils: Utils;
+  public constructor() {
+    const provider = new ethers.providers.JsonRpcProvider(
+      walletConfig.provider
+    );
 
     this.factory = new Contract(
       factoryAddress[network],
       PoolFactory.abi,
       this.signer
     );
+
+    this.utils = new Utils(this.signer);
   }
 
   /**
@@ -65,7 +70,7 @@ export class Dhedge {
       this.signer
     );
 
-    return new Pool(this.signer, poolLogic, managerLogic);
+    return new Pool(this.signer, poolLogic, managerLogic, this.utils);
   }
 
   /**
@@ -81,7 +86,7 @@ export class Dhedge {
       this.signer
     );
 
-    return new Pool(this.signer, poolLogic, managerLogic);
+    return new Pool(this.signer, poolLogic, managerLogic, this.utils);
   }
 
   /**

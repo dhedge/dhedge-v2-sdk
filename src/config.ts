@@ -44,3 +44,12 @@ export const dappFactoryAddress: AddressDappNetworkMap = {
     [Dapp.SUSHISWAP]: "0xc35DADB65012eC5796536bD9864eD8773aBc74C4"
   }
 };
+
+export const stakingAddress: AddressDappNetworkMap = {
+  [Network.POLYGON]: {
+    [Dapp.SUSHISWAP]: "0x0769fd68dFb93167989C6f7254cd0D766Fb2841F"
+  },
+  [Network.MUMBAI]: {
+    [Dapp.SUSHISWAP]: ""
+  }
+};
