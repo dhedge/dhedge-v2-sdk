@@ -37,14 +37,19 @@ export class Pool {
     this.utils = utils;
   }
 
-  async approve(dapp: Dapp, asset: string, staking = false): Promise<unknown> {
+  async approve(
+    dapp: Dapp,
+    asset: string,
+    amount: BigNumber | string,
+    staking = false
+  ): Promise<unknown> {
     const iERC20 = new ethers.utils.Interface(IERC20.abi);
     const approver = staking
       ? stakingAddress[this.network][dapp]
       : routerAddress[this.network][dapp];
     const approveTxData = iERC20.encodeFunctionData("approve", [
       approver,
-      ethers.constants.MaxUint256
+      amount
     ]);
 
     const tx = await this.poolLogic.execTransaction(asset, approveTxData);
@@ -52,10 +57,12 @@ export class Pool {
     return tx.hash;
   }
 
-  async approveDeposit(asset: string): Promise<unknown> {
+  async approveDeposit(
+    asset: string,
+    amount: BigNumber | string
+  ): Promise<unknown> {
     const iERC20 = new ethers.Contract(asset, IERC20.abi, this.signer);
-    const balance = await iERC20.balanceOf(this.signer.getAddress());
-    const tx = await iERC20.approve(this.address, balance);
+    const tx = await iERC20.approve(this.address, amount);
 
     return tx;
   }
@@ -64,7 +71,7 @@ export class Pool {
     dapp: Dapp,
     assetFrom: string,
     assetTo: string,
-    amount: string
+    amount: BigNumber | string
   ): Promise<string> {
     const iUniswapV2Router = new ethers.utils.Interface(IUniswapV2Router.abi);
     const deadline = Math.floor(Date.now() / 1000) + 60 * 20; // 20 minutes from the current Unix time
@@ -88,9 +95,9 @@ export class Pool {
     dapp: Dapp,
     assetA: string,
     assetB: string,
-    amountA: string,
-    amountB: string
-  ): Promise<string> {
+    amountA: BigNumber | string,
+    amountB: BigNumber | string
+  ): Promise<unknown> {
     const iUniswapV2Router = new ethers.utils.Interface(IUniswapV2Router.abi);
     const deadline = Math.floor(Date.now() / 1000) + 60 * 20; // 20 minutes from the current Unix time
 
@@ -107,7 +114,11 @@ export class Pool {
     return tx;
   }
 
-  async stake(dapp: Dapp, asset: string, amount: string): Promise<string> {
+  async stake(
+    dapp: Dapp,
+    asset: string,
+    amount: BigNumber | string
+  ): Promise<string> {
     const iMiniChefV2 = new ethers.utils.Interface(IMiniChefV2.abi);
 
     //to do: get LP pool id from asset
@@ -161,15 +172,8 @@ export class Pool {
     return tx;
   }
 
-  async deposit(asset: string, amount: string | number): Promise<string> {
-    if (!BigNumber.isBigNumber(amount) && typeof amount !== "string") {
-      throw new Error(
-        "Please pass numbers as strings or BigNumber objects to avoid precision errors."
-      );
-    }
-
-    const depositAmount = ethers.BigNumber.from(amount);
-    const tx = await this.poolLogic.deposit(asset, depositAmount);
+  async deposit(asset: string, amount: string | BigNumber): Promise<string> {
+    const tx = await this.poolLogic.deposit(asset, amount);
 
     return tx;
   }
