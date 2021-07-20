@@ -37,7 +37,7 @@ export class Pool {
     this.utils = utils;
   }
 
-  async approve(dapp: Dapp, asset: string, staking = false): Promise<string> {
+  async approve(dapp: Dapp, asset: string, staking = false): Promise<unknown> {
     const iERC20 = new ethers.utils.Interface(IERC20.abi);
     const approver = staking
       ? stakingAddress[this.network][dapp]
@@ -52,12 +52,12 @@ export class Pool {
     return tx.hash;
   }
 
-  async approveDeposit(asset: string): Promise<string> {
+  async approveDeposit(asset: string): Promise<unknown> {
     const iERC20 = new ethers.Contract(asset, IERC20.abi, this.signer);
     const balance = await iERC20.balanceOf(this.signer.getAddress());
     const tx = await iERC20.approve(this.address, balance);
 
-    return tx.hash;
+    return tx;
   }
 
   async trade(
@@ -81,7 +81,7 @@ export class Pool {
       swapTxData
     );
 
-    return tx.hash;
+    return tx;
   }
 
   async addLiquidity(
@@ -104,7 +104,7 @@ export class Pool {
       addLiquidityTxData
     );
 
-    return tx.hash;
+    return tx;
   }
 
   async stake(dapp: Dapp, asset: string, amount: string): Promise<string> {
@@ -124,7 +124,7 @@ export class Pool {
       stakeTxData
     );
 
-    return tx.hash;
+    return tx;
   }
 
   async getComposition(): Promise<FundComposition[]> {
@@ -147,22 +147,18 @@ export class Pool {
   public async changeAssets(
     assets: AssetEnabled[]
   ): Promise<FundComposition[]> {
-    let currentAssetsEnabled = await this.getComposition();
+    const currentAssetsEnabled = await this.getComposition();
     const currentAssets = currentAssetsEnabled.map(e =>
       e.asset.toLocaleLowerCase()
     );
     const newAssets = assets.map(e => e.asset.toLocaleLowerCase());
     const removedAssets = currentAssets.filter(e => !newAssets.includes(e));
     const changedAssets = assets.map(e => [e.asset, e.isDeposit]);
-    const receipt = await this.managerLogic.changeAssets(
+    const tx = await this.managerLogic.changeAssets(
       changedAssets,
       removedAssets
     );
-
-    await receipt.wait(1);
-
-    currentAssetsEnabled = await this.getComposition();
-    return currentAssetsEnabled;
+    return tx;
   }
 
   async deposit(asset: string, amount: string | number): Promise<string> {
@@ -175,8 +171,6 @@ export class Pool {
     const depositAmount = ethers.BigNumber.from(amount);
     const tx = await this.poolLogic.deposit(asset, depositAmount);
 
-    await tx.wait(1);
-
-    return tx.hash;
+    return tx;
   }
 }
