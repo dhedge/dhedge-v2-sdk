@@ -7,10 +7,12 @@ import { walletConfig, factoryAddress } from "../config";
 import { SupportedAsset } from "../types";
 
 import { Pool } from "./pool";
+import { Utils } from "./utils";
 
 export class Dhedge {
   public signer: Wallet;
   public factory: Contract;
+  public utils: Utils;
   public constructor() {
     const provider = new ethers.providers.JsonRpcProvider(
       walletConfig.provider
@@ -28,6 +30,8 @@ export class Dhedge {
       PoolFactory.abi,
       this.signer
     );
+
+    this.utils = new Utils(this.signer);
   }
 
   /**
@@ -73,7 +77,7 @@ export class Dhedge {
       this.signer
     );
 
-    return new Pool(this.signer, poolLogic, managerLogic);
+    return new Pool(this.signer, poolLogic, managerLogic, this.utils);
   }
 
   /**
@@ -89,7 +93,7 @@ export class Dhedge {
       this.signer
     );
 
-    return new Pool(this.signer, poolLogic, managerLogic);
+    return new Pool(this.signer, poolLogic, managerLogic, this.utils);
   }
 
   /**

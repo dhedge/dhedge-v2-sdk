@@ -5,23 +5,27 @@ import IMiniChefV2 from "../abi/IMiniChefV2.json";
 import IUniswapV2Router from "../abi/IUniswapV2Router.json";
 import { walletConfig, routerAddress, stakingAddress } from "../config";
 import { Dapp, Transaction, FundComposition, AssetEnabled } from "../types";
-import { getLpPoolId } from "../utils";
+
+import { Utils } from "./utils";
 
 export class Pool {
   public readonly poolLogic: Contract;
   public readonly managerLogic: Contract;
   public signer: Wallet;
   public address: string;
+  public utils: Utils;
 
   public constructor(
     signer: Wallet,
     poolLogic: Contract,
-    mangerLogic: Contract
+    mangerLogic: Contract,
+    utils: Utils
   ) {
     this.poolLogic = poolLogic;
     this.address = poolLogic.address;
     this.managerLogic = mangerLogic;
     this.signer = signer;
+    this.utils = utils;
   }
 
   async approve(dapp: Dapp, asset: string, staking = false): Promise<string> {
@@ -98,7 +102,7 @@ export class Pool {
     const iMiniChefV2 = new ethers.utils.Interface(IMiniChefV2.abi);
 
     //to do: get LP pool id from asset
-    const poolId = await getLpPoolId(dapp, asset, this.signer);
+    const poolId = await this.utils.getLpPoolId(dapp, asset);
 
     const stakeTxData = iMiniChefV2.encodeFunctionData(Transaction.DEPOSIT, [
       poolId,
