@@ -1,37 +1,29 @@
-import { Contract, Wallet, ethers } from "ethers";
+import { Contract, Wallet } from "ethers";
 
 import PoolFactory from "../abi/PoolFactory.json";
 import PoolLogic from "../abi/PoolLogic.json";
 import ManagerLogic from "../abi/PoolManagerLogic.json";
-import { walletConfig, factoryAddress } from "../config";
-import { SupportedAsset } from "../types";
+import { factoryAddress } from "../config";
+import { Network, SupportedAsset } from "../types";
 
 import { Pool } from "./pool";
 import { Utils } from "./utils";
 
 export class Dhedge {
+  public network: Network;
   public signer: Wallet;
   public factory: Contract;
   public utils: Utils;
-  public constructor() {
-    const provider = new ethers.providers.JsonRpcProvider(
-      walletConfig.provider
-    );
-
-    this.signer = walletConfig.privateKey
-      ? new Wallet(walletConfig.privateKey, provider)
-      : Wallet.fromMnemonic(
-          walletConfig.mnemonic,
-          "m/44'/60'/0'/0/" + walletConfig.accountId
-        ).connect(provider);
-
+  public constructor(wallet: Wallet, network: Network) {
+    this.network = network;
+    this.signer = wallet;
     this.factory = new Contract(
-      factoryAddress[walletConfig.network],
+      factoryAddress[network],
       PoolFactory.abi,
       this.signer
     );
 
-    this.utils = new Utils(this.signer);
+    this.utils = new Utils(this.network, this.signer);
   }
 
   /**
@@ -77,7 +69,13 @@ export class Dhedge {
       this.signer
     );
 
-    return new Pool(this.signer, poolLogic, managerLogic, this.utils);
+    return new Pool(
+      this.network,
+      this.signer,
+      poolLogic,
+      managerLogic,
+      this.utils
+    );
   }
 
   /**
@@ -93,7 +91,13 @@ export class Dhedge {
       this.signer
     );
 
-    return new Pool(this.signer, poolLogic, managerLogic, this.utils);
+    return new Pool(
+      this.network,
+      this.signer,
+      poolLogic,
+      managerLogic,
+      this.utils
+    );
   }
 
   /**

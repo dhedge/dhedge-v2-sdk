@@ -3,24 +3,33 @@ import { Contract, ethers, Wallet, BigNumber } from "ethers";
 import IERC20 from "../abi/IERC20.json";
 import IMiniChefV2 from "../abi/IMiniChefV2.json";
 import IUniswapV2Router from "../abi/IUniswapV2Router.json";
-import { walletConfig, routerAddress, stakingAddress } from "../config";
-import { Dapp, Transaction, FundComposition, AssetEnabled } from "../types";
+import { routerAddress, stakingAddress } from "../config";
+import {
+  Dapp,
+  Transaction,
+  FundComposition,
+  AssetEnabled,
+  Network
+} from "../types";
 
 import { Utils } from "./utils";
 
 export class Pool {
   public readonly poolLogic: Contract;
   public readonly managerLogic: Contract;
-  public signer: Wallet;
-  public address: string;
-  public utils: Utils;
+  public readonly signer: Wallet;
+  public readonly address: string;
+  public readonly utils: Utils;
+  public readonly network: Network;
 
   public constructor(
+    network: Network,
     signer: Wallet,
     poolLogic: Contract,
     mangerLogic: Contract,
     utils: Utils
   ) {
+    this.network = network;
     this.poolLogic = poolLogic;
     this.address = poolLogic.address;
     this.managerLogic = mangerLogic;
@@ -31,8 +40,8 @@ export class Pool {
   async approve(dapp: Dapp, asset: string, staking = false): Promise<string> {
     const iERC20 = new ethers.utils.Interface(IERC20.abi);
     const approver = staking
-      ? stakingAddress[walletConfig.network][dapp]
-      : routerAddress[walletConfig.network][dapp];
+      ? stakingAddress[this.network][dapp]
+      : routerAddress[this.network][dapp];
     const approveTxData = iERC20.encodeFunctionData("approve", [
       approver,
       ethers.constants.MaxUint256
@@ -68,7 +77,7 @@ export class Pool {
     ]);
 
     const tx = await this.poolLogic.execTransaction(
-      routerAddress[walletConfig.network][dapp],
+      routerAddress[this.network][dapp],
       swapTxData
     );
 
@@ -91,7 +100,7 @@ export class Pool {
     );
 
     const tx = await this.poolLogic.execTransaction(
-      routerAddress[walletConfig.network][dapp],
+      routerAddress[this.network][dapp],
       addLiquidityTxData
     );
 
@@ -111,7 +120,7 @@ export class Pool {
     ]);
 
     const tx = await this.poolLogic.execTransaction(
-      stakingAddress[walletConfig.network][dapp],
+      stakingAddress[this.network][dapp],
       stakeTxData
     );
 
