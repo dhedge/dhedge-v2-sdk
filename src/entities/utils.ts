@@ -1,4 +1,4 @@
-import { Contract, Wallet } from "ethers";
+import { BigNumber, Contract, Wallet } from "ethers";
 
 import IMiniChefV2 from "../abi/IMiniChefV2.json";
 import UniswapV2Factory from "../abi/IUniswapV2Factory.json";
@@ -14,6 +14,53 @@ export class Utils {
     this.network = network;
     this.signer = signer;
   }
+
+  /**
+   * Returns ration between two tokens of a liquidity pool
+   * This is the price of one tokrn in the other
+   * @param dApp dApp like uniswap or sushiswap
+   * @param tokenA first token of the pool pair
+   * @param tokenB second token of the pool pair
+   * @param ratio given amount of the firt token
+   * @throws if the dapp is not supported on the network
+   */
+  async getLpRatio(
+    dapp: Dapp,
+    tokenA: string,
+    tokenB: string
+  ): Promise<BigNumber> {
+    if (dappFactoryAddress[this.network][dapp]) {
+      const uniswapV2Factory = new Contract(
+        dappFactoryAddress[this.network][dapp] as string,
+        UniswapV2Factory.abi,
+        this.signer
+      );
+
+      const uniswapV2PairAddress = await uniswapV2Factory.getPair(
+        tokenA,
+        tokenB
+      );
+
+      const uniswapV2Pair = new Contract(
+        uniswapV2PairAddress,
+        UniswapV2Pair.abi,
+        this.signer
+      );
+
+      const result = await uniswapV2Pair.getReserves();
+      const [reserve0, reserve1] = result;
+      console.log(reserve0.toString());
+      console.log(reserve1.toString());
+      const ratio =
+        tokenA.toLowerCase() < tokenB.toLowerCase()
+          ? BigNumber.from(reserve1).div(reserve0)
+          : BigNumber.from(reserve1).div(reserve1);
+      return ratio;
+    } else {
+      throw new Error("Dapp not supported on this network");
+    }
+  }
+
   /**
    * Returns the amount of the other token that need to be provided to a liquidity pool
    * given the amount of one token
@@ -23,7 +70,7 @@ export class Utils {
    * @param amountA given amount of the firt token
    * @throws if the dapp is not supported on the network
    */
-  async calculateLpAmount(
+  async getLpAmount(
     dapp: Dapp,
     tokenA: string,
     tokenB: string,

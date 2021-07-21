@@ -130,7 +130,7 @@ describe("pool", () => {
   it("adds Liquidity into a WETH/USDT pool on sushi", async () => {
     let result;
     const pool = await dhedge.loadPool(myPool);
-    const liquidityAmountWETH = await dhedge.utils.calculateLpAmount(
+    const liquidityAmountWETH = await dhedge.utils.getLpAmount(
       Dapp.SUSHISWAP,
       usdt,
       weth,
