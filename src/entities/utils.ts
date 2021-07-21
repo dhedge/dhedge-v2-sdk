@@ -1,11 +1,10 @@
-import BigNumber from "bignumber.js";
 import { Contract, Wallet } from "ethers";
 
 import IMiniChefV2 from "../abi/IMiniChefV2.json";
 import UniswapV2Factory from "../abi/IUniswapV2Factory.json";
 import UniswapV2Pair from "../abi/IUniswapV2Pair.json";
 import { dappFactoryAddress, stakingAddress } from "../config";
-import { Dapp, Network } from "../types";
+import { Dapp, Network, Reserves } from "../types";
 
 export class Utils {
   network: Network;
@@ -25,11 +24,11 @@ export class Utils {
    * @param ratio given amount of the firt token
    * @throws if the dapp is not supported on the network
    */
-  async getLpRatio(
+  async getLpReserves(
     dapp: Dapp,
-    tokenA: string,
-    tokenB: string
-  ): Promise<BigNumber> {
+    assetA: string,
+    assetB: string
+  ): Promise<Reserves> {
     if (dappFactoryAddress[this.network][dapp]) {
       const uniswapV2Factory = new Contract(
         dappFactoryAddress[this.network][dapp] as string,
@@ -38,8 +37,8 @@ export class Utils {
       );
 
       const uniswapV2PairAddress = await uniswapV2Factory.getPair(
-        tokenA,
-        tokenB
+        assetA,
+        assetB
       );
 
       const uniswapV2Pair = new Contract(
@@ -50,13 +49,9 @@ export class Utils {
 
       const result = await uniswapV2Pair.getReserves();
       const [reserve0, reserve1] = result;
-      console.log(reserve0.toString());
-      console.log(reserve1.toString());
-      const ratio =
-        tokenA.toLowerCase() < tokenB.toLowerCase()
-          ? new BigNumber(reserve1.toString()).div(reserve0.toString())
-          : new BigNumber(reserve0.toString()).div(reserve1.toString());
-      return ratio;
+      return assetA.toLowerCase() < assetB.toLowerCase()
+        ? { assetA: reserve0, assetB: reserve1 }
+        : { assetA: reserve1, assetB: reserve0 };
     } else {
       throw new Error("Dapp not supported on this network");
     }

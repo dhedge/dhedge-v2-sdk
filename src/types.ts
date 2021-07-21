@@ -40,3 +40,8 @@ export type FundComposition = {
   balance: BigNumber;
   rate: BigNumber;
 }
+
+export type Reserves = {
+  assetA: BigNumber;
+  assetB: BigNumber
+}

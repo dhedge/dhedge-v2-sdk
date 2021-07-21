@@ -5,8 +5,8 @@ import { Dapp, Network } from "../types";
 
 import { Dhedge } from "./index";
 
-//const weth = "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
-const usdt = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
+const weth = "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
+//const usdt = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
 const usdc = "0x2791bca1f2de4661ed88a30c99a7a9449aa84174";
 //const lpUsdcWeth = "0x34965ba0ac2451A34a0471F04CCa3F990b8dea27";
 //const tradeAmountUsdt = "1000000";
@@ -57,11 +57,10 @@ describe("utils", () => {
   //   expect(Number(result)).toBeGreaterThan(0.9);
   // });
 
-  it("calculates lp ratio of the USDT/USDC pool", async () => {
-    const result = await dhedge.utils.getLpRatio(Dapp.SUSHISWAP, usdt, usdc);
-    console.log(result.toString());
-    expect(Number(result)).toBeLessThan(1.2);
-    expect(Number(result)).toBeGreaterThan(0.9);
+  it("get lp ratio of the USDT/USDC pool", async () => {
+    const result = await dhedge.utils.getLpReserves(Dapp.SUSHISWAP, usdc, weth);
+    console.log(result);
+    expect(result).not.toBe(null);
   });
 
   // it("gets pool Id of sushi LP pool for USDC/WETH pool", async () => {
