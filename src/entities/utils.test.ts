@@ -59,6 +59,7 @@ describe("utils", () => {
 
   it("calculates lp ratio of the USDT/USDC pool", async () => {
     const result = await dhedge.utils.getLpRatio(Dapp.SUSHISWAP, usdt, usdc);
+    console.log(result.toString());
     expect(Number(result)).toBeLessThan(1.2);
     expect(Number(result)).toBeGreaterThan(0.9);
   });

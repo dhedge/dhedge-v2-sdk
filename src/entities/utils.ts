@@ -1,4 +1,5 @@
-import { BigNumber, Contract, Wallet } from "ethers";
+import BigNumber from "bignumber.js";
+import { Contract, Wallet } from "ethers";
 
 import IMiniChefV2 from "../abi/IMiniChefV2.json";
 import UniswapV2Factory from "../abi/IUniswapV2Factory.json";
@@ -53,8 +54,8 @@ export class Utils {
       console.log(reserve1.toString());
       const ratio =
         tokenA.toLowerCase() < tokenB.toLowerCase()
-          ? BigNumber.from(reserve1).div(reserve0)
-          : BigNumber.from(reserve1).div(reserve1);
+          ? new BigNumber(reserve1.toString()).div(reserve0.toString())
+          : new BigNumber(reserve0.toString()).div(reserve1.toString());
       return ratio;
     } else {
       throw new Error("Dapp not supported on this network");
