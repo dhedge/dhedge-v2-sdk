@@ -1,5 +1,6 @@
-import { Contract, Wallet } from "ethers";
+import { Contract, ethers, Wallet } from "ethers";
 
+import IERC20 from "../abi/IERC20.json";
 import IMiniChefV2 from "../abi/IMiniChefV2.json";
 import UniswapV2Factory from "../abi/IUniswapV2Factory.json";
 import UniswapV2Pair from "../abi/IUniswapV2Pair.json";
@@ -135,5 +136,17 @@ export class Utils {
     } else {
       throw new Error("Dapp not supported on this network");
     }
+  }
+
+  /**
+   * Returns the balance of an asset (ERC20) token
+   * @param asset string token address
+   * @param owner address of the owner
+   */
+
+  async getBalance(asset: string, owner: string): Promise<ethers.BigNumber> {
+    const iERC20 = new ethers.Contract(asset, IERC20.abi, this.signer);
+    const balance = await iERC20.balanceOf(owner);
+    return balance;
   }
 }

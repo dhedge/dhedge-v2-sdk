@@ -29,7 +29,6 @@ export class Dhedge {
   /**
    * Creates a pool.
    *
-   * @param {boolean} privatePool
    * @param {string} managerName
    * @param {string} poolName
    * @param {string} symbol
