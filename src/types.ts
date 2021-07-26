@@ -14,7 +14,8 @@ export enum Dapp {
 export enum Transaction {
   SWAP = "swapExactTokensForTokens",
   ADD_LIQUIDITY = "addLiquidity",
-  DEPOSIT = "deposit"
+  DEPOSIT = "deposit",
+  HARVEST = "harvest"
 }
 
 export type AddressNetworkMap = Readonly<Record<Network, string>>;

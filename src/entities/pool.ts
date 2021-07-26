@@ -42,7 +42,8 @@ export class Pool {
     asset: string,
     amount: BigNumber | string,
     staking = false
-  ): Promise<unknown> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): Promise<any> {
     const iERC20 = new ethers.utils.Interface(IERC20.abi);
     const approver = staking
       ? stakingAddress[this.network][dapp]
@@ -72,7 +73,8 @@ export class Pool {
     assetFrom: string,
     assetTo: string,
     amount: BigNumber | string
-  ): Promise<unknown> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): Promise<any> {
     const iUniswapV2Router = new ethers.utils.Interface(IUniswapV2Router.abi);
     const deadline = Math.floor(Date.now() / 1000) + 60 * 20; // 20 minutes from the current Unix time
     const swapTxData = iUniswapV2Router.encodeFunctionData(Transaction.SWAP, [
@@ -97,7 +99,8 @@ export class Pool {
     assetB: string,
     amountA: BigNumber | string,
     amountB: BigNumber | string
-  ): Promise<unknown> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): Promise<any> {
     const iUniswapV2Router = new ethers.utils.Interface(IUniswapV2Router.abi);
     const deadline = Math.floor(Date.now() / 1000) + 60 * 20; // 20 minutes from the current Unix time
 
@@ -118,15 +121,34 @@ export class Pool {
     dapp: Dapp,
     asset: string,
     amount: BigNumber | string
-  ): Promise<string> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): Promise<any> {
     const iMiniChefV2 = new ethers.utils.Interface(IMiniChefV2.abi);
 
-    //to do: get LP pool id from asset
     const poolId = await this.utils.getLpPoolId(dapp, asset);
 
     const stakeTxData = iMiniChefV2.encodeFunctionData(Transaction.DEPOSIT, [
       poolId,
       amount,
+      this.address
+    ]);
+
+    const tx = await this.poolLogic.execTransaction(
+      stakingAddress[this.network][dapp],
+      stakeTxData
+    );
+
+    return tx;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async harvestStakingRewards(dapp: Dapp, asset: string): Promise<any> {
+    const iMiniChefV2 = new ethers.utils.Interface(IMiniChefV2.abi);
+
+    const poolId = await this.utils.getLpPoolId(dapp, asset);
+
+    const stakeTxData = iMiniChefV2.encodeFunctionData(Transaction.HARVEST, [
+      poolId,
       this.address
     ]);
 
@@ -172,7 +194,8 @@ export class Pool {
     return tx;
   }
 
-  async deposit(asset: string, amount: string | BigNumber): Promise<string> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async deposit(asset: string, amount: string | BigNumber): Promise<any> {
     const tx = await this.poolLogic.deposit(asset, amount);
 
     return tx;
