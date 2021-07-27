@@ -118,6 +118,29 @@ export class Pool {
     return tx;
   }
 
+  async removeLiquidity(
+    dapp: Dapp,
+    assetA: string,
+    assetB: string,
+    amount: string | ethers.BigNumber
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): Promise<any> {
+    const iUniswapV2Router = new ethers.utils.Interface(IUniswapV2Router.abi);
+    const deadline = Math.floor(Date.now() / 1000) + 60 * 20; // 20 minutes from the current Unix time
+
+    const removeLiquidityTxData = iUniswapV2Router.encodeFunctionData(
+      Transaction.REMOVE_LIQUIDITY,
+      [assetA, assetB, amount, 0, 0, this.address, deadline]
+    );
+
+    const tx = await this.poolLogic.execTransaction(
+      routerAddress[this.network][dapp],
+      removeLiquidityTxData
+    );
+
+    return tx;
+  }
+
   async stake(
     dapp: Dapp,
     asset: string,
@@ -137,6 +160,30 @@ export class Pool {
     const tx = await this.poolLogic.execTransaction(
       stakingAddress[this.network][dapp],
       stakeTxData
+    );
+
+    return tx;
+  }
+
+  async unStake(
+    dapp: Dapp,
+    asset: string,
+    amount: BigNumber | string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): Promise<any> {
+    const iMiniChefV2 = new ethers.utils.Interface(IMiniChefV2.abi);
+
+    const poolId = await this.utils.getLpPoolId(dapp, asset);
+
+    const unStakeTxData = iMiniChefV2.encodeFunctionData(Transaction.UNSTAKE, [
+      poolId,
+      amount,
+      this.address
+    ]);
+
+    const tx = await this.poolLogic.execTransaction(
+      stakingAddress[this.network][dapp],
+      unStakeTxData
     );
 
     return tx;
@@ -199,6 +246,12 @@ export class Pool {
   async deposit(asset: string, amount: string | BigNumber): Promise<any> {
     const tx = await this.poolLogic.deposit(asset, amount);
 
+    return tx;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async setTrader(newTrader: string): Promise<any> {
+    const tx = await this.managerLogic.setTrader(newTrader);
     return tx;
   }
 }

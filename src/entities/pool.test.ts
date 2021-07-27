@@ -1,20 +1,21 @@
 import { ethers } from "ethers";
 
 import { privateKey, providerUrl } from "../secrets";
-import { Dapp, Network } from "../types";
+import { Network } from "../types";
 
 import { Dhedge } from "./dhedge";
 
-const myPool = "0x17e4aa95c5eb9ee8b0651b7a2cd12920268f1285";
+//const myPool = "0x17e4aa95c5eb9ee8b0651b7a2cd12920268f1285";
 //const pool2 = "0x1b8e0d4a6cb63281dc623fdfe5a85258d80a3d76"
 
 // const weth = "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
-const usdt = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
-const usdc = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174";
+//const usdt = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
+//const dai = "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063";
+//const usdc = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174";
 // const sushi = "0x0b3F868E0BE5597D5DB7fEB59E1CADBb0fdDa50a";
 // const wmatic = "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270";
 // const lpUsdcWeth = "0x34965ba0ac2451A34a0471F04CCa3F990b8dea27";
-export const lpUsdcdai = "0xCD578F016888B57F1b1e3f887f392F0159E26747";
+//const lpUsdcDai = "0xCD578F016888B57F1b1e3f887f392F0159E26747";
 // const tradeAmountUsdc = "1000000";
 // const liquidityAmountUsdt = "1000000";
 // const lpUsdcWETHAmount = "10951027354";
@@ -47,19 +48,19 @@ describe("pool", () => {
   //   expect(result).not.toBe(null);
   // });
 
-  it("trades 0.5 USDC into USDT on sushiswap", async () => {
-    let result;
-    const pool = await dhedge.loadPool(myPool);
-    try {
-      result = await pool.trade(Dapp.SUSHISWAP, usdc, usdt, "500000", "497382");
-    } catch (e) {
-      console.log(e);
-    }
-    expect(result).not.toBe(null);
-  });
+  // it("trades 0.5 USDC into USDT on sushiswap", async () => {
+  //   let result;
+  //   const pool = await dhedge.loadPool(myPool);
+  //   try {
+  //     result = await pool.trade(Dapp.SUSHISWAP, usdc, usdt, "500000", "497382");
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  //   expect(result).not.toBe(null);
+  // });
 
   // it("checks fund composition", async () => {
-  //   let result: FundComposition[] = [];
+  //   let result = [];
   //   const pool = await dhedge.loadPool(myPool);
   //   try {
   //     result = await pool.getComposition();
@@ -157,9 +158,9 @@ describe("pool", () => {
   //   try {
   //     result = await pool.approve(
   //       Dapp.SUSHISWAP,
-  //       lpUsdcWeth,
+  //       lpUsdcDai,
   //       ethers.constants.MaxUint256,
-  //       true
+  //       false
   //     );
   //   } catch (e) {
   //     console.log(e);
@@ -196,11 +197,13 @@ describe("pool", () => {
   //   expect(result).not.toBe(null);
   // });
 
-  // it("stakes USDC/WETH LP on sushi", async () => {
+  // it("unStakes USDC/DAI LP on sushi", async () => {
   //   let result;
   //   const pool = await dhedge.loadPool(myPool);
+  //   const balance = "11013356749811";
   //   try {
-  //     result = await pool.stake(Dapp.SUSHISWAP, lpUsdcWeth, lpUsdcWETHAmount);
+  //     result = await pool.unStake(Dapp.SUSHISWAP, lpUsdcDai, balance);
+  //     console.log(result);
   //   } catch (e) {
   //     console.log(e);
   //   }
@@ -229,6 +232,32 @@ describe("pool", () => {
   //   const pool = await dhedge.loadPool(myPool);
   //   try {
   //     result = await pool.harvestStakingRewards(Dapp.SUSHISWAP, lpUsdcdai);
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  //   expect(result).not.toBe(null);
+  // });
+
+  // it("sets a trader account", async () => {
+  //   let result;
+  //   const newTrader = "0xC52D9a9D9b05a01887871216fF02bA4235e8503d";
+  //   const pool = await dhedge.loadPool(myPool);
+  //   try {
+  //     result = await pool.setTrader(newTrader);
+  //     console.log(result);
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  //   expect(result).not.toBe(null);
+  // });
+
+  // it("removes liquidity from  USDC/DAI LP on sushi", async () => {
+  //   let result;
+  //   const pool = await dhedge.loadPool(myPool);
+  //   const balance = "11013356749811";
+  //   try {
+  //     result = await pool.removeLiquidity(Dapp.SUSHISWAP, usdc, dai, balance);
+  //     console.log(result);
   //   } catch (e) {
   //     console.log(e);
   //   }

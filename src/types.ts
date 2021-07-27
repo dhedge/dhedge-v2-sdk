@@ -15,7 +15,9 @@ export enum Transaction {
   SWAP = "swapExactTokensForTokens",
   ADD_LIQUIDITY = "addLiquidity",
   DEPOSIT = "deposit",
-  HARVEST = "harvest"
+  HARVEST = "harvest",
+  UNSTAKE = "withdrawAndHarvest",
+  REMOVE_LIQUIDITY = "removeLiquidity"
 }
 
 export type AddressNetworkMap = Readonly<Record<Network, string>>;
