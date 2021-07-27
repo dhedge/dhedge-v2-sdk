@@ -9,8 +9,8 @@ const myPool = "0x17e4aa95c5eb9ee8b0651b7a2cd12920268f1285";
 //const pool2 = "0x1b8e0d4a6cb63281dc623fdfe5a85258d80a3d76"
 
 // const weth = "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
-// const usdt = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
-// const usdc = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174";
+const usdt = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
+const usdc = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174";
 // const sushi = "0x0b3F868E0BE5597D5DB7fEB59E1CADBb0fdDa50a";
 // const wmatic = "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270";
 // const lpUsdcWeth = "0x34965ba0ac2451A34a0471F04CCa3F990b8dea27";
@@ -47,16 +47,16 @@ describe("pool", () => {
   //   expect(result).not.toBe(null);
   // });
 
-  // it("trades 1 USDC into WETH on sushiswap", async () => {
-  //   let result;
-  //   const pool = await dhedge.loadPool(myPool);
-  //   try {
-  //     result = await pool.trade(Dapp.SUSHISWAP, usdc, weth, tradeAmountUsdc);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
+  it("trades 0.5 USDC into USDT on sushiswap", async () => {
+    let result;
+    const pool = await dhedge.loadPool(myPool);
+    try {
+      result = await pool.trade(Dapp.SUSHISWAP, usdc, usdt, "500000", "497382");
+    } catch (e) {
+      console.log(e);
+    }
+    expect(result).not.toBe(null);
+  });
 
   // it("checks fund composition", async () => {
   //   let result: FundComposition[] = [];
@@ -224,14 +224,14 @@ describe("pool", () => {
   //   expect(result.length).toBeGreaterThan(0);
   // });
 
-  it("harvests USDC/DAI LP Farm on sushi", async () => {
-    let result;
-    const pool = await dhedge.loadPool(myPool);
-    try {
-      result = await pool.harvestStakingRewards(Dapp.SUSHISWAP, lpUsdcdai);
-    } catch (e) {
-      console.log(e);
-    }
-    expect(result).not.toBe(null);
-  });
+  // it("harvests USDC/DAI LP Farm on sushi", async () => {
+  //   let result;
+  //   const pool = await dhedge.loadPool(myPool);
+  //   try {
+  //     result = await pool.harvestStakingRewards(Dapp.SUSHISWAP, lpUsdcdai);
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  //   expect(result).not.toBe(null);
+  // });
 });

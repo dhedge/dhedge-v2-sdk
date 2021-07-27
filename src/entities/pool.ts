@@ -72,14 +72,15 @@ export class Pool {
     dapp: Dapp,
     assetFrom: string,
     assetTo: string,
-    amount: BigNumber | string
+    amountIn: BigNumber | string,
+    minAmountOut: BigNumber | string
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): Promise<any> {
     const iUniswapV2Router = new ethers.utils.Interface(IUniswapV2Router.abi);
     const deadline = Math.floor(Date.now() / 1000) + 60 * 20; // 20 minutes from the current Unix time
     const swapTxData = iUniswapV2Router.encodeFunctionData(Transaction.SWAP, [
-      amount,
-      0,
+      amountIn,
+      minAmountOut,
       [assetFrom, assetTo],
       this.address,
       deadline
