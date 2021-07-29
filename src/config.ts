@@ -1,17 +1,9 @@
-import dotenv from "dotenv";
-
 import {
   Dapp,
   AddressNetworkMap,
   Network,
   AddressDappNetworkMap
 } from "./types";
-
-const envFound = dotenv.config();
-
-if (!envFound) {
-  throw new Error("Couldn't find .env file.");
-}
 
 export const factoryAddress: AddressNetworkMap = {
   [Network.MUMBAI]: "0xeec15f2716c7a98fFe14F7aD0dEeC93962aF4437",

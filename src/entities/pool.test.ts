@@ -5,8 +5,7 @@ import { Network } from "../types";
 
 import { Dhedge } from "./dhedge";
 
-//const myPool = "0x17e4aa95c5eb9ee8b0651b7a2cd12920268f1285";
-//const pool2 = "0x1b8e0d4a6cb63281dc623fdfe5a85258d80a3d76"
+const myPool = "0xd63aA0Dce2311670608f1AB0667E43612F73340e";
 
 // const weth = "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
 //const usdt = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
@@ -30,6 +29,12 @@ jest.setTimeout(100000);
 describe("pool", () => {
   beforeAll(() => {
     dhedge = new Dhedge(wallet, Network.POLYGON);
+  });
+
+  it("checks fund composition", async () => {
+    const pool = await dhedge.loadPool(myPool);
+    const result = await pool.getComposition();
+    expect(result.length).toBeGreaterThan(0);
   });
 
   // it("approves unlimited SUSHI on sushiswap", async () => {
@@ -57,18 +62,6 @@ describe("pool", () => {
   //     console.log(e);
   //   }
   //   expect(result).not.toBe(null);
-  // });
-
-  // it("checks fund composition", async () => {
-  //   let result = [];
-  //   const pool = await dhedge.loadPool(myPool);
-  //   try {
-  //     result = await pool.getComposition();
-  //     console.log(result);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result.length).toBeGreaterThan(0);
   // });
 
   // it("approve USDC balance of User for Deposit", async () => {

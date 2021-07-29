@@ -27,14 +27,13 @@ export class Dhedge {
   }
 
   /**
-   * Creates a pool.
+   * Creates a new pool.
    *
-   * @param {string} managerName
-   * @param {string} poolName
-   * @param {string} symbol
-   * @param {tuple[]} supportedAssets
-   * @param {number|BigNumber} managerFeeNumerator
-   * @returns {Promise<Pool>}
+   * @param {string} managerName name of manger
+   * @param {string} poolName pool name
+   * @param {string} symbol token symbol
+   * @param {tuple[]} supportedAssets enabled assets to trade
+   * @param {number|BigNumber} managerFeeNumerator manger fee in percent
    */
   public async createPool(
     managerName: string,
