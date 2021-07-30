@@ -55,7 +55,7 @@ const pool = await dhedge.createPool(
   "DRAF",
   [
     [usdcTokenAddress, true],
-    [wethTokenAddress, true],
+    [wethTokenAddress, false],
   ],
   10
 )
@@ -77,7 +77,7 @@ const composition = await pool.getComposition();
 
 ### Approve pool asset
 
-Before trading an asset on platforms like Sushiswap or Unsiwap it needs to be approved.
+Before trading an asset on platforms like Sushiswap or Uniswap it needs to be approved.
 
 Approve unlimted amount of USDC to trade on Sushiswap.
 
@@ -157,7 +157,7 @@ const tx = await pool.stake(
 )
 ```
 
-1 Sushiswap LP USDC/DAI token
+Unstake 1 Sushiswap LP USDC/DAI token
 
 ```
 const amountSlpUsdcDai = "1000000000000000000"
