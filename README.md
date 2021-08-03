@@ -105,7 +105,7 @@ Before depositing an asset into a Pool, it needs to be approved.
 Approve unlimited amount of USDC to deposit into Pool.
 
 ```
-const tx = await pool.approveDeposit(usdcTokenAddress, ethers.constants.MaxUint256);
+const tx = await pool.approveDeposit("USDC_TOKEN_ADDRESS", ethers.constants.MaxUint256);
 ```
 
 ### Deposit asset into pool
@@ -114,7 +114,7 @@ Deposit 1 USDC into Pool
 
 ```
 const usdcDepositAmount = "100000"
-const tx = await pool.deposit(usdcTokenAddress, usdcDepositAmount);
+const tx = await pool.deposit("USDC_TOKEN_ADDRESS", usdcDepositAmount);
 ```
 
 ### Approve pool asset
