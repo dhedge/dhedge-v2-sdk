@@ -5,7 +5,7 @@ import { privateKey, providerUrl } from "../secrets";
 import { Network } from "../types";
 
 import { Dhedge } from "./dhedge";
-const myPool = "0xd63aA0Dce2311670608f1AB0667E43612F73340e";
+const myPool = "0xbae28251b2a4e621aa7e20538c06dee010bc06de";
 // const usdc = "0x9D4Dc547d9c1822aEd5b6e19025894d1B7A54036";
 // const weth = "0x21d867E9089d07570c682B9186697E2E326CEc8a";
 

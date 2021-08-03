@@ -269,7 +269,7 @@ export class Pool {
    * @param dapp platform like Sushiswap or Uniswap
    * @param asset liquidity pool token
    */
-  async harvestStakingRewards(dapp: Dapp, asset: string): Promise<any> {
+  async harvestRewards(dapp: Dapp, asset: string): Promise<any> {
     const iMiniChefV2 = new ethers.utils.Interface(IMiniChefV2.abi);
     const poolId = await this.utils.getLpPoolId(dapp, asset);
     const harvestTxData = iMiniChefV2.encodeFunctionData(Transaction.HARVEST, [

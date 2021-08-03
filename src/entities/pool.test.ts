@@ -5,7 +5,7 @@ import { Network } from "../types";
 
 import { Dhedge } from "./dhedge";
 
-const myPool = "0xd63aA0Dce2311670608f1AB0667E43612F73340e";
+const myPool = "0xbae28251b2a4e621aa7e20538c06dee010bc06de";
 
 // const weth = "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
 //const usdt = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
@@ -224,7 +224,7 @@ describe("pool", () => {
   //   let result;
   //   const pool = await dhedge.loadPool(myPool);
   //   try {
-  //     result = await pool.harvestStakingRewards(Dapp.SUSHISWAP, lpUsdcdai);
+  //     result = await pool.harvestRewards(Dapp.SUSHISWAP, lpUsdcdai);
   //   } catch (e) {
   //     console.log(e);
   //   }
