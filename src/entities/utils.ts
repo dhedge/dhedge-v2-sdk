@@ -18,7 +18,7 @@ export class Utils {
 
   /**
    * Returns ration between two tokens of a liquidity pool
-   * This is the price of one tokrn in the other
+   * This is the price of one token in the other
    * @param dApp dApp like uniswap or sushiswap
    * @param tokenA first token of the pool pair
    * @param tokenB second token of the pool pair

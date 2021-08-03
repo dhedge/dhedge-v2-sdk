@@ -75,6 +75,19 @@ const pool = await dhedge.loadPool(poolAddress)
 const composition = await pool.getComposition();
 ```
 
+### Changing pool assets (enable/disable)
+
+Enable WETH in addition to already enabled USDC and USDT, but WETH shouldn't be allowed as deposit.
+
+```
+const enabledAssets = [
+  { asset: "USDC_TOKEN_ADDRESS", isDeposit: true },
+  { asset: "USDT_TOKEN_ADDRESS", isDeposit: true },
+  { asset: "WETH_TOKEN_ADDRESS", isDeposit: false },
+]
+const tx = await pool.changeAssets(enabledAssets)
+```
+
 ### Approve pool asset
 
 Before trading an asset on platforms like Sushiswap or Uniswap it needs to be approved.
