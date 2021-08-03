@@ -44,7 +44,9 @@ const dhedge = new Dhedge(walletWithProvider, Network.POLYGON);
 
 ### Create pool
 
-Create a pool with USDC and WETH enabled assets, but only USDC available for deposit.
+Create a pool with Manager Name, Pool Name, Ticker.  
+USDC and WETH enabled assets, but only USDC available for deposit.
+Manager Fee Percent
 
 ```
 const usdcTokenAddress = "USDC_TOKEN_ADDRESS"
@@ -94,6 +96,28 @@ Set an account with trading permissions
 
 ```
 const tx = await pool.setTrader("TRADER_ACCOUNT_ADDRESS")
+```
+
+### Approve asset for deposit
+
+Before depositing an asset into a Pool, it needs to be approved.
+
+Approve unlimited amount of USDC to deposit into Pool.
+
+```
+const poolAddress = "YOUR_POOL_ADDRESS"
+const pool = await dhedge.loadPool(poolAddress);
+const tx = await pool.approveDeposit(usdcTokenAddress, ethers.constants.MaxUint256);
+```
+
+### Deposit asset into pool
+
+Deposit 1 USDC into Pool
+
+```
+const poolAddress = "YOUR_POOL_ADDRESS"
+const pool = await dhedge.loadPool(poolAddress);
+const tx = await pool.deposit(usdcTokenAddress, "100000");
 ```
 
 ### Approve pool asset
