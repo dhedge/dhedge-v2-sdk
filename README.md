@@ -28,7 +28,7 @@ yarn add @dhedge/v2-sdk
 
 ### Initial setup
 
-Initialize the sdk with an [ethers wallet](https://docs.ethers.io/v4/api-wallet.html) and the network.
+Initialize the sdk with an [ethers wallet](https://docs.ethers.io/v5/api/signer/#Wallet) and the network.
 
 ```
 import { Dhedge, Dapp, Network, ethers } from "@dhedge/v2-sdk";
@@ -44,22 +44,24 @@ const dhedge = new Dhedge(walletWithProvider, Network.POLYGON);
 
 ### Create pool
 
-Create a pool with USDC and WETH enabled assets, but only USDC available for deposit.
+Create a pool.
+
+USDC and DAI enabled assets, but only USDC available for deposit.
 
 ```
 const usdcTokenAddress = "USDC_TOKEN_ADDRESS"
-const wethTokenAddress = "WETH_TOKEN_ADDRESS"
+const daiTokenAddress = "DAI_TOKEN_ADDRESS"
 const pool = await dhedge.createPool(
   "Day Ralio",
-  "Awseome Fund",
+  "Awesome Fund",
   "DRAF",
   [
     [usdcTokenAddress, true],
-    [wethTokenAddress, false],
+    [daiTokenAddress, false],
   ],
   10
 )
-console.log("created pool with address",pool.address)
+console.log("created pool with address", pool.address)
 ```
 
 ### Load pool
@@ -77,12 +79,12 @@ const composition = await pool.getComposition();
 
 ### Change pool assets (enable/disable)
 
-Enable WETH in addition to already enabled USDC and USDT, but WETH shouldn't be allowed as deposit.
+Change pool assets to allow DAI for deposits. Also enable WETH as an asset, but shouldn't be allowed as deposit.
 
 ```
 const enabledAssets = [
   { asset: "USDC_TOKEN_ADDRESS", isDeposit: true },
-  { asset: "USDT_TOKEN_ADDRESS", isDeposit: true },
+  { asset: "DAI_TOKEN_ADDRESS", isDeposit: true },
   { asset: "WETH_TOKEN_ADDRESS", isDeposit: false },
 ]
 const tx = await pool.changeAssets(enabledAssets)
@@ -96,11 +98,30 @@ Set an account with trading permissions
 const tx = await pool.setTrader("TRADER_ACCOUNT_ADDRESS")
 ```
 
-### Approve pool asset
+### Approve asset for deposit
 
-Before trading an asset on platforms like Sushiswap or Uniswap it needs to be approved.
+Before depositing an asset into a Pool, it needs to be approved.
 
-Approve unlimted amount of USDC to trade on Sushiswap.
+Approve unlimited amount of USDC to deposit into Pool.
+
+```
+const tx = await pool.approveDeposit("USDC_TOKEN_ADDRESS", ethers.constants.MaxUint256);
+```
+
+### Deposit asset into pool
+
+Deposit 1 USDC into Pool
+
+```
+const usdcDepositAmount = "100000"
+const tx = await pool.deposit("USDC_TOKEN_ADDRESS", usdcDepositAmount);
+```
+
+### Approve pool asset for trading & staking
+
+Before trading an asset on platforms like Sushiswap it needs to be approved.
+
+Approve unlimited amount of USDC to trade on Sushiswap
 
 ```
 const tx = await pool.approve(
@@ -110,12 +131,12 @@ const tx = await pool.approve(
 )
 ```
 
-Approve unlimted amound of SLP USDC-DAI token for staking on Sushiswap
+Approve unlimited amound of SLP USDC-DAI token for staking on Sushiswap
 
 ```
 const tx = await pool.approve(
   Dapp.SUSHISWAP,
-  "SLP_UYSDC_DAI_TOKEN_ADDRESS",
+  "SLP_USDC_DAI_TOKEN_ADDRESS",
   ethers.constants.MaxInt256,
   true
 )
