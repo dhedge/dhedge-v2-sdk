@@ -75,7 +75,7 @@ const pool = await dhedge.loadPool(poolAddress)
 const composition = await pool.getComposition();
 ```
 
-### Changing pool assets (enable/disable)
+### Change pool assets (enable/disable)
 
 Enable WETH in addition to already enabled USDC and USDT, but WETH shouldn't be allowed as deposit.
 
@@ -86,6 +86,14 @@ const enabledAssets = [
   { asset: "WETH_TOKEN_ADDRESS", isDeposit: false },
 ]
 const tx = await pool.changeAssets(enabledAssets)
+```
+
+### Set trader
+
+Set an account with trading permissions
+
+```
+const tx = await pool.setTrader("TRADER_ACCOUNT_ADDRESS")
 ```
 
 ### Approve pool asset
