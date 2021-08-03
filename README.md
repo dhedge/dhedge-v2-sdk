@@ -121,7 +121,7 @@ const tx = await pool.deposit("USDC_TOKEN_ADDRESS", usdcDepositAmount);
 
 Before trading an asset on platforms like Sushiswap it needs to be approved.
 
-Approve unlimited amount of USDC to trade on Sushiswap.
+Approve unlimited amount of USDC to trade on Sushiswap
 
 ```
 const tx = await pool.approve(
@@ -136,7 +136,7 @@ Approve unlimited amound of SLP USDC-DAI token for staking on Sushiswap
 ```
 const tx = await pool.approve(
   Dapp.SUSHISWAP,
-  "SLP_UYSDC_DAI_TOKEN_ADDRESS",
+  "SLP_USDC_DAI_TOKEN_ADDRESS",
   ethers.constants.MaxInt256,
   true
 )
