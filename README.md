@@ -28,7 +28,7 @@ yarn add @dhedge/v2-sdk
 
 ### Initial setup
 
-Initialize the sdk with an [ethers wallet](https://docs.ethers.io/v4/api-wallet.html) and the network.
+Initialize the sdk with an [ethers wallet](https://docs.ethers.io/v5/api/signer/#Wallet) and the network.
 
 ```
 import { Dhedge, Dapp, Network, ethers } from "@dhedge/v2-sdk";
