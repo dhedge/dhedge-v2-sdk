@@ -131,17 +131,6 @@ const tx = await pool.approve(
 )
 ```
 
-Approve unlimited amound of SLP USDC-DAI token for staking on Sushiswap
-
-```
-const tx = await pool.approve(
-  Dapp.SUSHISWAP,
-  "SLP_USDC_DAI_TOKEN_ADDRESS",
-  ethers.constants.MaxInt256,
-  true
-)
-```
-
 ### Trade pool assets
 
 Trade 1 USDC into DAI on Sushiswap
@@ -187,6 +176,17 @@ const tx = await pool.removeLiquidity(
 ```
 
 ### Staking
+
+Approve unlimited amound of SLP USDC-DAI token for staking on Sushiswap
+
+```
+const tx = await pool.approve(
+  Dapp.SUSHISWAP,
+  "SLP_USDC_DAI_TOKEN_ADDRESS",
+  ethers.constants.MaxInt256,
+  true
+)
+```
 
 Stake 1 Sushiswap LP USDC/DAI token
 
