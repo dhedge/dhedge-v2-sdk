@@ -46,18 +46,18 @@ const dhedge = new Dhedge(walletWithProvider, Network.POLYGON);
 
 Create a pool.
 
-USDC and USDT enabled assets, but only USDC available for deposit.
+USDC and DAI enabled assets, but only USDC available for deposit.
 
 ```
 const usdcTokenAddress = "USDC_TOKEN_ADDRESS"
-const usdtTokenAddress = "USDT_TOKEN_ADDRESS"
+const daiTokenAddress = "DAI_TOKEN_ADDRESS"
 const pool = await dhedge.createPool(
   "Day Ralio",
   "Awesome Fund",
   "DRAF",
   [
     [usdcTokenAddress, true],
-    [usdtTokenAddress, false],
+    [daiTokenAddress, false],
   ],
   10
 )
@@ -79,12 +79,12 @@ const composition = await pool.getComposition();
 
 ### Change pool assets (enable/disable)
 
-Change pool assets to allow USDT for deposits. Also enable WETH as an asset, but shouldn't be allowed as deposit.
+Change pool assets to allow DAI for deposits. Also enable WETH as an asset, but shouldn't be allowed as deposit.
 
 ```
 const enabledAssets = [
   { asset: "USDC_TOKEN_ADDRESS", isDeposit: true },
-  { asset: "USDT_TOKEN_ADDRESS", isDeposit: true },
+  { asset: "DAI_TOKEN_ADDRESS", isDeposit: true },
   { asset: "WETH_TOKEN_ADDRESS", isDeposit: false },
 ]
 const tx = await pool.changeAssets(enabledAssets)
@@ -117,7 +117,7 @@ const usdcDepositAmount = "100000"
 const tx = await pool.deposit("USDC_TOKEN_ADDRESS", usdcDepositAmount);
 ```
 
-### Approve pool asset
+### Approve pool asset for trading & staking
 
 Before trading an asset on platforms like Sushiswap it needs to be approved.
 
