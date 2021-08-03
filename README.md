@@ -119,9 +119,9 @@ const tx = await pool.deposit("USDC_TOKEN_ADDRESS", usdcDepositAmount);
 
 ### Approve pool asset
 
-Before trading an asset on platforms like Sushiswap or Uniswap it needs to be approved.
+Before trading an asset on platforms like Sushiswap it needs to be approved.
 
-Approve unlimted amount of USDC to trade on Sushiswap.
+Approve unlimited amount of USDC to trade on Sushiswap.
 
 ```
 const tx = await pool.approve(
