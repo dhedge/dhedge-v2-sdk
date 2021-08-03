@@ -44,16 +44,16 @@ const dhedge = new Dhedge(walletWithProvider, Network.POLYGON);
 
 ### Create pool
 
-Create a pool with Manager Name, Pool Name, Ticker.  
+Create a pool.
+
 USDC and WETH enabled assets, but only USDC available for deposit.
-Manager Fee Percent
 
 ```
 const usdcTokenAddress = "USDC_TOKEN_ADDRESS"
 const wethTokenAddress = "WETH_TOKEN_ADDRESS"
 const pool = await dhedge.createPool(
   "Day Ralio",
-  "Awseome Fund",
+  "Awesome Fund",
   "DRAF",
   [
     [usdcTokenAddress, true],
