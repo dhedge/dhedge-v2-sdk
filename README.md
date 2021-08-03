@@ -131,7 +131,7 @@ const tx = await pool.approve(
 )
 ```
 
-Approve unlimted amound of SLP USDC-DAI token for staking on Sushiswap
+Approve unlimited amound of SLP USDC-DAI token for staking on Sushiswap
 
 ```
 const tx = await pool.approve(
