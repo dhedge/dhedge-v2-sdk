@@ -46,22 +46,22 @@ const dhedge = new Dhedge(walletWithProvider, Network.POLYGON);
 
 Create a pool.
 
-USDC and WETH enabled assets, but only USDC available for deposit.
+USDC and USDT enabled assets, but only USDC available for deposit.
 
 ```
 const usdcTokenAddress = "USDC_TOKEN_ADDRESS"
-const wethTokenAddress = "WETH_TOKEN_ADDRESS"
+const usdtTokenAddress = "USDT_TOKEN_ADDRESS"
 const pool = await dhedge.createPool(
   "Day Ralio",
   "Awesome Fund",
   "DRAF",
   [
     [usdcTokenAddress, true],
-    [wethTokenAddress, false],
+    [usdtTokenAddress, false],
   ],
   10
 )
-console.log("created pool with address",pool.address)
+console.log("created pool with address", pool.address)
 ```
 
 ### Load pool
@@ -79,7 +79,7 @@ const composition = await pool.getComposition();
 
 ### Change pool assets (enable/disable)
 
-Enable WETH in addition to already enabled USDC and USDT, but WETH shouldn't be allowed as deposit.
+Change pool assets to allow USDT for deposits. Also enable WETH as an asset, but shouldn't be allowed as deposit.
 
 ```
 const enabledAssets = [
