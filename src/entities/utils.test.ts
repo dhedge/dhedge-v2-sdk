@@ -22,18 +22,6 @@ describe("utils", () => {
     dhedge = new Dhedge(wallet, Network.POLYGON);
   });
 
-  it("calculates minumum amount out when trading 1 USDC to USDT pool", async () => {
-    const result = await dhedge.utils.getMinAmountOut(
-      Dapp.SUSHISWAP,
-      usdc,
-      usdt,
-      "1000000",
-      0.05
-    );
-    expect(Number(result)).toBeGreaterThan(980000);
-    expect(Number(result)).toBeLessThan(1020000);
-  });
-
   it("gets lp ratio of the USDT/USDC pool", async () => {
     const result = await dhedge.utils.getLpReserves(Dapp.SUSHISWAP, usdc, usdt);
     expect(Number(result.assetA) / Number(result.assetB)).toBeGreaterThan(0.9);

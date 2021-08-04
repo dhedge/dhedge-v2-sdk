@@ -59,53 +59,6 @@ export class Utils {
   }
 
   /**
-   * Returns the minumum amount of token that should be received
-   * when trading tokens
-   * @param dApp dApp like uniswap or sushiswap
-   * @param tokenA first token of the pool pair
-   * @param tokenB second token of the pool pair
-   * @param amountA given amount of the firt token
-   * @throws if the dapp is not supported on the network
-   */
-  async getMinAmountOut(
-    dapp: Dapp,
-    tokenA: string,
-    tokenB: string,
-    amountA: string | ethers.BigNumber,
-    slippage: number
-  ): Promise<ethers.BigNumber> {
-    if (dappFactoryAddress[this.network][dapp]) {
-      const uniswapV2Factory = new Contract(
-        dappFactoryAddress[this.network][dapp] as string,
-        UniswapV2Factory.abi,
-        this.signer
-      );
-
-      const uniswapV2PairAddress = await uniswapV2Factory.getPair(
-        tokenA,
-        tokenB
-      );
-
-      const uniswapV2Pair = new Contract(
-        uniswapV2PairAddress,
-        UniswapV2Pair.abi,
-        this.signer
-      );
-
-      const result = await uniswapV2Pair.getReserves();
-      const [reserve0, reserve1] = result;
-      const amountB: ethers.BigNumber =
-        tokenA.toLowerCase() < tokenB.toLowerCase()
-          ? reserve1.mul(amountA).div(reserve0)
-          : reserve0.mul(amountA).div(reserve1);
-      const slippageAmount = amountB.mul(slippage * 100).div(10000);
-      return amountB.sub(slippageAmount);
-    } else {
-      throw new Error("Dapp not supported on this network");
-    }
-  }
-
-  /**
    * Returns the pool id of a liquidity pool
    * @param dApp dApp like uniswap or sushiswap
    * @param lpPoolAddress token address of the pool pair
