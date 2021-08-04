@@ -149,11 +149,10 @@ describe("pool", () => {
   //   let result;
   //   const pool = await dhedge.loadPool(myPool);
   //   try {
-  //     result = await pool.approve(
+  //     result = await pool.approveStaking(
   //       Dapp.SUSHISWAP,
   //       lpUsdcDai,
-  //       ethers.constants.MaxUint256,
-  //       false
+  //       ethers.constants.MaxUint256
   //     );
   //   } catch (e) {
   //     console.log(e);

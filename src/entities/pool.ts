@@ -87,29 +87,43 @@ export class Pool {
   //Manager functions
 
   /**
-   * Apporoves the asset for trading, providing liquidity and staking
+   * Approves the asset for trading and providing liquidity
    * @param dapp platform like Sushiswap or Uniswap
    * @param asset address of asset
    * @param amount amount to be approved
-   * @param staking approve for staking
    */
   async approve(
     dapp: Dapp,
     asset: string,
-    amount: BigNumber | string,
-    staking = false
+    amount: BigNumber | string
   ): Promise<any> {
     const iERC20 = new ethers.utils.Interface(IERC20.abi);
-    const approver = staking
-      ? stakingAddress[this.network][dapp]
-      : routerAddress[this.network][dapp];
     const approveTxData = iERC20.encodeFunctionData("approve", [
-      approver,
+      routerAddress[this.network][dapp],
       amount
     ]);
-
     const tx = await this.poolLogic.execTransaction(asset, approveTxData);
+    return tx;
+  }
 
+  /**
+   * Approves the liquidity pool token for staking
+   * @param dapp platform like Sushiswap or Uniswap
+   * @param asset address of liquidity pool token
+   * @param amount amount to be approved
+   * @param staking approve for staking
+   */
+  async approveStaking(
+    dapp: Dapp,
+    asset: string,
+    amount: BigNumber | string
+  ): Promise<any> {
+    const iERC20 = new ethers.utils.Interface(IERC20.abi);
+    const approveTxData = iERC20.encodeFunctionData("approve", [
+      stakingAddress[this.network][dapp],
+      amount
+    ]);
+    const tx = await this.poolLogic.execTransaction(asset, approveTxData);
     return tx;
   }
 

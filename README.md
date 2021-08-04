@@ -213,7 +213,7 @@ const tx = await pool.unstake(
 Harvest rewards from staked Sushiswap LP USDC/DAI tokens
 
 ```
-const tx = await pool.harvestStakingRewards(
+const tx = await pool.harvestRewards(
   Dapp.SUSHISWAP,
   "SLP_USDC_DAI_TOKEN_ADDRESS"
 )
