@@ -180,11 +180,10 @@ const tx = await pool.removeLiquidity(
 Approve unlimited amound of SLP USDC-DAI token for staking on Sushiswap
 
 ```
-const tx = await pool.approve(
+const tx = await pool.approveStaking(
   Dapp.SUSHISWAP,
   "SLP_USDC_DAI_TOKEN_ADDRESS",
-  ethers.constants.MaxInt256,
-  true
+  ethers.constants.MaxInt256
 )
 ```
 
