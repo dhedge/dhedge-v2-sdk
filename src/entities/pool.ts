@@ -302,9 +302,7 @@ export class Pool {
    * @param dapp platform like Sushiswap or Uniswap
    * @param assets new enabled pool asset
    */
-  public async changeAssets(
-    assets: AssetEnabled[]
-  ): Promise<FundComposition[]> {
+  public async changeAssets(assets: AssetEnabled[]): Promise<any> {
     const currentAssetsEnabled = await this.getComposition();
     const currentAssets = currentAssetsEnabled.map(e =>
       e.asset.toLocaleLowerCase()
