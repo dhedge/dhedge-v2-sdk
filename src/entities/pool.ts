@@ -325,4 +325,9 @@ export class Pool {
     const tx = await this.managerLogic.setTrader(trader);
     return tx;
   }
+
+  async withdraw(fundTokenAmount: string | BigNumber): Promise<any> {
+    const tx = await this.poolLogic.withdraw(fundTokenAmount);
+    return tx;
+  }
 }

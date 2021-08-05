@@ -31,11 +31,17 @@ describe("pool", () => {
     dhedge = new Dhedge(wallet, Network.POLYGON);
   });
 
-  it("checks fund composition", async () => {
-    const pool = await dhedge.loadPool(myPool);
-    const result = await pool.getComposition();
-    expect(result.length).toBeGreaterThan(0);
-  });
+  // it("checks fund composition", async () => {
+  //   const pool = await dhedge.loadPool(myPool);
+  //   const result = await pool.getComposition();
+  //   expect(result.length).toBeGreaterThan(0);
+  // });
+
+  it("withdraws 1.00002975 fund tokens", async () => {
+    const pool = await dhedge.loadPool(myPool)
+    const result = await pool.withdraw("1000029750000000000");
+    expect(result).toBeGreaterThan(0);
+  })
 
   // it("approves unlimited SUSHI on sushiswap", async () => {
   //   let result;
