@@ -7,7 +7,8 @@ import {
 
 export const factoryAddress: AddressNetworkMap = {
   [Network.MUMBAI]: "0xeec15f2716c7a98fFe14F7aD0dEeC93962aF4437",
-  [Network.POLYGON]: "0xfdc7b8bFe0DD3513Cc669bB8d601Cb83e2F69cB0"
+  //  [Network.POLYGON]: "0xfdc7b8bFe0DD3513Cc669bB8d601Cb83e2F69cB0"
+  [Network.POLYGON]: "0xDd87eCdB10cFF7004276AAbAbd30e7a08F69bb53"
 };
 
 export const routerAddress: AddressDappNetworkMap = {

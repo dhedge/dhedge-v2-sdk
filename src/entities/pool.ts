@@ -326,6 +326,10 @@ export class Pool {
     return tx;
   }
 
+  /**
+   * Withdraw  assets from a pool
+   * @param fundTokenAmount amount of pool tokens to be withdrawn
+   */
   async withdraw(fundTokenAmount: string | BigNumber): Promise<any> {
     const tx = await this.poolLogic.withdraw(fundTokenAmount);
     return tx;
