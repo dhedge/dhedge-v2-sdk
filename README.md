@@ -119,7 +119,7 @@ const tx = await pool.deposit("USDC_TOKEN_ADDRESS", usdcDepositAmount);
 
 ### Withdraw from pool
 
-Withdraw 1.00002975 pool tokens
+Withdraw 1.00002975 pool tokens. Note that this cannot be called if set as Trader account
 
 ```
 const poolTokensWithdrawAmount = "1000029750000000000"
