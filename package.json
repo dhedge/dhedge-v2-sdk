@@ -1,6 +1,6 @@
 {
   "name": "@dhedge/v2-sdk",
-  "version": "0.1.16",
+  "version": "0.0.1",
   "license": "MIT",
   "description": "🛠 An SDK for building applications on top of dHEDGE V2",
   "main": "dist/index.js",
@@ -28,6 +28,7 @@
   },
   "devDependencies": {
     "@size-limit/preset-small-lib": "^5.0.1",
+    "dotenv": "^10.0.0",
     "husky": "^7.0.1",
     "size-limit": "^5.0.1",
     "tsdx": "^0.14.1",

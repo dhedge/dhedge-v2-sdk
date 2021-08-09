@@ -1,14 +1,11 @@
 import { BigNumber } from "ethers";
 
 export enum Network {
-  POLYGON = "polygon",
-  MUMBAI = "mumbai"
+  POLYGON = "polygon"
 }
 
 export enum Dapp {
-  SUSHISWAP = "sushiswap",
-  UNISWAP = "uniswap",
-  AAVE = "aave"
+  SUSHISWAP = "sushiswap"
 }
 
 export enum Transaction {
@@ -24,8 +21,6 @@ export type AddressNetworkMap = Readonly<Record<Network, string>>;
 
 export type AddressDappMap = {
   [Dapp.SUSHISWAP]?: string;
-  [Dapp.UNISWAP]?: string;
-  [Dapp.AAVE]?: string;
 };
 
 export type AddressDappNetworkMap = Readonly<Record<Network, AddressDappMap>>;

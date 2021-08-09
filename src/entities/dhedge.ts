@@ -34,6 +34,7 @@ export class Dhedge {
    * @param {string} symbol token symbol
    * @param {tuple[]} supportedAssets enabled assets to trade
    * @param {number|BigNumber} managerFeeNumerator manger fee in percent
+   * @returns {Pool} created Pool
    */
   public async createPool(
     managerName: string,
@@ -79,6 +80,7 @@ export class Dhedge {
   /**
    * Loads a pool based on the provided address
    * @param address pool address
+   * @returns {Pool} loaded Pool
    */
   public async loadPool(address: string): Promise<Pool> {
     this.validatePool(address);
