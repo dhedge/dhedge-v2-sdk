@@ -117,6 +117,15 @@ const usdcDepositAmount = "100000"
 const tx = await pool.deposit("USDC_TOKEN_ADDRESS", usdcDepositAmount);
 ```
 
+### Withdraw from pool
+
+Withdraw 1.00002975 pool tokens
+
+```
+const poolTokensWithdrawAmount = "1000029750000000000"
+const tx = await pool.withdraw(poolTokensWithdrawAmount);
+```
+
 ### Approve pool asset for trading & staking
 
 Before trading an asset on platforms like Sushiswap it needs to be approved.
