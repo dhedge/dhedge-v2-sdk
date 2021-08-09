@@ -1,7 +1,7 @@
 import { Dhedge } from "..";
 import { Network } from "../types";
-import { wallet } from "./wallet";
 
+import { wallet } from "./wallet";
 
 const myPool = "0xbae28251b2a4e621aa7e20538c06dee010bc06de";
 

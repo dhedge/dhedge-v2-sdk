@@ -1,6 +1,6 @@
 import { Dhedge } from "..";
-
 import { Dapp, Network } from "../types";
+
 import { wallet } from "./wallet";
 
 const myPool = "0xd63aA0Dce2311670608f1AB0667E43612F73340e";
@@ -8,7 +8,6 @@ const myPool = "0xd63aA0Dce2311670608f1AB0667E43612F73340e";
 const usdt = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
 const usdc = "0x2791bca1f2de4661ed88a30c99a7a9449aa84174";
 const lpUsdcWeth = "0x34965ba0ac2451A34a0471F04CCa3F990b8dea27";
-
 
 let dhedge: Dhedge;
 

@@ -27,14 +27,14 @@ export class Dhedge {
   }
 
   /**
-   * Creates a new pool.
+   * Create a new pool.
    *
-   * @param {string} managerName name of manger
-   * @param {string} poolName pool name
-   * @param {string} symbol token symbol
-   * @param {tuple[]} supportedAssets enabled assets to trade
-   * @param {number|BigNumber} managerFeeNumerator manger fee in percent
-   * @returns {Pool} created Pool
+   * @param {string} managerName Name of manager
+   * @param {string} poolName Pool name
+   * @param {string} symbol Token symbol
+   * @param {tuple[]} supportedAssets Enabled assets to trade
+   * @param {number|BigNumber} managerFeeNumerator Manger fee in percent
+   * @returns {Pool} Created Pool
    */
   public async createPool(
     managerName: string,
@@ -78,9 +78,9 @@ export class Dhedge {
   }
 
   /**
-   * Loads a pool based on the provided address
-   * @param address pool address
-   * @returns {Pool} loaded Pool
+   * Load a pool based on the provided address
+   * @param {string} address Pool address
+   * @returns {Pool} Loaded Pool
    */
   public async loadPool(address: string): Promise<Pool> {
     this.validatePool(address);
@@ -102,9 +102,9 @@ export class Dhedge {
   }
 
   /**
-   *  Checks if pool address is valid
-   * @param {string} address pool address
-   *
+   * Check if pool address is valid
+   * @param {string} address Pool address
+   * @returns {boolean} Is valid pool address
    */
   private async validatePool(address: string): Promise<void> {
     const isPool = await this.factory.isPool(address);

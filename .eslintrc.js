@@ -1,6 +1,5 @@
 module.exports = {
   extends: [
-    "react-app",
     "plugin:@typescript-eslint/recommended",
     "plugin:prettier/recommended",
   ],
@@ -74,7 +73,6 @@ module.exports = {
     project: "./tsconfig.json",
   },
   rules: {
-    "react-hooks/exhaustive-deps": "error",
     "import/no-extraneous-dependencies": [
       "error",
       {
@@ -87,8 +85,6 @@ module.exports = {
     "no-duplicate-imports": ["error", { includeExports: true }],
   },
   settings: {
-    react: {
-      version: "detect",
-    },
+  
   },
 };

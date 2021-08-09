@@ -17,13 +17,13 @@ export class Utils {
   }
 
   /**
-   * Returns ration between two tokens of a liquidity pool
+   * Return the reserves of the two assets of a liquidity pool
    * This is the price of one token in the other
-   * @param dApp dApp like uniswap or sushiswap
-   * @param tokenA first token of the pool pair
-   * @param tokenB second token of the pool pair
-   * @param ratio given amount of the firt token
-   * @throws if the dapp is not supported on the network
+   * @param {Dapp} dApp DApp like Uniswap or Sushiswap
+   * @param {string} tokenA First token of the pool pair
+   * @param {string} tokenB Second token of the pool pair
+   * @returns {Promise<Reserves>} Reserves of the assets in BigNumber
+   * @throws If the dapp is not supported on the network
    */
   async getLpReserves(
     dapp: Dapp,
@@ -60,8 +60,9 @@ export class Utils {
 
   /**
    * Returns the pool id of a liquidity pool
-   * @param dApp dApp like uniswap or sushiswap
-   * @param lpPoolAddress token address of the pool pair
+   * @param {Dapp} dApp DApp like uniswap or sushiswap
+   * @param {string} lpPoolAddress token address of the pool pair
+   * @returns {number} Pool Id
    * @throws if the dapp is not supported on the network
    */
 
@@ -95,8 +96,9 @@ export class Utils {
 
   /**
    * Returns the balance of an asset (ERC20) token
-   * @param asset string token address
-   * @param owner address of the owner
+   * @param {string} asset string token address
+   * @param {string} owner address of the owner
+   * @returns { BigNumber } Balance of asset
    */
 
   async getBalance(asset: string, owner: string): Promise<ethers.BigNumber> {

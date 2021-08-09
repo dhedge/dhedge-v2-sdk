@@ -39,7 +39,8 @@ export class Pool {
   }
 
   /**
-   * Returns the assets with balances and deposit info of a pool
+   * Return the assets with balances and deposit info of a pool
+   * @returns {Promise<FundComposition[]>} Composition of assets with balance, deposit info
    */
   async getComposition(): Promise<FundComposition[]> {
     const result = await this.managerLogic.getFundComposition();
@@ -61,9 +62,10 @@ export class Pool {
   //Invest functions
 
   /**
-   * Approves the asset that can be deposited into a pool
-   * @param asset address of deposit asset
-   * @param amount amount to be approved
+   * Approve the asset that can be deposited into a pool
+   * @param {string} nasset Address of deposit asset
+   * @param {BigNumber | string} amount Amount to be approved
+   * @returns {Promise<any>} Transaction
    */
   async approveDeposit(
     asset: string,
@@ -75,22 +77,34 @@ export class Pool {
   }
 
   /**
-   * Deposits  asset into a pool
-   * @param asset address of asset
-   * @param amount amount to be deposited
+   * Deposit  asset into a pool
+   * @param {string} asset Address of asset
+   * @param {BigNumber | string} amount Amount to be deposited
+   * @returns {Promise<any>} Transaction
    */
   async deposit(asset: string, amount: string | BigNumber): Promise<any> {
     const tx = await this.poolLogic.deposit(asset, amount);
     return tx;
   }
 
+  /**
+   * Withdraw  assets from a pool
+   * @param fundTokenAmount Amount of pool tokens to be withdrawn
+   * @returns {Promise<any>} Transaction
+   */
+  async withdraw(fundTokenAmount: string | BigNumber): Promise<any> {
+    const tx = await this.poolLogic.withdraw(fundTokenAmount);
+    return tx;
+  }
+
   //Manager functions
 
   /**
-   * Approves the asset for trading and providing liquidity
-   * @param dapp platform like Sushiswap or Uniswap
-   * @param asset address of asset
-   * @param amount amount to be approved
+   * Approve the asset for trading and providing liquidity
+   * @param {Dapp} dapp Platform like Sushiswap or Uniswap
+   * @param {string} asset Address of asset
+   * @param @param {BigNumber | string} Amount to be approved
+   * @returns {Promise<any>} Transaction
    */
   async approve(
     dapp: Dapp,
@@ -107,11 +121,11 @@ export class Pool {
   }
 
   /**
-   * Approves the liquidity pool token for staking
-   * @param dapp platform like Sushiswap or Uniswap
-   * @param asset address of liquidity pool token
-   * @param amount amount to be approved
-   * @param staking approve for staking
+   * Approve the liquidity pool token for staking
+   * @param {Dapp} dapp Platform like Sushiswap or Uniswap
+   * @param {string} asset Address of liquidity pool token
+   * @param {BigNumber | string} amount Aamount to be approved
+   * @returns {Promise<any>} Transaction
    */
   async approveStaking(
     dapp: Dapp,
@@ -128,12 +142,13 @@ export class Pool {
   }
 
   /**
-   * Trades an asset into another asset
-   * @param dapp platform like Sushiswap or Uniswap
-   * @param assetFrom asset to trade from
-   * @param assetTo asset to trade into
-   * @param amountIn amount
-   * @param minAmountOut minumum amount of asset to receive
+   * Trade an asset into another asset
+   * @param {Dapp} dapp Platform like Sushiswap or Uniswap
+   * @param {string} assetFrom Asset to trade from
+   * @param {string} assetTo Asset to trade into
+   * @param {BigNumber | string} amountIn Amount
+   * @param {BigNumber | string} minAmountOut Minumum amount to receive
+   * @returns {Promise<any>} Transaction
    */
   async trade(
     dapp: Dapp,
@@ -158,12 +173,13 @@ export class Pool {
   }
 
   /**
-   * Adds liquidity to a liquidity pool
-   * @param dapp platform like Sushiswap or Uniswap
-   * @param assetA first asset
-   * @param assetB second asset
-   * @param amountA amount first asset
-   * @param amountB amount second asset
+   * Add liquidity to a liquidity pool
+   * @param {Dapp} dapp Platform like Sushiswap or Uniswap
+   * @param {string} assetA First asset
+   * @param {string} assetB Second asset
+   * @param {BigNumber | string} amountA Amount first asset
+   * @param {BigNumber | string} amountB Amount second asset
+   * @returns {Promise<any>} Transaction
    */
   async addLiquidity(
     dapp: Dapp,
@@ -194,11 +210,12 @@ export class Pool {
   }
 
   /**
-   * Removes liquidity from a liquidity pool
-   * @param dapp platform like Sushiswap or Uniswap
-   * @param assetA first asset
-   * @param assetB second asset
-   * @param amount amount of liquidity pool tokens
+   * Remove liquidity from a liquidity pool
+   * @param {Dapp} dapp Platform like Sushiswap or Uniswap
+   * @param {string} assetA First asset
+   * @param {string} assetB Second asset
+   * @param {BigNumber | string} amount Amount of liquidity pool tokens
+   * @returns {Promise<any>} Transaction
    */
   async removeLiquidity(
     dapp: Dapp,
@@ -227,16 +244,16 @@ export class Pool {
   }
 
   /**
-   * Stakes liquidity pool tokens in a yield farm
-   * @param dapp platform like Sushiswap or Uniswap
-   * @param asset liquidity pool token
-   * @param amount amount of liquidity pool tokens
+   * Stake liquidity pool tokens in a yield farm
+   * @param {Dapp} dapp Platform like Sushiswap or Uniswap
+   * @param {string} asset Liquidity pool token
+   * @param {BigNumber | string} amount Amount of liquidity pool tokens
+   * @returns {Promise<any>} Transaction
    */
   async stake(
     dapp: Dapp,
     asset: string,
     amount: BigNumber | string
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): Promise<any> {
     const iMiniChefV2 = new ethers.utils.Interface(IMiniChefV2.abi);
     const poolId = await this.utils.getLpPoolId(dapp, asset);
@@ -254,10 +271,11 @@ export class Pool {
   }
 
   /**
-   * Ustakes liquidity pool tokens from a yield farm
-   * @param dapp platform like Sushiswap or Uniswap
-   * @param asset liquidity pool token
-   * @param amount amount of liquidity pool tokens
+   * Unstake liquidity pool tokens from a yield farm
+   * @param {Dapp} dapp Platform like Sushiswap or Uniswap
+   * @param {string} asset Liquidity pool token
+   * @param  {BigNumber | string} amount Amount of liquidity pool tokens
+   * @returns {Promise<any>} Transaction
    */
   async unStake(
     dapp: Dapp,
@@ -279,9 +297,10 @@ export class Pool {
   }
 
   /**
-   * Claims rewards of staked liquidity pool tokens
-   * @param dapp platform like Sushiswap or Uniswap
-   * @param asset liquidity pool token
+   * Claim rewards of staked liquidity pool tokens
+   * @param {Dapp} dapp Platform like Sushiswap or Uniswap
+   * @param {string} asset Liquidity pool token
+   * @returns {Promise<any>} Transaction
    */
   async harvestRewards(dapp: Dapp, asset: string): Promise<any> {
     const iMiniChefV2 = new ethers.utils.Interface(IMiniChefV2.abi);
@@ -298,9 +317,9 @@ export class Pool {
   }
 
   /**
-   * Changes enabled pool assets
-   * @param dapp platform like Sushiswap or Uniswap
-   * @param assets new enabled pool asset
+   * Change enabled pool assets
+   * @param {AssetEnabled[]} assets New pool assets
+   * @returns {Promise<any>} Transaction
    */
   public async changeAssets(assets: AssetEnabled[]): Promise<any> {
     const currentAssetsEnabled = await this.getComposition();
@@ -318,20 +337,12 @@ export class Pool {
   }
 
   /**
-   * Sets a new trader with trading permissions
-   * @param trader address of user account trading permissions
+   * Set a new trader with trading permissions
+   * @param {string} trader Address trader account
+   * @returns {Promise<any>} Transaction
    */
   async setTrader(trader: string): Promise<any> {
     const tx = await this.managerLogic.setTrader(trader);
-    return tx;
-  }
-
-  /**
-   * Withdraw  assets from a pool
-   * @param fundTokenAmount amount of pool tokens to be withdrawn
-   */
-  async withdraw(fundTokenAmount: string | BigNumber): Promise<any> {
-    const tx = await this.poolLogic.withdraw(fundTokenAmount);
     return tx;
   }
 }
