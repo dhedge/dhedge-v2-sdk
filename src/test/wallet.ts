@@ -1,5 +1,6 @@
 import { ethers } from "ethers";
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 require("dotenv").config();
 
 const provider = new ethers.providers.JsonRpcProvider(

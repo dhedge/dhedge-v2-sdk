@@ -25,21 +25,21 @@ export type AddressDappMap = {
 
 export type AddressDappNetworkMap = Readonly<Record<Network, AddressDappMap>>;
 
-export type SupportedAsset = [ string, boolean ]
+export type SupportedAsset = [string, boolean];
 
 export type AssetEnabled = {
   asset: string;
   isDeposit: boolean;
-}
+};
 
 export type FundComposition = {
   asset: string;
   isDeposit: boolean;
   balance: BigNumber;
   rate: BigNumber;
-}
+};
 
 export type Reserves = {
   assetA: BigNumber;
-  assetB: BigNumber
-}
+  assetB: BigNumber;
+};
