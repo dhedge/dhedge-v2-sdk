@@ -6,12 +6,14 @@ import {
 } from "./types";
 
 export const factoryAddress: AddressNetworkMap = {
-  [Network.POLYGON]: "0xfdc7b8bFe0DD3513Cc669bB8d601Cb83e2F69cB0"
+  //[Network.POLYGON]: "0xfdc7b8bFe0DD3513Cc669bB8d601Cb83e2F69cB0"
+  [Network.POLYGON]: "0xDd87eCdB10cFF7004276AAbAbd30e7a08F69bb53"
 };
 
 export const routerAddress: AddressDappNetworkMap = {
   [Network.POLYGON]: {
-    [Dapp.SUSHISWAP]: "0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506"
+    [Dapp.SUSHISWAP]: "0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506",
+    [Dapp.AAVE]: "0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf"
   }
 };
 

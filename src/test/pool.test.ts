@@ -1,18 +1,20 @@
-import { Dhedge } from "..";
-import { Network } from "../types";
+import { Dhedge, ethers } from "..";
+import { Dapp, Network } from "../types";
 
 import { wallet } from "./wallet";
 
-const myPool = "0xbae28251b2a4e621aa7e20538c06dee010bc06de";
+const myPool = "0xf935080f8d024fd474a3d06aa1c7fe5da6a4b488";
 
-// const weth = "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
+//const weth = "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
 //const usdt = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
-//const dai = "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063";
+const dai = "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063";
 //const usdc = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174";
 // const sushi = "0x0b3F868E0BE5597D5DB7fEB59E1CADBb0fdDa50a";
 // const wmatic = "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270";
 // const lpUsdcWeth = "0x34965ba0ac2451A34a0471F04CCa3F990b8dea27";
 //const lpUsdcDai = "0xCD578F016888B57F1b1e3f887f392F0159E26747";
+//const amusdc = "0x1a13F4Ca1d028320A707D99520AbFefca3998b7F";
+//const lpUsdcUsdt = "0x4b1f1e2435a9c96f7330faea190ef6a7c8d70001";
 // const tradeAmountUsdc = "1000000";
 // const liquidityAmountUsdt = "1000000";
 // const lpUsdcWETHAmount = "10951027354";
@@ -21,6 +23,11 @@ const myPool = "0xbae28251b2a4e621aa7e20538c06dee010bc06de";
 let dhedge: Dhedge;
 
 jest.setTimeout(100000);
+
+const options = {
+  gasLimit: "500000",
+  gasPrice: ethers.utils.parseUnits("35", "gwei")
+};
 
 describe("pool", () => {
   beforeAll(() => {
@@ -39,15 +46,71 @@ describe("pool", () => {
   //   expect(result).toBeGreaterThan(0);
   // })
 
-  // it("approves unlimited SUSHI on sushiswap", async () => {
+  it("approves unlimited DAI on Aave", async () => {
+    let result;
+    const pool = await dhedge.loadPool(myPool);
+    try {
+      result = await pool.approve(
+        Dapp.AAVE,
+        dai,
+        ethers.constants.MaxInt256,
+        options
+      );
+      console.log(result);
+    } catch (e) {
+      console.log(e);
+    }
+    expect(result).not.toBe(null);
+  });
+
+  // const options = { gasPrice: ethers.utils.parseUnits("40", "gwei") };
+
+  // it("lends 1 DAI into Aave lending pool", async () => {
   //   let result;
   //   const pool = await dhedge.loadPool(myPool);
   //   try {
-  //     result = await pool.approve(
-  //       Dapp.SUSHISWAP,
-  //       sushi,
-  //       ethers.constants.MaxInt256
+  //     result = await pool.lend(Dapp.AAVE, dai, "1000000000000000000", options);
+  //     console.log(result);
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  //   expect(result).not.toBe(null);
+  // });
+
+  // it("withdraws 2 DAI from Aave lending pool", async () => {
+  //   let result;
+  //   const pool = await dhedge.loadPool(myPool);
+  //   try {
+  //     result = await pool.withdrawDeposit(
+  //       Dapp.AAVE,
+  //       dai,
+  //       "1000000000000000000",
+  //       options
   //     );
+  //     console.log(result);
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  //   expect(result).not.toBe(null);
+  // });
+
+  // it("borrows 0.001 WETH from Aave lending pool", async () => {
+  //   let result;
+  //   const pool = await dhedge.loadPool(myPool);
+  //   try {
+  //     result = await pool.borrow(Dapp.AAVE, weth, "1000000000000000");
+  //     console.log(result);
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  //   expect(result).not.toBe(null);
+  // });
+
+  // it("reapys 0.0001 WETH to Aave lending pool", async () => {
+  //   let result;
+  //   const pool = await dhedge.loadPool(myPool);
+  //   try {
+  //     result = await pool.repay(Dapp.AAVE, dai, "500000000000000");
   //     console.log(result);
   //   } catch (e) {
   //     console.log(e);
@@ -95,9 +158,8 @@ describe("pool", () => {
   //     { asset: usdc, isDeposit: true },
   //     { asset: weth, isDeposit: true },
   //     { asset: usdt, isDeposit: true },
-  //     { asset: lpUsdcWeth, isDeposit: false },
-  //     { asset: sushi, isDeposit: false },
-  //     { asset: wmatic, isDeposit: false }
+  //     { asset: amusdc, isDeposit: false },
+  //     { asset: lpUsdcUsdt, isDeposit: false }
   //   ];
   //   try {
   //     result = await pool.changeAssets(newAssets);

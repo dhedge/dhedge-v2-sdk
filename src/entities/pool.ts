@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Contract, ethers, Wallet, BigNumber } from "ethers";
 
 import IERC20 from "../abi/IERC20.json";
 import IMiniChefV2 from "../abi/IMiniChefV2.json";
 import IUniswapV2Router from "../abi/IUniswapV2Router.json";
+import ILendingPool from "../abi/ILendingPool.json";
 import { routerAddress, stakingAddress } from "../config";
 import {
   Dapp,
@@ -65,14 +67,16 @@ export class Pool {
    * Approve the asset that can be deposited into a pool
    * @param {string} nasset Address of deposit asset
    * @param {BigNumber | string} amount Amount to be approved
+   * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
   async approveDeposit(
     asset: string,
-    amount: BigNumber | string
+    amount: BigNumber | string,
+    options: any = null
   ): Promise<any> {
     const iERC20 = new ethers.Contract(asset, IERC20.abi, this.signer);
-    const tx = await iERC20.approve(this.address, amount);
+    const tx = await iERC20.approve(this.address, amount, options);
     return tx;
   }
 
@@ -80,20 +84,29 @@ export class Pool {
    * Deposit  asset into a pool
    * @param {string} asset Address of asset
    * @param {BigNumber | string} amount Amount to be deposited
+   * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
-  async deposit(asset: string, amount: string | BigNumber): Promise<any> {
-    const tx = await this.poolLogic.deposit(asset, amount);
+  async deposit(
+    asset: string,
+    amount: string | BigNumber,
+    options: any = null
+  ): Promise<any> {
+    const tx = await this.poolLogic.deposit(asset, amount, options);
     return tx;
   }
 
   /**
    * Withdraw  assets from a pool
    * @param fundTokenAmount Amount of pool tokens to be withdrawn
+   * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
-  async withdraw(fundTokenAmount: string | BigNumber): Promise<any> {
-    const tx = await this.poolLogic.withdraw(fundTokenAmount);
+  async withdraw(
+    fundTokenAmount: string | BigNumber,
+    options: any = null
+  ): Promise<any> {
+    const tx = await this.poolLogic.withdraw(fundTokenAmount, options);
     return tx;
   }
 
@@ -104,19 +117,25 @@ export class Pool {
    * @param {Dapp} dapp Platform like Sushiswap or Uniswap
    * @param {string} asset Address of asset
    * @param @param {BigNumber | string} Amount to be approved
+   * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
   async approve(
     dapp: Dapp,
     asset: string,
-    amount: BigNumber | string
+    amount: BigNumber | string,
+    options: any = null
   ): Promise<any> {
     const iERC20 = new ethers.utils.Interface(IERC20.abi);
     const approveTxData = iERC20.encodeFunctionData("approve", [
       routerAddress[this.network][dapp],
       amount
     ]);
-    const tx = await this.poolLogic.execTransaction(asset, approveTxData);
+    const tx = await this.poolLogic.execTransaction(
+      asset,
+      approveTxData,
+      options
+    );
     return tx;
   }
 
@@ -125,19 +144,25 @@ export class Pool {
    * @param {Dapp} dapp Platform like Sushiswap or Uniswap
    * @param {string} asset Address of liquidity pool token
    * @param {BigNumber | string} amount Aamount to be approved
+   * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
   async approveStaking(
     dapp: Dapp,
     asset: string,
-    amount: BigNumber | string
+    amount: BigNumber | string,
+    options: any = null
   ): Promise<any> {
     const iERC20 = new ethers.utils.Interface(IERC20.abi);
     const approveTxData = iERC20.encodeFunctionData("approve", [
       stakingAddress[this.network][dapp],
       amount
     ]);
-    const tx = await this.poolLogic.execTransaction(asset, approveTxData);
+    const tx = await this.poolLogic.execTransaction(
+      asset,
+      approveTxData,
+      options
+    );
     return tx;
   }
 
@@ -148,6 +173,7 @@ export class Pool {
    * @param {string} assetTo Asset to trade into
    * @param {BigNumber | string} amountIn Amount
    * @param {BigNumber | string} minAmountOut Minumum amount to receive
+   * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
   async trade(
@@ -155,7 +181,8 @@ export class Pool {
     assetFrom: string,
     assetTo: string,
     amountIn: BigNumber | string,
-    minAmountOut: BigNumber | string
+    minAmountOut: BigNumber | string,
+    options: any = null
   ): Promise<any> {
     const iUniswapV2Router = new ethers.utils.Interface(IUniswapV2Router.abi);
     const swapTxData = iUniswapV2Router.encodeFunctionData(Transaction.SWAP, [
@@ -167,7 +194,8 @@ export class Pool {
     ]);
     const tx = await this.poolLogic.execTransaction(
       routerAddress[this.network][dapp],
-      swapTxData
+      swapTxData,
+      options
     );
     return tx;
   }
@@ -179,6 +207,7 @@ export class Pool {
    * @param {string} assetB Second asset
    * @param {BigNumber | string} amountA Amount first asset
    * @param {BigNumber | string} amountB Amount second asset
+   * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
   async addLiquidity(
@@ -186,7 +215,8 @@ export class Pool {
     assetA: string,
     assetB: string,
     amountA: BigNumber | string,
-    amountB: BigNumber | string
+    amountB: BigNumber | string,
+    options: any = null
   ): Promise<any> {
     const iUniswapV2Router = new ethers.utils.Interface(IUniswapV2Router.abi);
     const addLiquidityTxData = iUniswapV2Router.encodeFunctionData(
@@ -204,7 +234,8 @@ export class Pool {
     );
     const tx = await this.poolLogic.execTransaction(
       routerAddress[this.network][dapp],
-      addLiquidityTxData
+      addLiquidityTxData,
+      options
     );
     return tx;
   }
@@ -215,13 +246,15 @@ export class Pool {
    * @param {string} assetA First asset
    * @param {string} assetB Second asset
    * @param {BigNumber | string} amount Amount of liquidity pool tokens
+   * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
   async removeLiquidity(
     dapp: Dapp,
     assetA: string,
     assetB: string,
-    amount: string | BigNumber
+    amount: string | BigNumber,
+    options: any = null
   ): Promise<any> {
     const iUniswapV2Router = new ethers.utils.Interface(IUniswapV2Router.abi);
     const removeLiquidityTxData = iUniswapV2Router.encodeFunctionData(
@@ -238,7 +271,8 @@ export class Pool {
     );
     const tx = await this.poolLogic.execTransaction(
       routerAddress[this.network][dapp],
-      removeLiquidityTxData
+      removeLiquidityTxData,
+      options
     );
     return tx;
   }
@@ -248,12 +282,14 @@ export class Pool {
    * @param {Dapp} dapp Platform like Sushiswap or Uniswap
    * @param {string} asset Liquidity pool token
    * @param {BigNumber | string} amount Amount of liquidity pool tokens
+   * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
   async stake(
     dapp: Dapp,
     asset: string,
-    amount: BigNumber | string
+    amount: BigNumber | string,
+    options: any = null
   ): Promise<any> {
     const iMiniChefV2 = new ethers.utils.Interface(IMiniChefV2.abi);
     const poolId = await this.utils.getLpPoolId(dapp, asset);
@@ -264,7 +300,8 @@ export class Pool {
     ]);
     const tx = await this.poolLogic.execTransaction(
       stakingAddress[this.network][dapp],
-      stakeTxData
+      stakeTxData,
+      options
     );
 
     return tx;
@@ -275,12 +312,14 @@ export class Pool {
    * @param {Dapp} dapp Platform like Sushiswap or Uniswap
    * @param {string} asset Liquidity pool token
    * @param  {BigNumber | string} amount Amount of liquidity pool tokens
+   * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
   async unStake(
     dapp: Dapp,
     asset: string,
-    amount: BigNumber | string
+    amount: BigNumber | string,
+    options: any = null
   ): Promise<any> {
     const iMiniChefV2 = new ethers.utils.Interface(IMiniChefV2.abi);
     const poolId = await this.utils.getLpPoolId(dapp, asset);
@@ -291,7 +330,8 @@ export class Pool {
     ]);
     const tx = await this.poolLogic.execTransaction(
       stakingAddress[this.network][dapp],
-      unStakeTxData
+      unStakeTxData,
+      options
     );
     return tx;
   }
@@ -300,9 +340,14 @@ export class Pool {
    * Claim rewards of staked liquidity pool tokens
    * @param {Dapp} dapp Platform like Sushiswap or Uniswap
    * @param {string} asset Liquidity pool token
+   * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
-  async harvestRewards(dapp: Dapp, asset: string): Promise<any> {
+  async harvestRewards(
+    dapp: Dapp,
+    asset: string,
+    options: any = null
+  ): Promise<any> {
     const iMiniChefV2 = new ethers.utils.Interface(IMiniChefV2.abi);
     const poolId = await this.utils.getLpPoolId(dapp, asset);
     const harvestTxData = iMiniChefV2.encodeFunctionData(Transaction.HARVEST, [
@@ -311,7 +356,8 @@ export class Pool {
     ]);
     const tx = await this.poolLogic.execTransaction(
       stakingAddress[this.network][dapp],
-      harvestTxData
+      harvestTxData,
+      options
     );
     return tx;
   }
@@ -319,9 +365,13 @@ export class Pool {
   /**
    * Change enabled pool assets
    * @param {AssetEnabled[]} assets New pool assets
+   * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
-  public async changeAssets(assets: AssetEnabled[]): Promise<any> {
+  public async changeAssets(
+    assets: AssetEnabled[],
+    options: any = null
+  ): Promise<any> {
     const currentAssetsEnabled = await this.getComposition();
     const currentAssets = currentAssetsEnabled.map(e =>
       e.asset.toLocaleLowerCase()
@@ -331,7 +381,8 @@ export class Pool {
     const changedAssets = assets.map(e => [e.asset, e.isDeposit]);
     const tx = await this.managerLogic.changeAssets(
       changedAssets,
-      removedAssets
+      removedAssets,
+      options
     );
     return tx;
   }
@@ -339,10 +390,126 @@ export class Pool {
   /**
    * Set a new trader with trading permissions
    * @param {string} trader Address trader account
+   * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
-  async setTrader(trader: string): Promise<any> {
-    const tx = await this.managerLogic.setTrader(trader);
+  async setTrader(trader: string, options: any = null): Promise<any> {
+    const tx = await this.managerLogic.setTrader(trader, options);
+    return tx;
+  }
+
+  /**
+   * Lend asset to a lending pool
+   * @param {Dapp} dapp Platform like Aave
+   * @param {string} asset Asset
+   * @param  {BigNumber | string} amount Amount of asset to lend
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async lend(
+    dapp: Dapp,
+    asset: string,
+    amount: BigNumber | string,
+    options: any = null
+  ): Promise<any> {
+    const iLendingPool = new ethers.utils.Interface(ILendingPool.abi);
+    const depositTxData = iLendingPool.encodeFunctionData(Transaction.DEPOSIT, [
+      asset,
+      amount,
+      this.address,
+      0
+    ]);
+    const tx = await this.poolLogic.execTransaction(
+      routerAddress[this.network][dapp],
+      depositTxData,
+      options
+    );
+    return tx;
+  }
+
+  /**
+   * Witdraw asset from a lending pool
+   * @param {Dapp} dapp Platform like Aave
+   * @param {string} asset Asset
+   * @param  {BigNumber | string} amount Amount of asset to lend
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async withdrawDeposit(
+    dapp: Dapp,
+    asset: string,
+    amount: BigNumber | string,
+    options: any = null
+  ): Promise<any> {
+    const iLendingPool = new ethers.utils.Interface(ILendingPool.abi);
+    const withdrawTxData = iLendingPool.encodeFunctionData(
+      Transaction.WITHDRAW,
+      [asset, amount, this.address]
+    );
+    const tx = await this.poolLogic.execTransaction(
+      routerAddress[this.network][dapp],
+      withdrawTxData,
+      options
+    );
+    return tx;
+  }
+
+  /**
+   * Borrow asset from a lending pool
+   * @param {Dapp} dapp Platform like Aave
+   * @param {string} asset Asset
+   * @param  {BigNumber | string} amount Amount of asset to lend
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async borrow(
+    dapp: Dapp,
+    asset: string,
+    amount: BigNumber | string,
+    options: any = null
+  ): Promise<any> {
+    const iLendingPool = new ethers.utils.Interface(ILendingPool.abi);
+    const borrowTxData = iLendingPool.encodeFunctionData(Transaction.BORROW, [
+      asset,
+      amount,
+      2,
+      0,
+      this.address
+    ]);
+    const tx = await this.poolLogic.execTransaction(
+      routerAddress[this.network][dapp],
+      borrowTxData,
+      options
+    );
+    return tx;
+  }
+
+  /**
+   * Repays borrowed asset to a lending pool
+   * @param {Dapp} dapp Platform like Aave
+   * @param {string} asset Asset
+   * @param  {BigNumber | string} amount Amount of asset to lend
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async repay(
+    dapp: Dapp,
+    asset: string,
+    amount: BigNumber | string,
+    options: any = null
+  ): Promise<any> {
+    const iLendingPool = new ethers.utils.Interface(ILendingPool.abi);
+    const repayTxData = iLendingPool.encodeFunctionData(Transaction.REPAY, [
+      asset,
+      amount,
+      2,
+      this.address
+    ]);
+    const tx = await this.poolLogic.execTransaction(
+      routerAddress[this.network][dapp],
+      repayTxData,
+      options
+    );
     return tx;
   }
 }
