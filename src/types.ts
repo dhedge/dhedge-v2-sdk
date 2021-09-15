@@ -5,8 +5,7 @@ export enum Network {
 }
 
 export enum Dapp {
-  SUSHISWAP = "sushiswap",
-  AAVE = "aave"
+  SUSHISWAP = "sushiswap"
 }
 
 export enum Transaction {
@@ -15,17 +14,13 @@ export enum Transaction {
   DEPOSIT = "deposit",
   HARVEST = "harvest",
   UNSTAKE = "withdrawAndHarvest",
-  REMOVE_LIQUIDITY = "removeLiquidity",
-  BORROW = "borrow",
-  REPAY = "repay",
-  WITHDRAW = "withdraw"
+  REMOVE_LIQUIDITY = "removeLiquidity"
 }
 
 export type AddressNetworkMap = Readonly<Record<Network, string>>;
 
 export type AddressDappMap = {
   [Dapp.SUSHISWAP]?: string;
-  [Dapp.AAVE]?: string;
 };
 
 export type AddressDappNetworkMap = Readonly<Record<Network, AddressDappMap>>;

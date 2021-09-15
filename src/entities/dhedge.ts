@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Contract, Wallet } from "ethers";
 
 import PoolFactory from "../abi/PoolFactory.json";
@@ -34,6 +35,7 @@ export class Dhedge {
    * @param {string} symbol Token symbol
    * @param {tuple[]} supportedAssets Enabled assets to trade
    * @param {number|BigNumber} managerFeeNumerator Manger fee in percent
+   * @param {any} options Transaction options
    * @returns {Pool} Created Pool
    */
   public async createPool(
@@ -41,7 +43,8 @@ export class Dhedge {
     poolName: string,
     symbol: string,
     supportedAssets: SupportedAsset[],
-    managerFeeNumerator = 100
+    managerFeeNumerator = 20,
+    options: any = null
   ): Promise<Pool> {
     const pool = await this.factory.createFund(
       false,
@@ -49,8 +52,9 @@ export class Dhedge {
       managerName,
       poolName,
       symbol,
-      managerFeeNumerator,
-      supportedAssets
+      managerFeeNumerator * 100,
+      supportedAssets,
+      options
     );
     const receipt = await pool.wait(1);
 
