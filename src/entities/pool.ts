@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import axios from "axios";
 import { Contract, ethers, Wallet, BigNumber } from "ethers";
 
 import IERC20 from "../abi/IERC20.json";
@@ -181,17 +182,29 @@ export class Pool {
     assetFrom: string,
     assetTo: string,
     amountIn: BigNumber | string,
-    minAmountOut: BigNumber | string,
+    minAmountOut: BigNumber | string = "0",
     options: any = null
   ): Promise<any> {
-    const iUniswapV2Router = new ethers.utils.Interface(IUniswapV2Router.abi);
-    const swapTxData = iUniswapV2Router.encodeFunctionData(Transaction.SWAP, [
-      amountIn,
-      minAmountOut,
-      [assetFrom, assetTo],
-      this.address,
-      Math.floor(Date.now() / 1000) + 60 * 20 // 20 minutes from the current Unix time
-    ]);
+    let swapTxData: string;
+    if (dapp === Dapp.ONEINCH) {
+      const referrerAddress = "";
+      const apiUrl = `https://api.1inch.exchange/v3.0/137/swap?fromTokenAddress=${assetFrom}&toTokenAddress=${assetTo}&amount=${amountIn.toString()}&fromAddress=${
+        this.address
+      }&destReceiver=${
+        this.address
+      }&referrerAddress=${referrerAddress}&slippage=1&disableEstimate=true`;
+      const response = await axios.get(apiUrl);
+      swapTxData = response.data.tx.data;
+    } else {
+      const iUniswapV2Router = new ethers.utils.Interface(IUniswapV2Router.abi);
+      swapTxData = iUniswapV2Router.encodeFunctionData(Transaction.SWAP, [
+        amountIn,
+        minAmountOut,
+        [assetFrom, assetTo],
+        this.address,
+        Math.floor(Date.now() / 1000) + 60 * 20 // 20 minutes from the current Unix time
+      ]);
+    }
     const tx = await this.poolLogic.execTransaction(
       routerAddress[this.network][dapp],
       swapTxData,

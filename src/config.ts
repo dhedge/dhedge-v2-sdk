@@ -12,7 +12,8 @@ export const factoryAddress: AddressNetworkMap = {
 export const routerAddress: AddressDappNetworkMap = {
   [Network.POLYGON]: {
     [Dapp.SUSHISWAP]: "0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506",
-    [Dapp.AAVE]: "0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf"
+    [Dapp.AAVE]: "0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf",
+    [Dapp.ONEINCH]: "0x11111112542D85B3EF69AE05771c2dCCff4fAa26"
   }
 };
 

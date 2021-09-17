@@ -1,4 +1,4 @@
-import { Dhedge } from "..";
+import { Dhedge, Dapp, ethers } from "..";
 import { Network } from "../types";
 
 import { wallet } from "./wallet";
@@ -8,7 +8,9 @@ const myPool = "0x3deeba9ca29e2dd98d32eed8dd559dac55014615";
 //const weth = "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
 //const usdt = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
 //const dai = "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063";
-//const usdc = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174";
+const usdc = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174";
+const frax = "0x104592a158490a9228070e0a8e5343b499e125d0";
+
 // const sushi = "0x0b3F868E0BE5597D5DB7fEB59E1CADBb0fdDa50a";
 // const wmatic = "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270";
 // const lpUsdcWeth = "0x34965ba0ac2451A34a0471F04CCa3F990b8dea27";
@@ -24,21 +26,21 @@ let dhedge: Dhedge;
 
 jest.setTimeout(100000);
 
-// const options = {
-//   gasLimit: 1000000,
-//   gasPrice: ethers.utils.parseUnits("35", "gwei")
-// };
+const options = {
+  gasLimit: 1000000,
+  gasPrice: ethers.utils.parseUnits("35", "gwei")
+};
 
 describe("pool", () => {
   beforeAll(() => {
     dhedge = new Dhedge(wallet, Network.POLYGON);
   });
 
-  it("checks fund composition", async () => {
-    const pool = await dhedge.loadPool(myPool);
-    const result = await pool.getComposition();
-    expect(result.length).toBeGreaterThan(0);
-  });
+  // it("checks fund composition", async () => {
+  //   const pool = await dhedge.loadPool(myPool);
+  //   const result = await pool.getComposition();
+  //   expect(result.length).toBeGreaterThan(0);
+  // });
 
   // it("withdraws 1.00002975 fund tokens", async () => {
   //   const pool = await dhedge.loadPool(myPool)
@@ -46,13 +48,13 @@ describe("pool", () => {
   //   expect(result).toBeGreaterThan(0);
   // })
 
-  // it("approves unlimited USDC on Aave", async () => {
+  // it("approves unlimited WETH on 1Inch", async () => {
   //   let result;
   //   const pool = await dhedge.loadPool(myPool);
   //   try {
   //     result = await pool.approve(
-  //       Dapp.AAVE,
-  //       usdc,
+  //       Dapp.SUSHISWAP,
+  //       weth,
   //       ethers.constants.MaxInt256,
   //       options
   //     );
@@ -111,24 +113,43 @@ describe("pool", () => {
   //   expect(result).not.toBe(null);
   // });
 
-  // it("trades 0.5 USDC into USDT on sushiswap", async () => {
-  //   let result;
-  //   const pool = await dhedge.loadPool(myPool);
-  //   try {
-  //     result = await pool.trade(
-  //       Dapp.SUSHISWAP,
-  //       weth,
-  //       usdc,
-  //       "668662332025537",
-  //       "100000",
-  //       options
-  //     );
-  //     console.log(result);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
+  it("trades 0.1 USDC into WETH on 1inch", async () => {
+    let result;
+    const pool = await dhedge.loadPool(myPool);
+    try {
+      result = await pool.trade(
+        Dapp.ONEINCH,
+        usdc,
+        frax,
+        "500000",
+        "0",
+        options
+      );
+      console.log("1inch", result);
+    } catch (e) {
+      console.log(e);
+    }
+    expect(result).not.toBe(null);
+  });
+
+  it("trades 0.1 USDC into WETH on Sushi", async () => {
+    let result;
+    const pool = await dhedge.loadPool(myPool);
+    try {
+      result = await pool.trade(
+        Dapp.SUSHISWAP,
+        usdc,
+        frax,
+        "500000",
+        "495600000000000000",
+        options
+      );
+      console.log("sushi", result);
+    } catch (e) {
+      console.log(e);
+    }
+    expect(result).not.toBe(null);
+  });
 
   // it("approve USDC balance of User for Deposit", async () => {
   //   let result;
