@@ -1,10 +1,23 @@
 import { Contract, ethers, Wallet } from "ethers";
+import {
+  Token,
+  TokenAmount,
+  Pair,
+  TradeType,
+  Route,
+  Trade,
+  Percent
+} from "@sushiswap/sdk";
 
 import IERC20 from "../abi/IERC20.json";
 import IMiniChefV2 from "../abi/IMiniChefV2.json";
 import UniswapV2Factory from "../abi/IUniswapV2Factory.json";
 import UniswapV2Pair from "../abi/IUniswapV2Pair.json";
-import { dappFactoryAddress, stakingAddress } from "../config";
+import {
+  dappFactoryAddress,
+  networkChainIdMap,
+  stakingAddress
+} from "../config";
 import { Dapp, Network, Reserves } from "../types";
 
 export class Utils {
@@ -105,5 +118,57 @@ export class Utils {
     const iERC20 = new ethers.Contract(asset, IERC20.abi, this.signer);
     const balance = await iERC20.balanceOf(owner);
     return balance;
+  }
+
+  /**
+   * Return the minimum amount out for a trade between two assets
+   * given the trade amount and slippage
+   * @param {Dapp} dApp DApp like Uniswap or Sushiswap
+   * @param {string} assetFrom Asset to trade from
+   * @param {string} assetTo Asset to trade into
+   * @param {string | ethers.BigNumber} amountIn Trade amount
+   * @param { number} slippage Maximum slippage allowed
+   * @returns {Promise<ethers.BigNumber>} Reserves of the assets in BigNumber
+   */
+  async getMinAmountOut(
+    dapp: Dapp,
+    assetFrom: string,
+    assetTo: string,
+    amountIn: string | ethers.BigNumber,
+    slippage: number
+  ): Promise<ethers.BigNumber> {
+    const assetFromChecked = ethers.utils.getAddress(assetFrom);
+    const assetToChecked = ethers.utils.getAddress(assetTo);
+    const reserves = await this.getLpReserves(
+      dapp,
+      assetFromChecked,
+      assetToChecked
+    );
+    const tokenA = new Token(
+      networkChainIdMap[this.network],
+      assetFromChecked,
+      18
+    );
+    const tokenB = new Token(
+      networkChainIdMap[this.network],
+      assetToChecked,
+      18
+    );
+    const pair = new Pair(
+      new TokenAmount(tokenA, reserves.assetA.toString()),
+      new TokenAmount(tokenB, reserves.assetB.toString())
+    );
+    const route = new Route([pair], tokenA, tokenB);
+
+    const trade = new Trade(
+      route,
+      new TokenAmount(tokenA, amountIn.toString()),
+      TradeType.EXACT_INPUT
+    );
+    return ethers.BigNumber.from(
+      trade
+        .minimumAmountOut(new Percent((slippage * 100).toFixed(), "10000"))
+        .raw.toString()
+    );
   }
 }

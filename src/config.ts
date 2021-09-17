@@ -4,6 +4,8 @@ import {
   Network,
   AddressDappNetworkMap
 } from "./types";
+import { ChainId } from "@sushiswap/sdk";
+import { NetworkChainIdMap } from ".";
 
 export const factoryAddress: AddressNetworkMap = {
   [Network.POLYGON]: "0xDd87eCdB10cFF7004276AAbAbd30e7a08F69bb53"
@@ -27,4 +29,8 @@ export const stakingAddress: AddressDappNetworkMap = {
   [Network.POLYGON]: {
     [Dapp.SUSHISWAP]: "0x0769fd68dFb93167989C6f7254cd0D766Fb2841F"
   }
+};
+
+export const networkChainIdMap: NetworkChainIdMap = {
+  [Network.POLYGON]: ChainId.MATIC
 };

@@ -1,3 +1,4 @@
+import { ChainId } from "@sushiswap/sdk";
 import { BigNumber } from "ethers";
 
 export enum Network {
@@ -50,3 +51,5 @@ export type Reserves = {
   assetA: BigNumber;
   assetB: BigNumber;
 };
+
+export type NetworkChainIdMap = Readonly<Record<Network, ChainId>>;
