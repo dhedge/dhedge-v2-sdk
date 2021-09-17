@@ -182,21 +182,27 @@ export class Pool {
     assetFrom: string,
     assetTo: string,
     amountIn: BigNumber | string,
-    minAmountOut: BigNumber | string = "0",
+    slippage = 0.5,
     options: any = null
   ): Promise<any> {
     let swapTxData: string;
     if (dapp === Dapp.ONEINCH) {
-      const referrerAddress = "";
       const apiUrl = `https://api.1inch.exchange/v3.0/137/swap?fromTokenAddress=${assetFrom}&toTokenAddress=${assetTo}&amount=${amountIn.toString()}&fromAddress=${
         this.address
       }&destReceiver=${
         this.address
-      }&referrerAddress=${referrerAddress}&slippage=1&disableEstimate=true`;
+      }&slippage=${slippage.toString()}&disableEstimate=true`;
       const response = await axios.get(apiUrl);
       swapTxData = response.data.tx.data;
     } else {
       const iUniswapV2Router = new ethers.utils.Interface(IUniswapV2Router.abi);
+      const minAmountOut = await this.utils.getMinAmountOut(
+        dapp,
+        assetFrom,
+        assetTo,
+        amountIn,
+        slippage
+      );
       swapTxData = iUniswapV2Router.encodeFunctionData(Transaction.SWAP, [
         amountIn,
         minAmountOut,

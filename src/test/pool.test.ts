@@ -122,7 +122,7 @@ describe("pool", () => {
         usdc,
         frax,
         "500000",
-        "0",
+        0.5,
         options
       );
       console.log("1inch", result);
@@ -132,24 +132,24 @@ describe("pool", () => {
     expect(result).not.toBe(null);
   });
 
-  it("trades 0.1 USDC into WETH on Sushi", async () => {
-    let result;
-    const pool = await dhedge.loadPool(myPool);
-    try {
-      result = await pool.trade(
-        Dapp.SUSHISWAP,
-        usdc,
-        frax,
-        "500000",
-        "495600000000000000",
-        options
-      );
-      console.log("sushi", result);
-    } catch (e) {
-      console.log(e);
-    }
-    expect(result).not.toBe(null);
-  });
+  // it("trades 0.1 USDC into WETH on Sushi", async () => {
+  //   let result;
+  //   const pool = await dhedge.loadPool(myPool);
+  //   try {
+  //     result = await pool.trade(
+  //       Dapp.SUSHISWAP,
+  //       usdc,
+  //       frax,
+  //       "500000",
+  //       0.5,
+  //       options
+  //     );
+  //     console.log("sushi", result);
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  //   expect(result).not.toBe(null);
+  // });
 
   // it("approve USDC balance of User for Deposit", async () => {
   //   let result;
