@@ -4,7 +4,7 @@ import { Network } from "../types";
 
 import { wallet } from "./wallet";
 
-const myPool = "0x3deeba9ca29e2dd98d32eed8dd559dac55014615";
+const myPool = "0x279ac4c05154fd72a636fce1bc25c50966141fd0";
 // const usdc = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174";
 // const weth = "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619";
 

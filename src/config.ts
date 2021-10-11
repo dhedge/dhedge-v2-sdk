@@ -8,7 +8,7 @@ import { ChainId } from "@sushiswap/sdk";
 import { NetworkChainIdMap } from ".";
 
 export const factoryAddress: AddressNetworkMap = {
-  [Network.POLYGON]: "0xDd87eCdB10cFF7004276AAbAbd30e7a08F69bb53"
+  [Network.POLYGON]: "0xfdc7b8bFe0DD3513Cc669bB8d601Cb83e2F69cB0"
 };
 
 export const routerAddress: AddressDappNetworkMap = {

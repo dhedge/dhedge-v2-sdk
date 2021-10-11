@@ -3,7 +3,7 @@ import { Dapp, Network } from "../types";
 
 import { wallet } from "./wallet";
 
-const myPool = "0x3deeba9ca29e2dd98d32eed8dd559dac55014615";
+const myPool = "0x279ac4c05154fd72a636fce1bc25c50966141fd0";
 
 const usdt = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
 const usdc = "0x2791bca1f2de4661ed88a30c99a7a9449aa84174";

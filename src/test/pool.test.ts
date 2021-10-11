@@ -3,13 +3,11 @@ import { Network } from "../types";
 
 import { wallet } from "./wallet";
 
-const myPool = "0x3deeba9ca29e2dd98d32eed8dd559dac55014615";
-
+const myPool = "0x279ac4c05154fd72a636fce1bc25c50966141fd0";
 //const weth = "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
 //const usdt = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
 //const dai = "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063";
 //const usdc = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174";
-//const usdc = "0x104592a158490a9228070e0a8e5343b499e125d0";
 
 // const sushi = "0x0b3F868E0BE5597D5DB7fEB59E1CADBb0fdDa50a";
 // const wmatic = "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270";
@@ -52,12 +50,7 @@ describe("pool", () => {
   //   let result;
   //   const pool = await dhedge.loadPool(myPool);
   //   try {
-  //     result = await pool.approve(
-  //       Dapp.QUICKSWAP,
-  //       weth,
-  //       ethers.constants.MaxInt256,
-  //       options
-  //     );
+  //     result = await pool.approve(Dapp.AAVE, weth, ethers.constants.MaxInt256);
   //     console.log(result);
   //   } catch (e) {
   //     console.log(e);
@@ -69,7 +62,7 @@ describe("pool", () => {
   //   let result;
   //   const pool = await dhedge.loadPool(myPool);
   //   try {
-  //     result = await pool.lend(Dapp.AAVE, usdc, "1000000", options);
+  //     result = await pool.lend(Dapp.AAVE, weth, "86567951006165", options);
   //     console.log(result);
   //   } catch (e) {
   //     console.log(e);
@@ -81,7 +74,12 @@ describe("pool", () => {
   //   let result;
   //   const pool = await dhedge.loadPool(myPool);
   //   try {
-  //     result = await pool.withdrawDeposit(Dapp.AAVE, usdc, "1000000", options);
+  //     result = await pool.withdrawDeposit(
+  //       Dapp.AAVE,
+  //       weth,
+  //       "86567951006165",
+  //       options
+  //     );
   //     console.log(result);
   //   } catch (e) {
   //     console.log(e);
@@ -118,10 +116,10 @@ describe("pool", () => {
   //   const pool = await dhedge.loadPool(myPool);
   //   try {
   //     result = await pool.trade(
-  //       Dapp.QUICKSWAP,
-  //       weth,
+  //       Dapp.ONEINCH,
   //       usdc,
-  //       "100000000000000",
+  //       weth,
+  //       "300000",
   //       0.5,
   //       options
   //     );
