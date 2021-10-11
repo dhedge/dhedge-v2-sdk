@@ -3,10 +3,11 @@ import { Dapp, Network } from "../types";
 
 import { wallet } from "./wallet";
 
-const myPool = "0xd63aA0Dce2311670608f1AB0667E43612F73340e";
+const myPool = "0x279ac4c05154fd72a636fce1bc25c50966141fd0";
 
 const usdt = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
 const usdc = "0x2791bca1f2de4661ed88a30c99a7a9449aa84174";
+const weth = "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
 const lpUsdcWeth = "0x34965ba0ac2451A34a0471F04CCa3F990b8dea27";
 
 let dhedge: Dhedge;
@@ -30,6 +31,16 @@ describe("utils", () => {
 
   it("gets USDC balance of a pool", async () => {
     const result = await dhedge.utils.getBalance(usdc, myPool);
+    expect(result.gt(0));
+  });
+  it("gets minumum amount out of WETH for 1 USDC", async () => {
+    const result = await dhedge.utils.getMinAmountOut(
+      Dapp.SUSHISWAP,
+      usdc,
+      weth,
+      "1000000",
+      0.5
+    );
     expect(result.gt(0));
   });
 });

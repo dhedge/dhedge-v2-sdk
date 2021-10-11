@@ -1,11 +1,15 @@
+import { ChainId } from "@sushiswap/sdk";
 import { BigNumber } from "ethers";
 
 export enum Network {
-  POLYGON = "polygon"
+  POLYGON = "polygon",
 }
 
 export enum Dapp {
-  SUSHISWAP = "sushiswap"
+  SUSHISWAP = "sushiswap",
+  AAVE = "aave",
+  ONEINCH = "1inch",
+  QUICKSWAP = "quickswap",
 }
 
 export enum Transaction {
@@ -14,13 +18,19 @@ export enum Transaction {
   DEPOSIT = "deposit",
   HARVEST = "harvest",
   UNSTAKE = "withdrawAndHarvest",
-  REMOVE_LIQUIDITY = "removeLiquidity"
+  REMOVE_LIQUIDITY = "removeLiquidity",
+  BORROW = "borrow",
+  REPAY = "repay",
+  WITHDRAW = "withdraw",
 }
 
 export type AddressNetworkMap = Readonly<Record<Network, string>>;
 
 export type AddressDappMap = {
   [Dapp.SUSHISWAP]?: string;
+  [Dapp.AAVE]?: string;
+  [Dapp.ONEINCH]?: string;
+  [Dapp.QUICKSWAP]?: string;
 };
 
 export type AddressDappNetworkMap = Readonly<Record<Network, AddressDappMap>>;
@@ -43,3 +53,5 @@ export type Reserves = {
   assetA: BigNumber;
   assetB: BigNumber;
 };
+
+export type NetworkChainIdMap = Readonly<Record<Network, ChainId>>;

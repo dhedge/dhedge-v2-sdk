@@ -1,14 +1,14 @@
-import { Dhedge, ethers } from "..";
-import { Dapp, Network } from "../types";
+import { Dhedge } from "..";
+import { Network } from "../types";
 
 import { wallet } from "./wallet";
 
-const myPool = "0xe3528a438b94e64669def9b875c381c46ef713bf";
-
-const weth = "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
+const myPool = "0x279ac4c05154fd72a636fce1bc25c50966141fd0";
+//const weth = "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
 //const usdt = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
 //const dai = "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063";
-const usdc = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174";
+//const usdc = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174";
+
 // const sushi = "0x0b3F868E0BE5597D5DB7fEB59E1CADBb0fdDa50a";
 // const wmatic = "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270";
 // const lpUsdcWeth = "0x34965ba0ac2451A34a0471F04CCa3F990b8dea27";
@@ -24,10 +24,10 @@ let dhedge: Dhedge;
 
 jest.setTimeout(100000);
 
-const options = {
-  gasLimit: "500000",
-  gasPrice: ethers.utils.parseUnits("35", "gwei")
-};
+// const options = {
+//   gasLimit: 1000000,
+//   gasPrice: ethers.utils.parseUnits("35", "gwei")
+// };
 
 describe("pool", () => {
   beforeAll(() => {
@@ -46,16 +46,11 @@ describe("pool", () => {
   //   expect(result).toBeGreaterThan(0);
   // })
 
-  // it("approves unlimited DAI on Aave", async () => {
+  // it("approves unlimited WETH on Quickswap", async () => {
   //   let result;
   //   const pool = await dhedge.loadPool(myPool);
   //   try {
-  //     result = await pool.approve(
-  //       Dapp.AAVE,
-  //       dai,
-  //       ethers.constants.MaxInt256,
-  //       options
-  //     );
+  //     result = await pool.approve(Dapp.AAVE, weth, ethers.constants.MaxInt256);
   //     console.log(result);
   //   } catch (e) {
   //     console.log(e);
@@ -63,13 +58,11 @@ describe("pool", () => {
   //   expect(result).not.toBe(null);
   // });
 
-  // const options = { gasPrice: ethers.utils.parseUnits("40", "gwei") };
-
-  // it("lends 1 DAI into Aave lending pool", async () => {
+  // it("lends 1 USDC into Aave lending pool", async () => {
   //   let result;
   //   const pool = await dhedge.loadPool(myPool);
   //   try {
-  //     result = await pool.lend(Dapp.AAVE, dai, "1000000000000000000", options);
+  //     result = await pool.lend(Dapp.AAVE, weth, "86567951006165", options);
   //     console.log(result);
   //   } catch (e) {
   //     console.log(e);
@@ -77,14 +70,14 @@ describe("pool", () => {
   //   expect(result).not.toBe(null);
   // });
 
-  // it("withdraws 2 DAI from Aave lending pool", async () => {
+  // it("withdraws 1 USDC from Aave lending pool", async () => {
   //   let result;
   //   const pool = await dhedge.loadPool(myPool);
   //   try {
   //     result = await pool.withdrawDeposit(
   //       Dapp.AAVE,
-  //       dai,
-  //       "1000000000000000000",
+  //       weth,
+  //       "86567951006165",
   //       options
   //     );
   //     console.log(result);
@@ -94,11 +87,11 @@ describe("pool", () => {
   //   expect(result).not.toBe(null);
   // });
 
-  // it("borrows 0.001 WETH from Aave lending pool", async () => {
+  // it("borrows 0.0001 WETH from Aave lending pool", async () => {
   //   let result;
   //   const pool = await dhedge.loadPool(myPool);
   //   try {
-  //     result = await pool.borrow(Dapp.AAVE, weth, "1000000000000000");
+  //     result = await pool.borrow(Dapp.AAVE, weth, "100000000000000");
   //     console.log(result);
   //   } catch (e) {
   //     console.log(e);
@@ -110,7 +103,7 @@ describe("pool", () => {
   //   let result;
   //   const pool = await dhedge.loadPool(myPool);
   //   try {
-  //     result = await pool.repay(Dapp.AAVE, dai, "500000000000000");
+  //     result = await pool.repay(Dapp.AAVE, weth, "100000000000000", options);
   //     console.log(result);
   //   } catch (e) {
   //     console.log(e);
@@ -118,24 +111,43 @@ describe("pool", () => {
   //   expect(result).not.toBe(null);
   // });
 
-  it("trades 0.5 USDC into USDT on sushiswap", async () => {
-    let result;
-    const pool = await dhedge.loadPool(myPool);
-    try {
-      result = await pool.trade(
-        Dapp.SUSHISWAP,
-        weth,
-        usdc,
-        "668662332025537",
-        "100000",
-        options
-      );
-      console.log(result);
-    } catch (e) {
-      console.log(e);
-    }
-    expect(result).not.toBe(null);
-  });
+  // it("trades 1 FRAX into WETH on quickswap", async () => {
+  //   let result;
+  //   const pool = await dhedge.loadPool(myPool);
+  //   try {
+  //     result = await pool.trade(
+  //       Dapp.ONEINCH,
+  //       usdc,
+  //       weth,
+  //       "300000",
+  //       0.5,
+  //       options
+  //     );
+  //     console.log(result);
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  //   expect(result).not.toBe(null);
+  // });
+
+  // it("trades 0.1 USDC into WETH on Sushi", async () => {
+  //   let result;
+  //   const pool = await dhedge.loadPool(myPool);
+  //   try {
+  //     result = await pool.trade(
+  //       Dapp.SUSHISWAP,
+  //       usdc,
+  //       frax,
+  //       "500000",
+  //       0.5,
+  //       options
+  //     );
+  //     console.log("sushi", result);
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  //   expect(result).not.toBe(null);
+  // });
 
   // it("approve USDC balance of User for Deposit", async () => {
   //   let result;
