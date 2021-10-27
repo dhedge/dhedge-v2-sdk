@@ -8,17 +8,22 @@ import {
   Trade,
   Percent
 } from "@sushiswap/sdk";
+import { SOR, SwapTypes } from "@balancer-labs/sor";
+import { BaseProvider } from "@ethersproject/providers";
 
 import IERC20 from "../abi/IERC20.json";
 import IMiniChefV2 from "../abi/IMiniChefV2.json";
 import UniswapV2Factory from "../abi/IUniswapV2Factory.json";
 import UniswapV2Pair from "../abi/IUniswapV2Pair.json";
+import IBalancerV2Vault from "../abi/IBalancertV2Vault.json";
 import {
+  balancerSubgraph,
   dappFactoryAddress,
   networkChainIdMap,
   stakingAddress
 } from "../config";
 import { Dapp, Network, Reserves } from "../types";
+import { Pool } from ".";
 
 export class Utils {
   network: Network;
@@ -170,5 +175,81 @@ export class Utils {
         .minimumAmountOut(new Percent((slippage * 100).toFixed(), "10000"))
         .raw.toString()
     );
+  }
+
+  async getBalancerSwapTx(
+    pool: Pool,
+    assetFrom: string,
+    assetTo: string,
+    amountIn: ethers.BigNumber | string,
+    slippage: number
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): Promise<any> {
+    const sor = new SOR(
+      this.signer.provider as BaseProvider,
+      networkChainIdMap[this.network],
+      balancerSubgraph[this.network]
+    );
+    // isFetched will be true on success
+    const isFetched = await sor.fetchPools();
+
+    if (!isFetched) throw new Error("Error fetching balancer pools");
+
+    const swapType = SwapTypes.SwapExactIn;
+    const { swaps, tokenAddresses, returnAmount } = await sor.getSwaps(
+      assetFrom,
+      assetTo,
+      swapType,
+      ethers.BigNumber.from(amountIn)
+    );
+
+    const minimumAmountOut = returnAmount
+      .mul(10000 - slippage * 100)
+      .div(10000);
+
+    const iBalancerV2Vault = new ethers.utils.Interface(IBalancerV2Vault.abi);
+
+    if (swaps.length === 1) {
+      const swap = swaps[0];
+      //do single swap
+      const swapTx = iBalancerV2Vault.encodeFunctionData("swap", [
+        [
+          swap.poolId,
+          SwapTypes.SwapExactIn,
+          tokenAddresses[swap.assetInIndex],
+          tokenAddresses[swap.assetOutIndex],
+          swap.amount,
+          swap.userData
+        ],
+        [pool.address, false, pool.address, false],
+        minimumAmountOut,
+        Math.floor(Date.now() / 1000) + 60 * 20 // 20 minutes from the current Unix time
+      ]);
+      return swapTx;
+    } else {
+      // Limits:
+      // +ve means max to send
+      // -ve mean min to receive
+      // For a multihop the intermediate tokens should be 0
+      const limits: string[] = [];
+      tokenAddresses.forEach((token, i) => {
+        if (token.toLowerCase() === assetFrom.toLowerCase()) {
+          limits[i] = amountIn.toString();
+        } else if (token.toLowerCase() === assetTo.toLowerCase()) {
+          limits[i] = minimumAmountOut.mul(-1).toString();
+        } else {
+          limits[i] = "0";
+        }
+      });
+      const swapTx = iBalancerV2Vault.encodeFunctionData("batchSwap", [
+        SwapTypes.SwapExactIn,
+        swaps,
+        tokenAddresses,
+        [pool.address, false, pool.address, false],
+        limits,
+        Math.floor(Date.now() / 1000) + 60 * 20 // 20 minutes from the current Unix time
+      ]);
+      return swapTx;
+    }
   }
 }

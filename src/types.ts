@@ -2,7 +2,7 @@ import { ChainId } from "@sushiswap/sdk";
 import { BigNumber } from "ethers";
 
 export enum Network {
-  POLYGON = "polygon",
+  POLYGON = "polygon"
 }
 
 export enum Dapp {
@@ -10,6 +10,7 @@ export enum Dapp {
   AAVE = "aave",
   ONEINCH = "1inch",
   QUICKSWAP = "quickswap",
+  BALANCER = "balancer"
 }
 
 export enum Transaction {
@@ -21,7 +22,7 @@ export enum Transaction {
   REMOVE_LIQUIDITY = "removeLiquidity",
   BORROW = "borrow",
   REPAY = "repay",
-  WITHDRAW = "withdraw",
+  WITHDRAW = "withdraw"
 }
 
 export type AddressNetworkMap = Readonly<Record<Network, string>>;
@@ -31,6 +32,7 @@ export type AddressDappMap = {
   [Dapp.AAVE]?: string;
   [Dapp.ONEINCH]?: string;
   [Dapp.QUICKSWAP]?: string;
+  [Dapp.BALANCER]?: string;
 };
 
 export type AddressDappNetworkMap = Readonly<Record<Network, AddressDappMap>>;

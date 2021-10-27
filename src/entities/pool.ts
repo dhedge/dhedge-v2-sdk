@@ -194,6 +194,14 @@ export class Pool {
       }&slippage=${slippage.toString()}&disableEstimate=true`;
       const response = await axios.get(apiUrl);
       swapTxData = response.data.tx.data;
+    } else if (dapp === Dapp.BALANCER) {
+      swapTxData = await this.utils.getBalancerSwapTx(
+        this,
+        assetFrom,
+        assetTo,
+        amountIn,
+        slippage
+      );
     } else {
       const iUniswapV2Router = new ethers.utils.Interface(IUniswapV2Router.abi);
       const minAmountOut = await this.utils.getMinAmountOut(

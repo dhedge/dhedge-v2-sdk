@@ -16,7 +16,8 @@ export const routerAddress: AddressDappNetworkMap = {
     [Dapp.SUSHISWAP]: "0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506",
     [Dapp.AAVE]: "0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf",
     [Dapp.ONEINCH]: "0x11111112542D85B3EF69AE05771c2dCCff4fAa26",
-    [Dapp.QUICKSWAP]: "0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff"
+    [Dapp.QUICKSWAP]: "0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff",
+    [Dapp.BALANCER]: "0xBA12222222228d8Ba445958a75a0704d566BF2C8"
   }
 };
 
@@ -35,4 +36,9 @@ export const stakingAddress: AddressDappNetworkMap = {
 
 export const networkChainIdMap: NetworkChainIdMap = {
   [Network.POLYGON]: ChainId.MATIC
+};
+
+export const balancerSubgraph: AddressNetworkMap = {
+  [Network.POLYGON]:
+    "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-polygon-v2"
 };
