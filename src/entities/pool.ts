@@ -539,4 +539,32 @@ export class Pool {
     const tx = await this.managerLogic.setTrader(trader, options);
     return tx;
   }
+
+  /**
+   * Invest into a Balancer pool
+   * @param {string} poolId Balancer pool id
+   * @param {string[] | } assetsIn Array of balancer pool assets
+   * @param {BigNumber[] | string[]} amountsIn Array of maximum amounts to provide to pool
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async joinBalancerPool(
+    poolId: string,
+    assets: string[],
+    amountsIn: string[] | BigNumber[],
+    options: any = null
+  ): Promise<any> {
+    const joinPoolTxData = this.utils.getBalancerJoinPoolTx(
+      this,
+      poolId,
+      assets,
+      amountsIn
+    );
+    const tx = await this.poolLogic.execTransaction(
+      routerAddress[this.network][Dapp.BALANCER],
+      joinPoolTxData,
+      options
+    );
+    return tx;
+  }
 }

@@ -1,15 +1,15 @@
 import { Dhedge, ethers } from "..";
-import { Dapp, Network } from "../types";
+import { Network } from "../types";
 
 import { wallet } from "./wallet";
 
 const myPool = "0xe3528a438b94e64669def9b875c381c46ef713bf";
-//const weth = "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
+const weth = "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
 //const usdt = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
 //const dai = "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063";
 const usdc = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174";
-
-const sushi = "0x0b3F868E0BE5597D5DB7fEB59E1CADBb0fdDa50a";
+const wbtc = "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6";
+//const sushi = "0x0b3F868E0BE5597D5DB7fEB59E1CADBb0fdDa50a";
 // const wmatic = "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270";
 // const lpUsdcWeth = "0x34965ba0ac2451A34a0471F04CCa3F990b8dea27";
 //const lpUsdcDai = "0xCD578F016888B57F1b1e3f887f392F0159E26747";
@@ -25,7 +25,7 @@ let dhedge: Dhedge;
 jest.setTimeout(100000);
 
 const options = {
-  gasLimit: 1000000,
+  gasLimit: 5000000,
   gasPrice: ethers.utils.parseUnits("35", "gwei")
 };
 
@@ -135,24 +135,24 @@ describe("pool", () => {
   //   expect(result).not.toBe(null);
   // });
 
-  it("trades 2 USDC into SUSHI on Sushi", async () => {
-    let result;
-    const pool = await dhedge.loadPool(myPool);
-    try {
-      result = await pool.trade(
-        Dapp.SUSHISWAP,
-        usdc,
-        sushi,
-        "2000000",
-        0.5,
-        options
-      );
-      console.log(result);
-    } catch (e) {
-      console.log(e);
-    }
-    expect(result).not.toBe(null);
-  });
+  // it("trades 2 USDC into SUSHI on Sushi", async () => {
+  //   let result;
+  //   const pool = await dhedge.loadPool(myPool);
+  //   try {
+  //     result = await pool.trade(
+  //       Dapp.SUSHISWAP,
+  //       usdc,
+  //       sushi,
+  //       "2000000",
+  //       0.5,
+  //       options
+  //     );
+  //     console.log(result);
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  //   expect(result).not.toBe(null);
+  // });
 
   // it("trades 0.1 USDC into WETH on Sushi", async () => {
   //   let result;
@@ -363,4 +363,23 @@ describe("pool", () => {
   //   }
   //   expect(result).not.toBe(null);
   // });
+
+  it("adds 1 USDC and 0.0003 WTH to a WBTC/USDC/WETH balancer pool", async () => {
+    let result;
+    const pool = await dhedge.loadPool(myPool);
+    const assets = [wbtc, usdc, weth];
+    const amounts = ["2000", "1000000", "200000000000000"];
+    try {
+      result = await pool.joinBalancerPool(
+        "0x03cd191f589d12b0582a99808cf19851e468e6b500010000000000000000000a",
+        assets,
+        amounts,
+        options
+      );
+      console.log("result", result);
+    } catch (e) {
+      console.log(e);
+    }
+    expect(result).not.toBe(null);
+  });
 });

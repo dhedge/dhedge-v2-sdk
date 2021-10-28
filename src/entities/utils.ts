@@ -252,4 +252,32 @@ export class Utils {
       return swapTx;
     }
   }
+
+  async getBalancerJoinPoolTx(
+    pool: Pool,
+    balancerPoolId: string,
+    assets: string[],
+    amountsIn: string[] | ethers.BigNumber[]
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): Promise<any> {
+    const amountsInInput = amountsIn.map(e => ethers.BigNumber.from(e));
+    const assetsInput = assets.map(e => ethers.utils.getAddress(e));
+    const iBalancerV2Vault = new ethers.utils.Interface(IBalancerV2Vault.abi);
+    const txData = [
+      balancerPoolId,
+      pool.address,
+      pool.address,
+      [
+        assetsInput,
+        amountsInInput,
+        ethers.utils.defaultAbiCoder.encode(
+          ["uint256", "uint256[]", "uint256"],
+          [1, amountsInInput, 0]
+        ),
+        false
+      ]
+    ];
+    const joinPoolTx = iBalancerV2Vault.encodeFunctionData("joinPool", txData);
+    return joinPoolTx;
+  }
 }

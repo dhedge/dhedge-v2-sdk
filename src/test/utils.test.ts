@@ -1,15 +1,15 @@
-import { ethers } from "ethers";
+//import { ethers } from "ethers";
 import { Dhedge } from "..";
 import { Network } from "../types";
 
 import { wallet } from "./wallet";
 
-const myPool = "0x279ac4c05154fd72a636fce1bc25c50966141fd0";
+const myPool = "0xe3528a438b94e64669def9b875c381c46ef713bf";
 
 // const usdt = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
 const usdc = "0x2791bca1f2de4661ed88a30c99a7a9449aa84174";
 const weth = "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
-//const wbtc = "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6";
+const wbtc = "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6";
 // const lpUsdcWeth = "0x34965ba0ac2451A34a0471F04CCa3F990b8dea27";
 
 let dhedge: Dhedge;
@@ -46,15 +46,16 @@ describe("utils", () => {
   //   expect(result.gt(0));
   // });
 
-  it("gets Balancer pool", async () => {
+  it("gets Balancer pool tx data", async () => {
     const pool = await dhedge.loadPool(myPool);
-    const result = await dhedge.utils.getBalancerSwapTx(
+    const assets = [wbtc, usdc, weth];
+    const amounts = ["0", "1000000", "0"];
+    const result = await dhedge.utils.getBalancerJoinPoolTx(
       pool,
-      usdc,
-      weth,
-      ethers.BigNumber.from("1000000")
+      "0x03cd191f589d12b0582a99808cf19851e468e6b500010000000000000000000a",
+      assets,
+      amounts
     );
-    console.log(result);
     expect(result);
   });
 });
