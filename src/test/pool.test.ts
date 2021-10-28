@@ -364,7 +364,7 @@ describe("pool", () => {
   //   expect(result).not.toBe(null);
   // });
 
-  it("adds 1 USDC and 0.0003 WTH to a WBTC/USDC/WETH balancer pool", async () => {
+  it("adds 0.00002 WBTC, 1 USDC and 0.0002 WETH to a WBTC/USDC/WETH balancer pool", async () => {
     let result;
     const pool = await dhedge.loadPool(myPool);
     const assets = [wbtc, usdc, weth];
