@@ -364,22 +364,44 @@ describe("pool", () => {
   //   expect(result).not.toBe(null);
   // });
 
-  it("adds 0.00002 WBTC, 1 USDC and 0.0002 WETH to a WBTC/USDC/WETH balancer pool", async () => {
-    let result;
-    const pool = await dhedge.loadPool(myPool);
-    const assets = [wbtc, usdc, weth];
-    const amounts = ["2000", "1000000", "200000000000000"];
-    try {
-      result = await pool.joinBalancerPool(
-        "0x03cd191f589d12b0582a99808cf19851e468e6b500010000000000000000000a",
-        assets,
-        amounts,
-        options
-      );
-      console.log("result", result);
-    } catch (e) {
-      console.log(e);
-    }
-    expect(result).not.toBe(null);
-  });
+  // it("adds 0.00002 WBTC, 1 USDC and 0.0002 WETH to a WBTC/USDC/WETH balancer pool", async () => {
+  //   let result;
+  //   const pool = await dhedge.loadPool(myPool);
+  //   const assets = [wbtc, usdc, weth];
+  //   const amounts = ["2000", "1000000", "200000000000000"];
+  //   try {
+  //     result = await pool.joinBalancerPool(
+  //       "0x03cd191f589d12b0582a99808cf19851e468e6b500010000000000000000000a",
+  //       assets,
+  //       amounts,
+  //       options
+  //     );
+  //     console.log("result", result);
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  //   expect(result).not.toBe(null);
+  // });
+
+  // it("exits enitre balance of WBTC/USDC/WETH balancer pool", async () => {
+  //   let result;
+  //   const pool = await dhedge.loadPool(myPool);
+  //   const assets = [wbtc, usdc, weth];
+  //   const amount = await dhedge.utils.getBalance(
+  //     "0x03cd191f589d12b0582a99808cf19851e468e6b5",
+  //     pool.address
+  //   );
+  //   try {
+  //     result = await pool.exitBalancerPool(
+  //       "0x03cd191f589d12b0582a99808cf19851e468e6b500010000000000000000000a",
+  //       assets,
+  //       amount,
+  //       options
+  //     );
+  //     console.log("result", result);
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  //   expect(result).not.toBe(null);
+  // });
 });

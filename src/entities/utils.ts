@@ -280,4 +280,33 @@ export class Utils {
     const joinPoolTx = iBalancerV2Vault.encodeFunctionData("joinPool", txData);
     return joinPoolTx;
   }
+
+  async getBalancerExitPoolTx(
+    pool: Pool,
+    balancerPoolId: string,
+    assets: string[],
+    amount: string | ethers.BigNumber
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): Promise<any> {
+    const assetsInput = assets.map(e => ethers.utils.getAddress(e));
+    const minimumAmountOut = new Array(assetsInput.length).fill(0);
+    const iBalancerV2Vault = new ethers.utils.Interface(IBalancerV2Vault.abi);
+    const txData = [
+      balancerPoolId,
+      pool.address,
+      pool.address,
+      [
+        assetsInput,
+        minimumAmountOut,
+        ethers.utils.defaultAbiCoder.encode(
+          ["uint256", "uint256"],
+          [1, amount]
+        ),
+        false
+      ]
+    ];
+    const exitPoolTx = iBalancerV2Vault.encodeFunctionData("exitPool", txData);
+    return exitPoolTx;
+  }
 }

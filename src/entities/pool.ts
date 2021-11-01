@@ -567,4 +567,32 @@ export class Pool {
     );
     return tx;
   }
+
+  /**
+   * Invest into a Balancer pool
+   * @param {string} poolId Balancer pool id
+   * @param {string[] | } assets Array of balancer pool assets
+   * @param {BigNumber | string } amount Amount of pool tokens to withdraw
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async exitBalancerPool(
+    poolId: string,
+    assets: string[],
+    amount: string | BigNumber,
+    options: any = null
+  ): Promise<any> {
+    const exitPoolTxData = this.utils.getBalancerExitPoolTx(
+      this,
+      poolId,
+      assets,
+      amount
+    );
+    const tx = await this.poolLogic.execTransaction(
+      routerAddress[this.network][Dapp.BALANCER],
+      exitPoolTxData,
+      options
+    );
+    return tx;
+  }
 }
