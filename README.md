@@ -254,7 +254,7 @@ const tx = await pool.lend(Dapp.AAVE, USDC_TOKEN_ADDRESS, "1000000")
 Withdraw 1 USDC from Aave lending pool
 
 ```
-const tx = await withdrawDeposit(Dapp.AAVE, USDC_TOKEN_ADDRESS, "1000000")
+const tx = await pool.withdrawDeposit(Dapp.AAVE, USDC_TOKEN_ADDRESS, "1000000")
 ```
 
 Borrow 0.0001 WETH from Aave lending pool
