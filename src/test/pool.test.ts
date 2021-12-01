@@ -46,17 +46,36 @@ describe("pool", () => {
   //   expect(result).toBeGreaterThan(0);
   // })
 
-  // it("approves unlimited WETH on Balancer", async () => {
+  // it("approves unlimited USDC on 1Inch", async () => {
   //   let result;
   //   const pool = await dhedge.loadPool(myPool);
   //   try {
   //     result = await pool.approve(
-  //       Dapp.BALANCER,
+  //       Dapp.ONEINCH,
   //       usdc,
   //       ethers.constants.MaxInt256,
   //       options
   //     );
   //     console.log(result);
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  //   expect(result).not.toBe(null);
+  // });
+
+  // it("trades 1 USDC into WETH on 1Inch", async () => {
+  //   let result;
+  //   const pool = await dhedge.loadPool(myPool);
+  //   try {
+  //     result = await pool.trade(
+  //       Dapp.ONEINCH,
+  //       usdc,
+  //       weth,
+  //       "1000000",
+  //       0.5,
+  //       options
+  //     );
+  //     console.log("1inch trade", result);
   //   } catch (e) {
   //     console.log(e);
   //   }
@@ -129,44 +148,6 @@ describe("pool", () => {
   //       options
   //     );
   //     console.log(result);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
-
-  // it("trades 2 USDC into SUSHI on Sushi", async () => {
-  //   let result;
-  //   const pool = await dhedge.loadPool(myPool);
-  //   try {
-  //     result = await pool.trade(
-  //       Dapp.SUSHISWAP,
-  //       usdc,
-  //       sushi,
-  //       "2000000",
-  //       0.5,
-  //       options
-  //     );
-  //     console.log(result);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
-
-  // it("trades 0.1 USDC into WETH on Sushi", async () => {
-  //   let result;
-  //   const pool = await dhedge.loadPool(myPool);
-  //   try {
-  //     result = await pool.trade(
-  //       Dapp.SUSHISWAP,
-  //       usdc,
-  //       frax,
-  //       "500000",
-  //       0.5,
-  //       options
-  //     );
-  //     console.log("sushi", result);
   //   } catch (e) {
   //     console.log(e);
   //   }

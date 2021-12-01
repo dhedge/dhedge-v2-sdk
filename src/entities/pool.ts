@@ -187,7 +187,7 @@ export class Pool {
   ): Promise<any> {
     let swapTxData: string;
     if (dapp === Dapp.ONEINCH) {
-      const apiUrl = `https://api.1inch.exchange/v3.0/137/swap?fromTokenAddress=${assetFrom}&toTokenAddress=${assetTo}&amount=${amountIn.toString()}&fromAddress=${
+      const apiUrl = `https://api.1inch.exchange/v4.0/137/swap?fromTokenAddress=${assetFrom}&toTokenAddress=${assetTo}&amount=${amountIn.toString()}&fromAddress=${
         this.address
       }&destReceiver=${
         this.address

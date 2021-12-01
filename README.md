@@ -142,17 +142,17 @@ const tx = await pool.approve(
 
 ### Trade pool assets
 
-Trade 1 USDC into DAI on Sushiswap
+Trade 1 USDC into DAI on Sushiswap (other options: QUICKSWAP, BALANCER, or ONEINCH)
 
 ```
 const amountIn = "1000000"
-const minAmountOut = "997085"
+const slippage = 0.5
 const tx = await pool.trade(
   Dapp.SUSHISWAP,
   "USDC_TOKEN_ADDRESS",
   "DAI_TOKEN_ADDRESS",
   amountIn,
-  minAmountOut
+  slippage
 )
 ```
 
@@ -182,6 +182,22 @@ const tx = await pool.removeLiquidity(
   "DAI_TOKEN_ADDRESS",
   amountSlpUsdcDai
 )
+```
+
+Add 0.00002 WBTC, 1 USDC and 0.0002 WETH to a WBTC/USDC/WETH Balancer pool
+
+```
+const balancerPoolId = "0x03cd191f589d12b0582a99808cf19851e468e6b500010000000000000000000a"
+const assets = [WBTC_TOKEN_ADDRESS, USDC_TOKEN_ADDRESS, WETH_TOKEN_ADDRESS];
+const amounts = ["2000", "1000000", "200000000000000"];
+const tx = await pool.joinBalancerPool(balancerPoolId, assets, amounts)
+```
+
+Remove all tokens from WBTC/USDC/WETH Balancer pool
+
+```
+const amount = await dhedge.utils.getBalance(BALANCER_LP_TOKEN_ADDRESS, pool.address)
+const tx = await pool.exitBalancerPool(balancerPoolId, assets, amount)
 ```
 
 ### Staking
@@ -225,4 +241,30 @@ const tx = await pool.harvestRewards(
   Dapp.SUSHISWAP,
   "SLP_USDC_DAI_TOKEN_ADDRESS"
 )
+```
+
+### Lending/Borrowing Aave
+
+Deposit 1 USDC into Aave lending pool
+
+```
+const tx = await pool.lend(Dapp.AAVE, USDC_TOKEN_ADDRESS, "1000000")
+```
+
+Withdraw 1 USDC from Aave lending pool
+
+```
+const tx = await withdrawDeposit(Dapp.AAVE, USDC_TOKEN_ADDRESS, "1000000")
+```
+
+Borrow 0.0001 WETH from Aave lending pool
+
+```
+const tx = await pool.borrow(Dapp.AAVE, WETH_TOKEN_ADDRESS, "100000000000000");
+```
+
+Repay 0.0001 WETH to Aave lending pool", async () => {
+
+```
+const tx = await pool.repay(Dapp.AAVE, WETH_TOKEN_ADDRESS, "100000000000000");
 ```
