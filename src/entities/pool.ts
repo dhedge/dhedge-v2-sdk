@@ -194,6 +194,14 @@ export class Pool {
       }&slippage=${slippage.toString()}&disableEstimate=true`;
       const response = await axios.get(apiUrl);
       swapTxData = response.data.tx.data;
+    } else if (dapp === Dapp.BALANCER) {
+      swapTxData = await this.utils.getBalancerSwapTx(
+        this,
+        assetFrom,
+        assetTo,
+        amountIn,
+        slippage
+      );
     } else {
       const iUniswapV2Router = new ethers.utils.Interface(IUniswapV2Router.abi);
       const minAmountOut = await this.utils.getMinAmountOut(
@@ -529,6 +537,62 @@ export class Pool {
    */
   async setTrader(trader: string, options: any = null): Promise<any> {
     const tx = await this.managerLogic.setTrader(trader, options);
+    return tx;
+  }
+
+  /**
+   * Invest into a Balancer pool
+   * @param {string} poolId Balancer pool id
+   * @param {string[] | } assetsIn Array of balancer pool assets
+   * @param {BigNumber[] | string[]} amountsIn Array of maximum amounts to provide to pool
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async joinBalancerPool(
+    poolId: string,
+    assets: string[],
+    amountsIn: string[] | BigNumber[],
+    options: any = null
+  ): Promise<any> {
+    const joinPoolTxData = this.utils.getBalancerJoinPoolTx(
+      this,
+      poolId,
+      assets,
+      amountsIn
+    );
+    const tx = await this.poolLogic.execTransaction(
+      routerAddress[this.network][Dapp.BALANCER],
+      joinPoolTxData,
+      options
+    );
+    return tx;
+  }
+
+  /**
+   * Invest into a Balancer pool
+   * @param {string} poolId Balancer pool id
+   * @param {string[] | } assets Array of balancer pool assets
+   * @param {BigNumber | string } amount Amount of pool tokens to withdraw
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async exitBalancerPool(
+    poolId: string,
+    assets: string[],
+    amount: string | BigNumber,
+    options: any = null
+  ): Promise<any> {
+    const exitPoolTxData = this.utils.getBalancerExitPoolTx(
+      this,
+      poolId,
+      assets,
+      amount
+    );
+    const tx = await this.poolLogic.execTransaction(
+      routerAddress[this.network][Dapp.BALANCER],
+      exitPoolTxData,
+      options
+    );
     return tx;
   }
 }
