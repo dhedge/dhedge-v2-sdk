@@ -18,7 +18,6 @@ export enum Transaction {
   ADD_LIQUIDITY = "addLiquidity",
   DEPOSIT = "deposit",
   HARVEST = "harvest",
-  UNSTAKE = "withdrawAndHarvest",
   REMOVE_LIQUIDITY = "removeLiquidity",
   BORROW = "borrow",
   REPAY = "repay",

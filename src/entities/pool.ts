@@ -350,7 +350,7 @@ export class Pool {
   ): Promise<any> {
     const iMiniChefV2 = new ethers.utils.Interface(IMiniChefV2.abi);
     const poolId = await this.utils.getLpPoolId(dapp, asset);
-    const unStakeTxData = iMiniChefV2.encodeFunctionData(Transaction.UNSTAKE, [
+    const unStakeTxData = iMiniChefV2.encodeFunctionData(Transaction.WITHDRAW, [
       poolId,
       amount,
       this.address

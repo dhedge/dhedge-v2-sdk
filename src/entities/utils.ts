@@ -260,19 +260,17 @@ export class Utils {
     amountsIn: string[] | ethers.BigNumber[]
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): Promise<any> {
-    const amountsInInput = amountsIn.map(e => ethers.BigNumber.from(e));
-    const assetsInput = assets.map(e => ethers.utils.getAddress(e));
     const iBalancerV2Vault = new ethers.utils.Interface(IBalancerV2Vault.abi);
     const txData = [
       balancerPoolId,
       pool.address,
       pool.address,
       [
-        assetsInput,
-        amountsInInput,
+        assets,
+        amountsIn,
         ethers.utils.defaultAbiCoder.encode(
           ["uint256", "uint256[]", "uint256"],
-          [1, amountsInInput, 0]
+          [1, amountsIn, 0]
         ),
         false
       ]
@@ -289,15 +287,14 @@ export class Utils {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): Promise<any> {
-    const assetsInput = assets.map(e => ethers.utils.getAddress(e));
-    const minimumAmountOut = new Array(assetsInput.length).fill(0);
+    const minimumAmountOut = new Array(assets.length).fill(0);
     const iBalancerV2Vault = new ethers.utils.Interface(IBalancerV2Vault.abi);
     const txData = [
       balancerPoolId,
       pool.address,
       pool.address,
       [
-        assetsInput,
+        assets,
         minimumAmountOut,
         ethers.utils.defaultAbiCoder.encode(
           ["uint256", "uint256"],
