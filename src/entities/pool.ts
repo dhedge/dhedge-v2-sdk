@@ -7,6 +7,7 @@ import IERC20 from "../abi/IERC20.json";
 import IMiniChefV2 from "../abi/IMiniChefV2.json";
 import ILendingPool from "../abi/ILendingPool.json";
 import IUniswapV2Router from "../abi/IUniswapV2Router.json";
+import IBalancerMerkleOrchard from "../abi/IBalancerMerkleOrchard.json";
 import { routerAddress, stakingAddress } from "../config";
 import {
   Dapp,
@@ -591,6 +592,31 @@ export class Pool {
     const tx = await this.poolLogic.execTransaction(
       routerAddress[this.network][Dapp.BALANCER],
       exitPoolTxData,
+      options
+    );
+    return tx;
+  }
+
+  /**
+   * Claim rewards from Balancer pools
+   * @param {string[]} assets Array of tokens being claimed
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async harvestBalancerRewards(
+    assets: string[],
+    options: any = null
+  ): Promise<any> {
+    const iBalancerMerkleOrchard = new ethers.utils.Interface(
+      IBalancerMerkleOrchard.abi
+    );
+    const harvestTxData = iBalancerMerkleOrchard.encodeFunctionData(
+      Transaction.CLAIM_DISTRIBIUTIONS,
+      [this.address, [], assets]
+    );
+    const tx = await this.poolLogic.execTransaction(
+      stakingAddress[this.network][Dapp.BALANCER],
+      harvestTxData,
       options
     );
     return tx;
