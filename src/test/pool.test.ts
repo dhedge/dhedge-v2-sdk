@@ -1,14 +1,14 @@
-import { Dhedge, ethers } from "..";
+import { Dhedge } from "..";
 import { Network } from "../types";
 
 import { wallet } from "./wallet";
 
-const myPool = "0x3deeba9ca29e2dd98d32eed8dd559dac55014615";
-const weth = "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
-//const usdt = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
-//const dai = "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063";
-const usdc = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174";
-const wbtc = "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6";
+const myPool = "0x3e5f7e9e7dc3bc3086ccebd5eb59a0a4a29d881b";
+// const weth = "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
+// //const usdt = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
+// //const dai = "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063";
+// const usdc = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174";
+// const wbtc = "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6";
 //const sushi = "0x0b3F868E0BE5597D5DB7fEB59E1CADBb0fdDa50a";
 // const wmatic = "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270";
 // const lpUsdcWeth = "0x34965ba0ac2451A34a0471F04CCa3F990b8dea27";
@@ -24,27 +24,28 @@ let dhedge: Dhedge;
 
 jest.setTimeout(100000);
 
-const options = {
-  gasLimit: 5000000,
-  gasPrice: ethers.utils.parseUnits("35", "gwei")
-};
+// const options = {
+//   gasLimit: 5000000,
+//   gasPrice: ethers.utils.parseUnits("35", "gwei")
+// };
 
 describe("pool", () => {
   beforeAll(() => {
     dhedge = new Dhedge(wallet, Network.POLYGON);
   });
 
-  // it("checks fund composition", async () => {
-  //   const pool = await dhedge.loadPool(myPool);
-  //   const result = await pool.getComposition();
-  //   expect(result.length).toBeGreaterThan(0);
-  // });
+  it("checks fund composition", async () => {
+    const pool = await dhedge.loadPool(myPool);
+    const result = await pool.getComposition();
+    console.log(result);
+    expect(result.length).toBeGreaterThan(0);
+  });
 
   // it("withdraws 1.00002975 fund tokens", async () => {
-  //   const pool = await dhedge.loadPool(myPool)
+  //   const pool = await dhedge.loadPool(myPool);
   //   const result = await pool.withdraw("1000029750000000000");
   //   expect(result).toBeGreaterThan(0);
-  // })
+  // });
 
   // it("approves unlimited USDC on 1Inch", async () => {
   //   let result;

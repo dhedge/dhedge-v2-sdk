@@ -1,6 +1,6 @@
 import { Dhedge, ethers } from "..";
 import { Dapp, Network } from "../types";
-import { DAI, TEST_POOL, USDC } from "./constants";
+import { TEST_POOL, USDC, WETH } from "./constants";
 
 import { wallet } from "./wallet";
 
@@ -18,14 +18,31 @@ describe("pool", () => {
     dhedge = new Dhedge(wallet, Network.POLYGON);
   });
 
-  it("trades 5 DAI into USDC on 1Inch", async () => {
+  // it("approves unlimited USDC on 1Inch", async () => {
+  //   let result;
+  //   const pool = await dhedge.loadPool(TEST_POOL);
+  //   try {
+  //     result = await pool.approve(
+  //       Dapp.ONEINCH,
+  //       USDC,
+  //       ethers.constants.MaxInt256,
+  //       options
+  //     );
+  //     console.log(result);
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  //   expect(result).not.toBe(null);
+  // });
+
+  it("trades 1 USDC into WETH on 1Inch", async () => {
     let result;
     const pool = await dhedge.loadPool(TEST_POOL);
     try {
       result = await pool.trade(
         Dapp.ONEINCH,
         USDC,
-        DAI,
+        WETH,
         "1000000",
         0.5,
         options
