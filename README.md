@@ -200,6 +200,15 @@ const amount = await dhedge.utils.getBalance(BALANCER_LP_TOKEN_ADDRESS, pool.add
 const tx = await pool.exitBalancerPool(balancerPoolId, assets, amount)
 ```
 
+Harvest rewards from Balancer
+
+```
+const tx = await pool.harvestBalancerRewards([
+      BAL_TOKEN_ADDRESS,
+      WMATIC_TOKEN_ADDRESS
+    ]);
+```
+
 ### Staking
 
 Approve unlimited amound of SLP USDC-DAI token for staking on Sushiswap
@@ -263,8 +272,17 @@ Borrow 0.0001 WETH from Aave lending pool
 const tx = await pool.borrow(Dapp.AAVE, WETH_TOKEN_ADDRESS, "100000000000000");
 ```
 
-Repay 0.0001 WETH to Aave lending pool", async () => {
+Repay 0.0001 WETH to Aave lending pool
 
 ```
 const tx = await pool.repay(Dapp.AAVE, WETH_TOKEN_ADDRESS, "100000000000000");
+```
+
+Harvest rewards from Aave
+
+```
+const tx = await pool.harvestAaveRewards([
+    AAVE_USDC_ADDRESS,
+    AAVE_WETH_DEBT_ADDRESS
+  ]);
 ```

@@ -1,6 +1,6 @@
-import { Dhedge, ethers } from "..";
-import { Dapp, Network } from "../types";
-import { BAL, TEST_POOL } from "./constants";
+import { Dhedge } from "..";
+import { Network } from "../types";
+import { TEST_POOL } from "./constants";
 
 import { wallet } from "./wallet";
 
@@ -8,10 +8,10 @@ let dhedge: Dhedge;
 
 jest.setTimeout(100000);
 
-const options = {
-  gasLimit: 5000000,
-  gasPrice: ethers.utils.parseUnits("35", "gwei")
-};
+// const options = {
+//   gasLimit: 2000000,
+//   gasPrice: ethers.utils.parseUnits("700", "gwei")
+// };
 
 describe("pool", () => {
   beforeAll(() => {
@@ -26,6 +26,25 @@ describe("pool", () => {
   //       Dapp.BALANCER,
   //       USDC,
   //       ethers.constants.MaxInt256,
+  //       options
+  //     );
+  //     console.log(result);
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  //   expect(result).not.toBe(null);
+  // });
+
+  // it("trades 2 USDC into SUSHI on Balancer", async () => {
+  //   let result;
+  //   const pool = await dhedge.loadPool(myPool);
+  //   try {
+  //     result = await pool.trade(
+  //       Dapp.BALANCER,
+  //       usdc,
+  //       sushi,
+  //       "2000000",
+  //       0.5,
   //       options
   //     );
   //     console.log(result);
@@ -54,7 +73,7 @@ describe("pool", () => {
   //   expect(result).not.toBe(null);
   // });
 
-  // it("exits enitre balance of WBTC/USDC/WETH balancer pool", async () => {
+  // it("exits entire balance of WBTC/USDC/WETH balancer pool", async () => {
   //   let result;
   //   const pool = await dhedge.loadPool(myPool);
   //   const assets = [wbtc, usdc, weth];
@@ -80,7 +99,7 @@ describe("pool", () => {
     let result;
     const pool = await dhedge.loadPool(TEST_POOL);
     try {
-      result = await pool.harvestBalancerRewards([BAL], options);
+      result = await pool.harvestBalancerRewards();
       console.log("result", result);
     } catch (e) {
       console.log(e);

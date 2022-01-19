@@ -8,6 +8,7 @@ import IMiniChefV2 from "../abi/IMiniChefV2.json";
 import ILendingPool from "../abi/ILendingPool.json";
 import IUniswapV2Router from "../abi/IUniswapV2Router.json";
 import IBalancerMerkleOrchard from "../abi/IBalancerMerkleOrchard.json";
+import IAaveIncentivesController from "../abi/IAaveIncentivesController.json";
 import { routerAddress, stakingAddress } from "../config";
 import {
   Dapp,
@@ -617,6 +618,45 @@ export class Pool {
     const tx = await this.poolLogic.execTransaction(
       stakingAddress[this.network][Dapp.BALANCER],
       harvestTxData,
+      options
+    );
+    return tx;
+  }
+
+  /**
+   * Claim rewards from Aave platform
+   * @param {string[]} assets Aave tokens (deposit/debt) hold by pool
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async harvestAaveRewards(
+    assets: string[],
+    options: any = null
+  ): Promise<any> {
+    const aaveIncentivesAddress = stakingAddress[this.network][
+      Dapp.AAVE
+    ] as string;
+    const iAaveIncentivesController = new ethers.utils.Interface(
+      IAaveIncentivesController.abi
+    );
+    const aaveIncentivesController = new ethers.Contract(
+      aaveIncentivesAddress,
+      iAaveIncentivesController,
+      this.signer
+    );
+
+    const amount = await aaveIncentivesController.getUserUnclaimedRewards(
+      this.address
+    );
+
+    const claimTxData = iAaveIncentivesController.encodeFunctionData(
+      Transaction.CLAIM_REWARDS,
+      [assets, amount, this.address]
+    );
+
+    const tx = await this.poolLogic.execTransaction(
+      aaveIncentivesAddress,
+      claimTxData,
       options
     );
     return tx;

@@ -8,8 +8,8 @@ import { ChainId } from "@sushiswap/sdk";
 import { NetworkChainIdMap } from ".";
 
 export const factoryAddress: AddressNetworkMap = {
-  [Network.POLYGON]: "0xfdc7b8bFe0DD3513Cc669bB8d601Cb83e2F69cB0"
-  //[Network.POLYGON]: "0xDd87eCdB10cFF7004276AAbAbd30e7a08F69bb53"
+  //[Network.POLYGON]: "0xfdc7b8bFe0DD3513Cc669bB8d601Cb83e2F69cB0"
+  [Network.POLYGON]: "0xDd87eCdB10cFF7004276AAbAbd30e7a08F69bb53"
 };
 
 export const routerAddress: AddressDappNetworkMap = {
@@ -32,7 +32,8 @@ export const dappFactoryAddress: AddressDappNetworkMap = {
 export const stakingAddress: AddressDappNetworkMap = {
   [Network.POLYGON]: {
     [Dapp.SUSHISWAP]: "0x0769fd68dFb93167989C6f7254cd0D766Fb2841F",
-    [Dapp.BALANCER]: "0x0F3e0c4218b7b0108a3643cFe9D3ec0d4F57c54e"
+    [Dapp.BALANCER]: "0x0F3e0c4218b7b0108a3643cFe9D3ec0d4F57c54e",
+    [Dapp.AAVE]: "0x357D51124f59836DeD84c8a1730D72B749d8BC23"
   }
 };
 
