@@ -45,3 +45,7 @@ export const balancerSubgraph: AddressNetworkMap = {
   [Network.POLYGON]:
     "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-polygon-v2"
 };
+
+export const multiCallAddress: AddressNetworkMap = {
+  [Network.POLYGON]: "0x275617327c958bD06b5D6b871E7f491D76113dd8"
+};
