@@ -19,6 +19,7 @@ import {
 } from "../types";
 
 import { Utils } from "./utils";
+import { ClaimService } from "../services/claim-balancer/claim.service";
 
 export class Pool {
   public readonly poolLogic: Contract;
@@ -604,16 +605,24 @@ export class Pool {
    * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
-  async harvestBalancerRewards(
-    assets: string[],
-    options: any = null
-  ): Promise<any> {
+  async harvestBalancerRewards(options: any = null): Promise<any> {
+    const claimService = new ClaimService(this.network, this.signer);
+    const multiTokenPendingClaims = await claimService.getMultiTokensPendingClaims(
+      this.address
+    );
+    const tokens = multiTokenPendingClaims.map(
+      tokenPendingClaims => tokenPendingClaims.tokenClaimInfo.token
+    );
+    const claims = await claimService.multiTokenClaimRewards(
+      this.address,
+      multiTokenPendingClaims
+    );
     const iBalancerMerkleOrchard = new ethers.utils.Interface(
       IBalancerMerkleOrchard.abi
     );
     const harvestTxData = iBalancerMerkleOrchard.encodeFunctionData(
       Transaction.CLAIM_DISTRIBIUTIONS,
-      [this.address, [], assets]
+      [this.address, claims, tokens]
     );
     const tx = await this.poolLogic.execTransaction(
       stakingAddress[this.network][Dapp.BALANCER],

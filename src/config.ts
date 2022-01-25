@@ -8,8 +8,8 @@ import { ChainId } from "@sushiswap/sdk";
 import { NetworkChainIdMap } from ".";
 
 export const factoryAddress: AddressNetworkMap = {
-  //[Network.POLYGON]: "0xfdc7b8bFe0DD3513Cc669bB8d601Cb83e2F69cB0"
-  [Network.POLYGON]: "0xDd87eCdB10cFF7004276AAbAbd30e7a08F69bb53"
+  [Network.POLYGON]: "0xfdc7b8bFe0DD3513Cc669bB8d601Cb83e2F69cB0"
+  //[Network.POLYGON]: "0xDd87eCdB10cFF7004276AAbAbd30e7a08F69bb53"
 };
 
 export const routerAddress: AddressDappNetworkMap = {
@@ -44,4 +44,8 @@ export const networkChainIdMap: NetworkChainIdMap = {
 export const balancerSubgraph: AddressNetworkMap = {
   [Network.POLYGON]:
     "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-polygon-v2"
+};
+
+export const multiCallAddress: AddressNetworkMap = {
+  [Network.POLYGON]: "0x275617327c958bD06b5D6b871E7f491D76113dd8"
 };

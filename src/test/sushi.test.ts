@@ -1,7 +1,9 @@
 import { Dhedge } from "..";
-import { Network } from "../types";
+import { Dapp, Network } from "../types";
 
 import { wallet } from "./wallet";
+
+import { BAL, TEST_POOL, USDT } from "./constants";
 
 const myPool = "0x3e5f7e9e7dc3bc3086ccebd5eb59a0a4a29d881b";
 // const weth = "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
@@ -34,165 +36,28 @@ describe("pool", () => {
     dhedge = new Dhedge(wallet, Network.POLYGON);
   });
 
-  it("checks fund composition", async () => {
+  it("adds Liquidity into a WETH/USDT pool on sushi", async () => {
+    let result;
     const pool = await dhedge.loadPool(myPool);
-    const result = await pool.getComposition();
-    console.log(result);
-    expect(result.length).toBeGreaterThan(0);
+    const liquidityAmountWETH = await dhedge.utils.getLpAmount(
+      Dapp.SUSHISWAP,
+      USDT,
+      WETH,
+      liquidityAmountUsdt
+    );
+    try {
+      result = await pool.addLiquidity(
+        Dapp.SUSHISWAP,
+        usdt,
+        weth,
+        liquidityAmountUsdt,
+        liquidityAmountWETH
+      );
+    } catch (e) {
+      console.log(e);
+    }
+    expect(result).not.toBe(null);
   });
-
-  // it("withdraws 1.00002975 fund tokens", async () => {
-  //   const pool = await dhedge.loadPool(myPool);
-  //   const result = await pool.withdraw("1000029750000000000");
-  //   expect(result).toBeGreaterThan(0);
-  // });
-
-  // it("approves unlimited USDC on 1Inch", async () => {
-  //   let result;
-  //   const pool = await dhedge.loadPool(myPool);
-  //   try {
-  //     result = await pool.approve(
-  //       Dapp.ONEINCH,
-  //       usdc,
-  //       ethers.constants.MaxInt256,
-  //       options
-  //     );
-  //     console.log(result);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
-
-  // it("trades 1 USDC into WETH on 1Inch", async () => {
-  //   let result;
-  //   const pool = await dhedge.loadPool(myPool);
-  //   try {
-  //     result = await pool.trade(
-  //       Dapp.ONEINCH,
-  //       usdc,
-  //       weth,
-  //       "1000000",
-  //       0.5,
-  //       options
-  //     );
-  //     console.log("1inch trade", result);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
-
-  // it("lends 1 USDC into Aave lending pool", async () => {
-  //   let result;
-  //   const pool = await dhedge.loadPool(myPool);
-  //   try {
-  //     result = await pool.lend(Dapp.AAVE, weth, "86567951006165", options);
-  //     console.log(result);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
-
-  // it("trades 2 USDC into SUSHI on Balancer", async () => {
-  //   let result;
-  //   const pool = await dhedge.loadPool(myPool);
-  //   try {
-  //     result = await pool.trade(
-  //       Dapp.BALANCER,
-  //       usdc,
-  //       sushi,
-  //       "2000000",
-  //       0.5,
-  //       options
-  //     );
-  //     console.log(result);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
-
-  // it("approve USDC balance of User for Deposit", async () => {
-  //   let result;
-  //   const pool = await dhedge.loadPool(myPool);
-  //   try {
-  //     result = await pool.approveDeposit(usdt, ethers.constants.MaxUint256);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
-
-  // it("deposit 0.1 USDC into Pool", async () => {
-  //   let result;
-  //   const pool = await dhedge.loadPool(myPool);
-  //   try {
-  //     result = await pool.deposit(usdc, depositAmountUsdc);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
-
-  // it("adds LpUSDCWETH/SUSHI/WMATIC to enabled assets", async () => {
-  //   let result;
-  //   const pool = await dhedge.loadPool(myPool);
-  //   const newAssets: AssetEnabled[] = [
-  //     { asset: usdc, isDeposit: true },
-  //     { asset: weth, isDeposit: true },
-  //     { asset: usdt, isDeposit: true },
-  //     { asset: amusdc, isDeposit: false },
-  //     { asset: lpUsdcUsdt, isDeposit: false }
-  //   ];
-  //   try {
-  //     result = await pool.changeAssets(newAssets);
-  //     console.log(result);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
-
-  // it("removes all assets except USDC and USDT", async () => {
-  //   let result;
-  //   const pool = await dhedge.loadPool(myPool);
-  //   const newAssets: AssetEnabled[] = [
-  //     { asset: usdc, isDeposit: false },
-  //     { asset: weth, isDeposit: true }
-  //   ];
-  //   try {
-  //     result = await pool.changeAssets(newAssets);
-  //     console.log(result);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
-
-  // it("adds Liquidity into a WETH/USDT pool on sushi", async () => {
-  //   let result;
-  //   const pool = await dhedge.loadPool(myPool);
-  //   const liquidityAmountWETH = await dhedge.utils.getLpAmount(
-  //     Dapp.SUSHISWAP,
-  //     usdt,
-  //     weth,
-  //     liquidityAmountUsdt
-  //   );
-  //   try {
-  //     result = await pool.addLiquidity(
-  //       Dapp.SUSHISWAP,
-  //       usdt,
-  //       weth,
-  //       liquidityAmountUsdt,
-  //       liquidityAmountWETH
-  //     );
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
 
   // it("approves unlimited LP USDC/WETH on sushiswap for staking", async () => {
   //   let result;
@@ -305,44 +170,4 @@ describe("pool", () => {
   //   expect(result).not.toBe(null);
   // });
 
-  // it("adds 0.00002 WBTC, 1 USDC and 0.0002 WETH to a WBTC/USDC/WETH balancer pool", async () => {
-  //   let result;
-  //   const pool = await dhedge.loadPool(myPool);
-  //   const assets = [wbtc, usdc, weth];
-  //   const amounts = ["2000", "1000000", "200000000000000"];
-  //   try {
-  //     result = await pool.joinBalancerPool(
-  //       "0x03cd191f589d12b0582a99808cf19851e468e6b500010000000000000000000a",
-  //       assets,
-  //       amounts,
-  //       options
-  //     );
-  //     console.log("result", result);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
-
-  // it("exits enitre balance of WBTC/USDC/WETH balancer pool", async () => {
-  //   let result;
-  //   const pool = await dhedge.loadPool(myPool);
-  //   const assets = [wbtc, usdc, weth];
-  //   const amount = await dhedge.utils.getBalance(
-  //     "0x03cd191f589d12b0582a99808cf19851e468e6b5",
-  //     pool.address
-  //   );
-  //   try {
-  //     result = await pool.exitBalancerPool(
-  //       "0x03cd191f589d12b0582a99808cf19851e468e6b500010000000000000000000a",
-  //       assets,
-  //       amount,
-  //       options
-  //     );
-  //     console.log("result", result);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
 });

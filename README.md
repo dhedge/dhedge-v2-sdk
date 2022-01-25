@@ -203,10 +203,7 @@ const tx = await pool.exitBalancerPool(balancerPoolId, assets, amount)
 Harvest rewards from Balancer
 
 ```
-const tx = await pool.harvestBalancerRewards([
-      BAL_TOKEN_ADDRESS,
-      WMATIC_TOKEN_ADDRESS
-    ]);
+const tx = await pool.harvestBalancerRewards()
 ```
 
 ### Staking

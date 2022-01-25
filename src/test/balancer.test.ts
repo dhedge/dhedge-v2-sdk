@@ -1,4 +1,4 @@
-import { Dhedge } from "..";
+import { Dhedge, ethers } from "..";
 import { Network } from "../types";
 import { TEST_POOL } from "./constants";
 
@@ -8,10 +8,10 @@ let dhedge: Dhedge;
 
 jest.setTimeout(100000);
 
-// const options = {
-//   gasLimit: 2000000,
-//   gasPrice: ethers.utils.parseUnits("700", "gwei")
-// };
+const options = {
+  gasLimit: 2000000,
+  gasPrice: ethers.utils.parseUnits("1000", "gwei")
+};
 
 describe("pool", () => {
   beforeAll(() => {
@@ -99,7 +99,7 @@ describe("pool", () => {
     let result;
     const pool = await dhedge.loadPool(TEST_POOL);
     try {
-      result = await pool.harvestBalancerRewards();
+      result = await pool.harvestBalancerRewards(options);
       console.log("result", result);
     } catch (e) {
       console.log(e);
