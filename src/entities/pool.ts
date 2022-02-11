@@ -176,6 +176,32 @@ export class Pool {
   }
 
   /**
+   * Approve the liquidity pool token for staking
+   * @param {Dapp} dapp Platform like Sushiswap or Uniswap
+   * @param {string} asset Address of liquidity pool token
+   * @param {BigNumber | string} amount Aamount to be approved
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async approveUniswapV3Liquidity(
+    asset: string,
+    amount: BigNumber | string,
+    options: any = null
+  ): Promise<any> {
+    const iERC20 = new ethers.utils.Interface(IERC20.abi);
+    const approveTxData = iERC20.encodeFunctionData("approve", [
+      nonfungiblePositionManagerAddress[this.network],
+      amount
+    ]);
+    const tx = await this.poolLogic.execTransaction(
+      asset,
+      approveTxData,
+      options
+    );
+    return tx;
+  }
+
+  /**
    * Trade an asset into another asset
    * @param {Dapp} dapp Platform like Sushiswap or Uniswap
    * @param {string} assetFrom Asset to trade from
@@ -691,9 +717,9 @@ export class Pool {
     assetB: string,
     amountA: BigNumber | string,
     amountB: BigNumber | string,
-    tickLower: BigNumber | string,
-    tickUpper: BigNumber | string,
-    fee: BigNumber | string,
+    tickLower: number,
+    tickUpper: number,
+    fee: number,
     options: any = null
   ): Promise<any> {
     const iNonfungiblePositionManager = new ethers.utils.Interface(
@@ -702,17 +728,19 @@ export class Pool {
     const mintTxData = iNonfungiblePositionManager.encodeFunctionData(
       Transaction.MINT,
       [
-        assetA,
-        assetB,
-        fee,
-        tickLower,
-        tickUpper,
-        amountA,
-        amountB,
-        0,
-        0,
-        this.address,
-        Math.floor(Date.now() / 1000) + 60 * 20 // 20 minutes from the current Unix time
+        [
+          assetA,
+          assetB,
+          fee,
+          tickLower,
+          tickUpper,
+          amountA,
+          amountB,
+          0,
+          0,
+          this.address,
+          Math.floor(Date.now() / 1000) + 60 * 20 // 20 minutes from the current Unix time
+        ]
       ]
     );
     const tx = await this.poolLogic.execTransaction(
