@@ -10,7 +10,8 @@ export enum Dapp {
   AAVE = "aave",
   ONEINCH = "1inch",
   QUICKSWAP = "quickswap",
-  BALANCER = "balancer"
+  BALANCER = "balancer",
+  UNISWAPV3 = "uniswapV3"
 }
 
 export enum Transaction {
@@ -23,7 +24,8 @@ export enum Transaction {
   REMOVE_LIQUIDITY = "removeLiquidity",
   BORROW = "borrow",
   REPAY = "repay",
-  WITHDRAW = "withdraw"
+  WITHDRAW = "withdraw",
+  MINT = "mint"
 }
 
 export type AddressNetworkMap = Readonly<Record<Network, string>>;
@@ -34,6 +36,7 @@ export type AddressDappMap = {
   [Dapp.ONEINCH]?: string;
   [Dapp.QUICKSWAP]?: string;
   [Dapp.BALANCER]?: string;
+  [Dapp.UNISWAPV3]?: string;
 };
 
 export type AddressDappNetworkMap = Readonly<Record<Network, AddressDappMap>>;

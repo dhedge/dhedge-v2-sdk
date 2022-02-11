@@ -7,9 +7,14 @@ import IERC20 from "../abi/IERC20.json";
 import IMiniChefV2 from "../abi/IMiniChefV2.json";
 import ILendingPool from "../abi/ILendingPool.json";
 import IUniswapV2Router from "../abi/IUniswapV2Router.json";
+import INonfungiblePositionManager from "../abi/INonfungiblePositionManager.json";
 import IBalancerMerkleOrchard from "../abi/IBalancerMerkleOrchard.json";
 import IAaveIncentivesController from "../abi/IAaveIncentivesController.json";
-import { routerAddress, stakingAddress } from "../config";
+import {
+  nonfungiblePositionManagerAddress,
+  routerAddress,
+  stakingAddress
+} from "../config";
 import {
   Dapp,
   Transaction,
@@ -666,6 +671,53 @@ export class Pool {
     const tx = await this.poolLogic.execTransaction(
       aaveIncentivesAddress,
       claimTxData,
+      options
+    );
+    return tx;
+  }
+
+  /**
+   * Add liquidity to a liquidity pool
+   * @param {Dapp} dapp Platform like Sushiswap or Uniswap
+   * @param {string} assetA First asset
+   * @param {string} assetB Second asset
+   * @param {BigNumber | string} amountA Amount first asset
+   * @param {BigNumber | string} amountB Amount second asset
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async addLiquidityUniswapV3(
+    assetA: string,
+    assetB: string,
+    amountA: BigNumber | string,
+    amountB: BigNumber | string,
+    tickLower: BigNumber | string,
+    tickUpper: BigNumber | string,
+    fee: BigNumber | string,
+    options: any = null
+  ): Promise<any> {
+    const iNonfungiblePositionManager = new ethers.utils.Interface(
+      INonfungiblePositionManager.abi
+    );
+    const mintTxData = iNonfungiblePositionManager.encodeFunctionData(
+      Transaction.MINT,
+      [
+        assetA,
+        assetB,
+        fee,
+        tickLower,
+        tickUpper,
+        amountA,
+        amountB,
+        0,
+        0,
+        this.address,
+        Math.floor(Date.now() / 1000) + 60 * 20 // 20 minutes from the current Unix time
+      ]
+    );
+    const tx = await this.poolLogic.execTransaction(
+      nonfungiblePositionManagerAddress[this.network],
+      mintTxData,
       options
     );
     return tx;

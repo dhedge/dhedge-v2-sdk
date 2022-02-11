@@ -37,6 +37,10 @@ export const stakingAddress: AddressDappNetworkMap = {
   }
 };
 
+export const nonfungiblePositionManagerAddress: AddressNetworkMap = {
+  [Network.POLYGON]: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88"
+};
+
 export const networkChainIdMap: NetworkChainIdMap = {
   [Network.POLYGON]: ChainId.MATIC
 };
