@@ -1,6 +1,7 @@
+import { FeeAmount } from "@uniswap/v3-sdk";
 import { Dhedge, ethers } from "..";
 import { Network } from "../types";
-import { DAI, TEST_POOL, WETH } from "./constants";
+import { TEST_POOL, WETH, WBTC } from "./constants";
 
 import { wallet } from "./wallet";
 
@@ -23,7 +24,7 @@ describe("pool", () => {
   //   const pool = await dhedge.loadPool(TEST_POOL);
   //   try {
   //     result = await pool.approveUniswapV3Liquidity(
-  //       DAI,
+  //       WBTC,
   //       ethers.constants.MaxInt256,
   //       options
   //     );
@@ -34,21 +35,21 @@ describe("pool", () => {
   //   expect(result).not.toBe(null);
   // });
 
-  it("adds WETH and DAI to V3 pool", async () => {
+  it("adds WETH and WBTC to V3 pool", async () => {
     let result;
     const pool = await dhedge.loadPool(TEST_POOL);
     const wethBalance = await dhedge.utils.getBalance(WETH, pool.address);
-    const daiBalance = await dhedge.utils.getBalance(DAI, pool.address);
+    const daiBalance = await dhedge.utils.getBalance(WBTC, pool.address);
 
     try {
       result = await pool.addLiquidityUniswapV3(
         WETH,
-        DAI,
+        WBTC,
         wethBalance,
         daiBalance,
-        76020,
-        82920,
-        3000,
+        0.04,
+        0.11,
+        FeeAmount.LOW,
         options
       );
       console.log(result);
@@ -57,4 +58,20 @@ describe("pool", () => {
     }
     expect(result).not.toBe(null);
   });
+
+  // it("should get lowe range for WETH/USDC pair ", async () => {
+  //   const pool = await dhedge.loadPool(TEST_POOL);
+  //   const result = await getUniswapV3MintParams(
+  //     pool,
+  //     WETH,
+  //     WBTC,
+  //     "1000000",
+  //     "10000000000000000",
+  //     0.05,
+  //     0.18,
+  //     FeeAmount.MEDIUM
+  //   );
+  //   console.log("result", result);
+  //   expect(result).not.toBe(null);
+  // });
 });

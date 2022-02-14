@@ -25,6 +25,8 @@ import {
 
 import { Utils } from "./utils";
 import { ClaimService } from "../services/claim-balancer/claim.service";
+import { getUniswapV3MintParams } from "../services/uniswap/V3Liquidity";
+import { FeeAmount } from "@uniswap/v3-sdk";
 
 export class Pool {
   public readonly poolLogic: Contract;
@@ -709,6 +711,8 @@ export class Pool {
    * @param {string} assetB Second asset
    * @param {BigNumber | string} amountA Amount first asset
    * @param {BigNumber | string} amountB Amount second asset
+   * @param { number } minPrice Lower price range (assetB per assetA)
+   * @param { number } maxPrice Lower price range (assetB per assetA)
    * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
@@ -717,31 +721,27 @@ export class Pool {
     assetB: string,
     amountA: BigNumber | string,
     amountB: BigNumber | string,
-    tickLower: number,
-    tickUpper: number,
-    fee: number,
+    minPrice: number,
+    maxPrice: number,
+    feeAmount: FeeAmount,
     options: any = null
   ): Promise<any> {
     const iNonfungiblePositionManager = new ethers.utils.Interface(
       INonfungiblePositionManager.abi
     );
+    const mintTxParams = await getUniswapV3MintParams(
+      this,
+      assetA,
+      assetB,
+      amountA,
+      amountB,
+      minPrice,
+      maxPrice,
+      feeAmount
+    );
     const mintTxData = iNonfungiblePositionManager.encodeFunctionData(
       Transaction.MINT,
-      [
-        [
-          assetA,
-          assetB,
-          fee,
-          tickLower,
-          tickUpper,
-          amountA,
-          amountB,
-          0,
-          0,
-          this.address,
-          Math.floor(Date.now() / 1000) + 60 * 20 // 20 minutes from the current Unix time
-        ]
-      ]
+      [mintTxParams]
     );
     const tx = await this.poolLogic.execTransaction(
       nonfungiblePositionManagerAddress[this.network],
