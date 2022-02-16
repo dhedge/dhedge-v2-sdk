@@ -10,8 +10,12 @@ import {
 import { ethers } from "ethers";
 import JSBI from "jsbi";
 import { Pool } from "../..";
-import { networkChainIdMap } from "../../config";
+import {
+  networkChainIdMap,
+  nonfungiblePositionManagerAddress
+} from "../../config";
 import { UniswapV3MintParams } from "./types";
+import INonfungiblePositionManager from "../../abi/INonfungiblePositionManager.json";
 
 export function tryParsePrice(
   baseToken: Token,
@@ -106,4 +110,17 @@ export async function getUniswapV3MintParams(
     pool.address,
     deadline
   ];
+}
+
+export async function getUniswapV3Liquidity(
+  tokenId: string,
+  pool: Pool
+): Promise<ethers.BigNumber> {
+  const iNonfungiblePositionManager = new ethers.Contract(
+    nonfungiblePositionManagerAddress[pool.network],
+    INonfungiblePositionManager.abi,
+    pool.signer
+  );
+  const result = await iNonfungiblePositionManager.positions(tokenId);
+  return result.liquidity;
 }

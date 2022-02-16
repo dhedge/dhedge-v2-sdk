@@ -11,6 +11,8 @@ import INonfungiblePositionManager from "../abi/INonfungiblePositionManager.json
 import IBalancerMerkleOrchard from "../abi/IBalancerMerkleOrchard.json";
 import IAaveIncentivesController from "../abi/IAaveIncentivesController.json";
 import {
+  deadline,
+  MaxUint128,
   nonfungiblePositionManagerAddress,
   routerAddress,
   stakingAddress
@@ -25,7 +27,10 @@ import {
 
 import { Utils } from "./utils";
 import { ClaimService } from "../services/claim-balancer/claim.service";
-import { getUniswapV3MintParams } from "../services/uniswap/V3Liquidity";
+import {
+  getUniswapV3Liquidity,
+  getUniswapV3MintParams
+} from "../services/uniswap/V3Liquidity";
 import { FeeAmount } from "@uniswap/v3-sdk";
 
 export class Pool {
@@ -252,7 +257,7 @@ export class Pool {
         minAmountOut,
         [assetFrom, assetTo],
         this.address,
-        Math.floor(Date.now() / 1000) + 60 * 20 // 20 minutes from the current Unix time
+        deadline
       ]);
     }
     const tx = await this.poolLogic.execTransaction(
@@ -284,16 +289,7 @@ export class Pool {
     const iUniswapV2Router = new ethers.utils.Interface(IUniswapV2Router.abi);
     const addLiquidityTxData = iUniswapV2Router.encodeFunctionData(
       Transaction.ADD_LIQUIDITY,
-      [
-        assetA,
-        assetB,
-        amountA,
-        amountB,
-        0,
-        0,
-        this.address,
-        Math.floor(Date.now() / 1000) + 60 * 20 // 20 minutes from the current Unix time
-      ]
+      [assetA, assetB, amountA, amountB, 0, 0, this.address, deadline]
     );
     const tx = await this.poolLogic.execTransaction(
       routerAddress[this.network][dapp],
@@ -322,15 +318,7 @@ export class Pool {
     const iUniswapV2Router = new ethers.utils.Interface(IUniswapV2Router.abi);
     const removeLiquidityTxData = iUniswapV2Router.encodeFunctionData(
       Transaction.REMOVE_LIQUIDITY,
-      [
-        assetA,
-        assetB,
-        amount,
-        0,
-        0,
-        this.address,
-        Math.floor(Date.now() / 1000) + 60 * 20 // 20 minutes from the current Unix time
-      ]
+      [assetA, assetB, amount, 0, 0, this.address, deadline]
     );
     const tx = await this.poolLogic.execTransaction(
       routerAddress[this.network][dapp],
@@ -686,16 +674,13 @@ export class Pool {
       iAaveIncentivesController,
       this.signer
     );
-
     const amount = await aaveIncentivesController.getUserUnclaimedRewards(
       this.address
     );
-
     const claimTxData = iAaveIncentivesController.encodeFunctionData(
       Transaction.CLAIM_REWARDS,
       [assets, amount, this.address]
     );
-
     const tx = await this.poolLogic.execTransaction(
       aaveIncentivesAddress,
       claimTxData,
@@ -705,14 +690,14 @@ export class Pool {
   }
 
   /**
-   * Add liquidity to a liquidity pool
-   * @param {Dapp} dapp Platform like Sushiswap or Uniswap
+   * Create UniswapV3 liquidity pool
    * @param {string} assetA First asset
    * @param {string} assetB Second asset
    * @param {BigNumber | string} amountA Amount first asset
    * @param {BigNumber | string} amountB Amount second asset
    * @param { number } minPrice Lower price range (assetB per assetA)
    * @param { number } maxPrice Lower price range (assetB per assetA)
+   * @param { FeeAmount } feeAmount Fee tier (Low 0.05%, Medium 0.3%, High 1%)
    * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
@@ -746,6 +731,95 @@ export class Pool {
     const tx = await this.poolLogic.execTransaction(
       nonfungiblePositionManagerAddress[this.network],
       mintTxData,
+      options
+    );
+    return tx;
+  }
+
+  /**
+   * Remove liquidity from an UniswapV3 liquidity pool
+   * @param {string} tokenId Token Id of UniswapV3 position
+   * @param {number} amount Amount in percent of assets to be removed
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async removeLiquidityUniswapV3(
+    tokenId: string,
+    amount = 100,
+    options: any = null
+  ): Promise<any> {
+    const iNonfungiblePositionManager = new ethers.utils.Interface(
+      INonfungiblePositionManager.abi
+    );
+    const liquidity = (await getUniswapV3Liquidity(tokenId, this))
+      .mul(amount)
+      .div(100);
+    const decreaseLiquidityTxData = iNonfungiblePositionManager.encodeFunctionData(
+      Transaction.DECREASE_LIQUIDITY,
+      [[tokenId, liquidity, 0, 0, deadline]]
+    );
+    const collectTxData = iNonfungiblePositionManager.encodeFunctionData(
+      Transaction.COLLECT,
+      [[tokenId, this.address, MaxUint128, MaxUint128]]
+    );
+    const multicallTxData = iNonfungiblePositionManager.encodeFunctionData(
+      Transaction.MULTI_CALL,
+      [[decreaseLiquidityTxData, collectTxData]]
+    );
+    const tx = await this.poolLogic.execTransaction(
+      nonfungiblePositionManagerAddress[this.network],
+      multicallTxData,
+      options
+    );
+    return tx;
+  }
+
+  /**
+   * Increase liquidity of an UniswapV3 liquidity pool
+   * @param {string} tokenId Token Id of UniswapV3 position
+   * @param {BigNumber | string} amountA Amount first asset
+   * @param {BigNumber | string} amountB Amount second asset
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async increaseLiquidityUniswapV3(
+    tokenId: string,
+    amountA: BigNumber | string,
+    amountB: BigNumber | string,
+    options: any = null
+  ): Promise<any> {
+    const iNonfungiblePositionManager = new ethers.utils.Interface(
+      INonfungiblePositionManager.abi
+    );
+    const increaseLiquidityTxData = iNonfungiblePositionManager.encodeFunctionData(
+      Transaction.INCREASE_LIQUIDITY,
+      [[tokenId, amountA, amountB, 0, 0, deadline]]
+    );
+    const tx = await this.poolLogic.execTransaction(
+      nonfungiblePositionManagerAddress[this.network],
+      increaseLiquidityTxData,
+      options
+    );
+    return tx;
+  }
+
+  /**
+   * Claim fees of an UniswapV3 liquidity pool
+   * @param {string} tokenId Token Id of UniswapV3 position
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async claimFeesUniswapV3(tokenId: string, options: any = null): Promise<any> {
+    const iNonfungiblePositionManager = new ethers.utils.Interface(
+      INonfungiblePositionManager.abi
+    );
+    const collectTxData = iNonfungiblePositionManager.encodeFunctionData(
+      Transaction.COLLECT,
+      [[tokenId, this.address, MaxUint128, MaxUint128]]
+    );
+    const tx = await this.poolLogic.execTransaction(
+      nonfungiblePositionManagerAddress[this.network],
+      collectTxData,
       options
     );
     return tx;

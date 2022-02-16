@@ -57,3 +57,6 @@ export const balancerSubgraph: AddressNetworkMap = {
 export const multiCallAddress: AddressNetworkMap = {
   [Network.POLYGON]: "0x275617327c958bD06b5D6b871E7f491D76113dd8"
 };
+
+export const deadline = Math.floor(Date.now() / 1000) + 60 * 20;
+export const MaxUint128 = "0xffffffffffffffffffffffffffffffff";
