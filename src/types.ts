@@ -29,7 +29,8 @@ export enum Transaction {
   BORROW = "borrow",
   REPAY = "repay",
   WITHDRAW = "withdraw",
-  MINT = "mint"
+  MINT = "mint",
+  BURN = "burn"
 }
 
 export type AddressNetworkMap = Readonly<Record<Network, string>>;

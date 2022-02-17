@@ -762,9 +762,19 @@ export class Pool {
       Transaction.COLLECT,
       [[tokenId, this.address, MaxUint128, MaxUint128]]
     );
+
+    const multicallParams = [decreaseLiquidityTxData, collectTxData];
+
+    if (amount === 100) {
+      const burnTxData = iNonfungiblePositionManager.encodeFunctionData(
+        Transaction.BURN,
+        [tokenId]
+      );
+      multicallParams.push(burnTxData);
+    }
     const multicallTxData = iNonfungiblePositionManager.encodeFunctionData(
       Transaction.MULTI_CALL,
-      [[decreaseLiquidityTxData, collectTxData]]
+      [multicallParams]
     );
     const tx = await this.poolLogic.execTransaction(
       nonfungiblePositionManagerAddress[this.network],
