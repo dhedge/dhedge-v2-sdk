@@ -7,9 +7,13 @@ import {
 import { ChainId } from "@sushiswap/sdk";
 import { NetworkChainIdMap } from ".";
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+require("dotenv").config();
+
 export const factoryAddress: AddressNetworkMap = {
-  [Network.POLYGON]: "0xfdc7b8bFe0DD3513Cc669bB8d601Cb83e2F69cB0"
-  //[Network.POLYGON]: "0xDd87eCdB10cFF7004276AAbAbd30e7a08F69bb53"
+  [Network.POLYGON]: process.env.STAGING_CONTRACTS
+    ? "0xDd87eCdB10cFF7004276AAbAbd30e7a08F69bb53"
+    : "0xfdc7b8bFe0DD3513Cc669bB8d601Cb83e2F69cB0"
 };
 
 export const routerAddress: AddressDappNetworkMap = {
