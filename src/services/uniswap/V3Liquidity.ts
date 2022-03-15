@@ -69,10 +69,14 @@ export async function getUniswapV3MintParams(
   assetB: string,
   amountA: string | ethers.BigNumber,
   amountB: string | ethers.BigNumber,
-  minPrice: number,
-  maxPrice: number,
+  minPrice: number | null,
+  maxPrice: number | null,
+  minTick: number | null,
+  maxTick: number | null,
   feeAmount: FeeAmount
 ): Promise<UniswapV3MintParams> {
+  let tickLower = 0;
+  let tickUpper = 0;
   const chainId = networkChainIdMap[pool.network];
   const decimals = await Promise.all(
     [assetA, assetB].map(asset => pool.utils.getDecimals(asset))
@@ -82,15 +86,19 @@ export async function getUniswapV3MintParams(
   const [token0, token1] = tokenA.sortsBefore(tokenB)
     ? [tokenA, tokenB]
     : [tokenB, tokenA];
-
   const invertPrice = !tokenA.equals(token0);
-  const tickLower = invertPrice
-    ? tryParseTick(token1, token0, feeAmount, maxPrice.toString())
-    : tryParseTick(token0, token1, feeAmount, minPrice.toString());
-  const tickUpper = invertPrice
-    ? tryParseTick(token1, token0, feeAmount, minPrice.toString())
-    : tryParseTick(token0, token1, feeAmount, maxPrice.toString());
 
+  if (minPrice && maxPrice) {
+    tickLower = invertPrice
+      ? tryParseTick(token1, token0, feeAmount, maxPrice.toString())
+      : tryParseTick(token0, token1, feeAmount, minPrice.toString());
+    tickUpper = invertPrice
+      ? tryParseTick(token1, token0, feeAmount, minPrice.toString())
+      : tryParseTick(token0, token1, feeAmount, maxPrice.toString());
+  } else if (minTick && maxTick) {
+    tickLower = minTick;
+    tickUpper = maxTick;
+  }
   const [amount0, amount1] = invertPrice
     ? [amountB, amountA]
     : [amountA, amountB];

@@ -696,7 +696,9 @@ export class Pool {
    * @param {BigNumber | string} amountA Amount first asset
    * @param {BigNumber | string} amountB Amount second asset
    * @param { number } minPrice Lower price range (assetB per assetA)
-   * @param { number } maxPrice Lower price range (assetB per assetA)
+   * @param { number } maxPrice Upper price range (assetB per assetA)
+   * @param { number } minTick Lower tick range
+   * @param { number } maxTick Upper tick range
    * @param { FeeAmount } feeAmount Fee tier (Low 0.05%, Medium 0.3%, High 1%)
    * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
@@ -706,14 +708,20 @@ export class Pool {
     assetB: string,
     amountA: BigNumber | string,
     amountB: BigNumber | string,
-    minPrice: number,
-    maxPrice: number,
+    minPrice: number | null,
+    maxPrice: number | null,
+    minTick: number | null,
+    maxTick: number | null,
     feeAmount: FeeAmount,
     options: any = null
   ): Promise<any> {
+    if ((!minPrice || !maxPrice) && (!minTick || !maxTick))
+      throw new Error("Need to provide price or tick range");
+
     const iNonfungiblePositionManager = new ethers.utils.Interface(
       INonfungiblePositionManager.abi
     );
+
     const mintTxParams = await getUniswapV3MintParams(
       this,
       assetA,
@@ -722,6 +730,8 @@ export class Pool {
       amountB,
       minPrice,
       maxPrice,
+      minTick,
+      maxTick,
       feeAmount
     );
     const mintTxData = iNonfungiblePositionManager.encodeFunctionData(
