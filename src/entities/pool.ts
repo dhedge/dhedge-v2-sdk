@@ -370,7 +370,8 @@ export class Pool {
    * Lend asset to a lending pool
    * @param {Dapp} dapp Platform like Aave
    * @param {string} asset Asset
-   * @param  {BigNumber | string} amount Amount of asset to lend
+   * @param {BigNumber | string} amount Amount of asset to lend
+   * @param {number} referrralCode Code from Aave referral program
    * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
@@ -378,6 +379,7 @@ export class Pool {
     dapp: Dapp,
     asset: string,
     amount: BigNumber | string,
+    referrralCode = 0,
     options: any = null
   ): Promise<any> {
     const iLendingPool = new ethers.utils.Interface(ILendingPool.abi);
@@ -385,7 +387,7 @@ export class Pool {
       asset,
       amount,
       this.address,
-      0
+      referrralCode
     ]);
     const tx = await this.poolLogic.execTransaction(
       routerAddress[this.network][dapp],
@@ -427,6 +429,7 @@ export class Pool {
    * @param {Dapp} dapp Platform like Aave
    * @param {string} asset Asset
    * @param  {BigNumber | string} amount Amount of asset to lend
+   * @param {number} referrralCode Code from Aave referral program
    * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
@@ -434,6 +437,7 @@ export class Pool {
     dapp: Dapp,
     asset: string,
     amount: BigNumber | string,
+    referrralCode = 0,
     options: any = null
   ): Promise<any> {
     const iLendingPool = new ethers.utils.Interface(ILendingPool.abi);
@@ -441,7 +445,7 @@ export class Pool {
       asset,
       amount,
       2,
-      0,
+      referrralCode,
       this.address
     ]);
     const tx = await this.poolLogic.execTransaction(
