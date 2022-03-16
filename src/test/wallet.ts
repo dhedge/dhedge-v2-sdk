@@ -4,7 +4,7 @@ import { ethers } from "ethers";
 require("dotenv").config();
 
 const provider = new ethers.providers.JsonRpcProvider(
-  `https://polygon-mainnet.infura.io/v3/${process.env.INFURA_PROJECT_ID}`
+  `https://opt-mainnet.g.alchemy.com/v2/MgM9KAbo2O5SkJ5aGMk2dHo75qnuqYeR`
 );
 
 export const wallet = new ethers.Wallet(

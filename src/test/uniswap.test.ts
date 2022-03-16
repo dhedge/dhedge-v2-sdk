@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { FeeAmount } from "@uniswap/v3-sdk";
 import { Dhedge } from "..";
 import { Network } from "../types";
-import { TEST_POOL } from "./constants";
-import { getTxOptions } from "./txOptions";
+import { TEST_POOL, USDC, WETH } from "./constants";
+//import { getTxOptions } from "./txOptions";
 
 import { wallet } from "./wallet";
 
@@ -12,8 +13,9 @@ jest.setTimeout(100000);
 
 describe("pool", () => {
   beforeAll(async () => {
-    dhedge = new Dhedge(wallet, Network.POLYGON);
-    options = await getTxOptions();
+    dhedge = new Dhedge(wallet, Network.OPTIMISM);
+    //options = await getTxOptions();
+    options = { gasLimit: "3000000" };
   });
 
   // it("approves unlimited WETH on for UniswapV3 LP", async () => {
@@ -21,7 +23,7 @@ describe("pool", () => {
   //   const pool = await dhedge.loadPool(TEST_POOL);
   //   try {
   //     result = await pool.approveUniswapV3Liquidity(
-  //       WBTC,
+  //       USDC,
   //       ethers.constants.MaxInt256,
   //       options
   //     );
@@ -32,33 +34,35 @@ describe("pool", () => {
   //   expect(result).not.toBe(null);
   // });
 
-  // it("adds WETH and WBTC to a new V3 pool", async () => {
-  //   let result;
-  //   const pool = await dhedge.loadPool(TEST_POOL);
-  //   const wethBalance = await dhedge.utils.getBalance(WETH, pool.address);
-  //   const daiBalance = await dhedge.utils.getBalance(WBTC, pool.address);
+  it("adds WETH and WBTC to a new V3 pool", async () => {
+    let result;
+    const pool = await dhedge.loadPool(TEST_POOL);
+    const usdcBalance = await dhedge.utils.getBalance(USDC, pool.address);
+    const wethBalance = await dhedge.utils.getBalance(WETH, pool.address);
 
-  //   try {
-  //     result = await pool.addLiquidityUniswapV3(
-  //       WETH,
-  //       WBTC,
-  //       wethBalance,
-  //       daiBalance,
-  //       0.04,
-  //       0.11,
-  //       FeeAmount.LOW,
-  //       options
-  //     );
-  //     console.log(result);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
+    try {
+      result = await pool.addLiquidityUniswapV3(
+        USDC,
+        WETH,
+        usdcBalance,
+        wethBalance,
+        0.0003,
+        0.0004,
+        null,
+        null,
+        FeeAmount.LOW,
+        options
+      );
+      console.log(result);
+    } catch (e) {
+      console.log(e);
+    }
+    expect(result).not.toBe(null);
+  });
 
   // it("should remove liquidity from an existing pool ", async () => {
   //   const pool = await dhedge.loadPool(TEST_POOL);
-  //   const result = await pool.removeLiquidityUniswapV3("54929", 50, options);
+  //   const result = await pool.removeLiquidityUniswapV3("84405", 100, options);
   //   console.log("result", result);
   //   expect(result).not.toBe(null);
   // });
@@ -75,10 +79,10 @@ describe("pool", () => {
   //   expect(result).not.toBe(null);
   // });
 
-  it("should claim fees an existing pool", async () => {
-    const pool = await dhedge.loadPool(TEST_POOL);
-    const result = await pool.claimFeesUniswapV3("54929", options);
-    console.log("result", result);
-    expect(result).not.toBe(null);
-  });
+  // it("should claim fees an existing pool", async () => {
+  //   const pool = await dhedge.loadPool(TEST_POOL);
+  //   const result = await pool.claimFeesUniswapV3("54929", options);
+  //   console.log("result", result);
+  //   expect(result).not.toBe(null);
+  // });
 });

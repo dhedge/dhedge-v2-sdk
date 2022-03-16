@@ -1,8 +1,8 @@
-import { ChainId } from "@sushiswap/sdk";
 import { BigNumber } from "ethers";
 
 export enum Network {
-  POLYGON = "polygon"
+  POLYGON = "polygon",
+  OPTIMISM = "optimism"
 }
 
 export enum Dapp {
@@ -65,4 +65,4 @@ export type Reserves = {
   assetB: BigNumber;
 };
 
-export type NetworkChainIdMap = Readonly<Record<Network, ChainId>>;
+export type NetworkChainIdMap = Readonly<Record<Network, number>>;
