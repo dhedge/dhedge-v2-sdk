@@ -4,7 +4,7 @@ import { ethers } from "ethers";
 require("dotenv").config();
 
 const provider = new ethers.providers.JsonRpcProvider(
-  `https://opt-mainnet.g.alchemy.com/v2/MgM9KAbo2O5SkJ5aGMk2dHo75qnuqYeR`
+  `https://opt-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_PROJECT_ID}`
 );
 
 export const wallet = new ethers.Wallet(
