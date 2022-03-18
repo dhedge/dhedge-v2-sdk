@@ -32,6 +32,7 @@ import {
   getUniswapV3MintParams
 } from "../services/uniswap/V3Liquidity";
 import { FeeAmount } from "@uniswap/v3-sdk";
+import { getUniswapV3SwapTxData } from "../services/uniswap/V3Trade";
 
 export class Pool {
   public readonly poolLogic: Contract;
@@ -214,7 +215,7 @@ export class Pool {
    * @param {string} assetFrom Asset to trade from
    * @param {string} assetTo Asset to trade into
    * @param {BigNumber | string} amountIn Amount
-   * @param {BigNumber | string} minAmountOut Minumum amount to receive
+   * @param {number} slippage Slippage tolerance in %
    * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
@@ -840,6 +841,41 @@ export class Pool {
     const tx = await this.poolLogic.execTransaction(
       nonfungiblePositionManagerAddress[this.network],
       collectTxData,
+      options
+    );
+    return tx;
+  }
+
+  /**
+   * Trade an asset into another asset
+   * @param {Dapp} dapp Platform like Sushiswap or Uniswap
+   * @param {string} assetFrom Asset to trade from
+   * @param {string} assetTo Asset to trade into
+   * @param {BigNumber | string} amountIn Amount
+   * @param { FeeAmount } feeAmount Fee tier (Low 0.05%, Medium 0.3%, High 1%)
+   * @param {number} slippage Slippage tolerance in %
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async tradeUniswapV3(
+    assetFrom: string,
+    assetTo: string,
+    amountIn: BigNumber | string,
+    feeAmount: FeeAmount,
+    slippage = 0.5,
+    options: any = null
+  ): Promise<any> {
+    const swapxData = await getUniswapV3SwapTxData(
+      this,
+      assetFrom,
+      assetTo,
+      amountIn,
+      slippage,
+      feeAmount
+    );
+    const tx = await this.poolLogic.execTransaction(
+      routerAddress[this.network][Dapp.UNISWAPV3],
+      swapxData,
       options
     );
     return tx;

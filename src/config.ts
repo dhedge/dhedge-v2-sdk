@@ -22,9 +22,12 @@ export const routerAddress: AddressDappNetworkMap = {
     [Dapp.AAVE]: "0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf",
     [Dapp.ONEINCH]: "0x1111111254fb6c44bac0bed2854e76f90643097d",
     [Dapp.QUICKSWAP]: "0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff",
-    [Dapp.BALANCER]: "0xBA12222222228d8Ba445958a75a0704d566BF2C8"
+    [Dapp.BALANCER]: "0xBA12222222228d8Ba445958a75a0704d566BF2C8",
+    [Dapp.UNISWAPV3]: "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45"
   },
-  [Network.OPTIMISM]: {}
+  [Network.OPTIMISM]: {
+    [Dapp.UNISWAPV3]: "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45"
+  }
 };
 
 export const dappFactoryAddress: AddressDappNetworkMap = {
@@ -67,3 +70,5 @@ export const multiCallAddress: AddressNetworkMap = {
 
 export const deadline = Math.floor(Date.now() / 1000) + 60 * 20;
 export const MaxUint128 = "0xffffffffffffffffffffffffffffffff";
+export const UNISWAPV3_QUOTER_ADDRESS =
+  "0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6";
