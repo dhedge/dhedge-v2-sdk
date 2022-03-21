@@ -3,7 +3,7 @@ import { FeeAmount } from "@uniswap/v3-sdk";
 import { Dhedge } from "..";
 import { Network } from "../types";
 import { TEST_POOL, USDC, WETH } from "./constants";
-import { getTxOptions } from "./txOptions";
+//import { getTxOptions } from "./txOptions";
 
 import { wallet } from "./wallet";
 
@@ -13,9 +13,9 @@ jest.setTimeout(100000);
 
 describe("pool", () => {
   beforeAll(async () => {
-    dhedge = new Dhedge(wallet, Network.POLYGON);
-    options = await getTxOptions();
-    //options = { gasLimit: "3000000" };
+    dhedge = new Dhedge(wallet, Network.OPTIMISM);
+    //options = await getTxOptions();
+    options = { gasLimit: "3000000" };
   });
 
   // it("approves unlimited WETH on for UniswapV3 LP", async () => {
