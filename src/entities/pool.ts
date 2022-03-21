@@ -6,6 +6,7 @@ import { Contract, ethers, Wallet, BigNumber } from "ethers";
 import IERC20 from "../abi/IERC20.json";
 import IMiniChefV2 from "../abi/IMiniChefV2.json";
 import ILendingPool from "../abi/ILendingPool.json";
+import ISynthetix from "../abi/ISynthetix.json";
 import IUniswapV2Router from "../abi/IUniswapV2Router.json";
 import INonfungiblePositionManager from "../abi/INonfungiblePositionManager.json";
 import IBalancerMerkleOrchard from "../abi/IBalancerMerkleOrchard.json";
@@ -15,7 +16,8 @@ import {
   MaxUint128,
   nonfungiblePositionManagerAddress,
   routerAddress,
-  stakingAddress
+  stakingAddress,
+  SYNTHETIX_TRACKING_CODE
 } from "../config";
 import {
   Dapp,
@@ -37,6 +39,7 @@ import { getUniswapV3SwapTxData } from "../services/uniswap/V3Trade";
 export class Pool {
   public readonly poolLogic: Contract;
   public readonly managerLogic: Contract;
+  public readonly factory: Contract;
   public readonly signer: Wallet;
   public readonly address: string;
   public readonly utils: Utils;
@@ -47,7 +50,8 @@ export class Pool {
     signer: Wallet,
     poolLogic: Contract,
     mangerLogic: Contract,
-    utils: Utils
+    utils: Utils,
+    factory: Contract
   ) {
     this.network = network;
     this.poolLogic = poolLogic;
@@ -55,6 +59,7 @@ export class Pool {
     this.managerLogic = mangerLogic;
     this.signer = signer;
     this.utils = utils;
+    this.factory = factory;
   }
 
   /**
@@ -244,6 +249,19 @@ export class Pool {
         amountIn,
         slippage
       );
+    } else if (dapp === Dapp.SYHTHETIX) {
+      const iSynthetix = new ethers.utils.Interface(ISynthetix.abi);
+      const assets = [assetFrom, assetTo].map(asset =>
+        ethers.utils.formatBytes32String(asset)
+      );
+      const daoAddress = await this.factory.owner();
+      swapTxData = iSynthetix.encodeFunctionData(Transaction.SWAP_SYNTHS, [
+        assets[0],
+        amountIn,
+        assets[1],
+        daoAddress,
+        SYNTHETIX_TRACKING_CODE
+      ]);
     } else {
       const iUniswapV2Router = new ethers.utils.Interface(IUniswapV2Router.abi);
       const minAmountOut = await this.utils.getMinAmountOut(

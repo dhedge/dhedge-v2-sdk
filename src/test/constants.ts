@@ -14,4 +14,4 @@ export const BAL = "0x9a71012B13CA4d3D0Cdc72A177DF3ef03b0E76A3";
 export const AMUSDC = "0x1a13f4ca1d028320a707d99520abfefca3998b7f";
 export const VDEBTWETH = "0xede17e9d79fc6f9ff9250d9eefbdb88cc18038b5";
 
-export const TEST_POOL = "0xe3528a438b94e64669def9b875c381c46ef713bf";
+export const TEST_POOL = "0xf36f550907872faaa02477f791df3ce33fe38854";

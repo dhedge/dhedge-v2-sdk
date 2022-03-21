@@ -26,7 +26,8 @@ export const routerAddress: AddressDappNetworkMap = {
     [Dapp.UNISWAPV3]: "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45"
   },
   [Network.OPTIMISM]: {
-    [Dapp.UNISWAPV3]: "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45"
+    [Dapp.UNISWAPV3]: "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
+    [Dapp.SYHTHETIX]: "0x8700dAec35aF8Ff88c16BdF0418774CB3D7599B4"
   }
 };
 
@@ -72,3 +73,6 @@ export const deadline = Math.floor(Date.now() / 1000) + 60 * 20;
 export const MaxUint128 = "0xffffffffffffffffffffffffffffffff";
 export const UNISWAPV3_QUOTER_ADDRESS =
   "0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6";
+
+export const SYNTHETIX_TRACKING_CODE =
+  "0x4448454447450000000000000000000000000000000000000000000000000000";
