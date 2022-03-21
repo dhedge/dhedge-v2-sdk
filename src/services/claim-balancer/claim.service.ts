@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from "axios";
-import { chunk, flatten, groupBy } from "lodash";
+import { chunk, flatten } from "lodash";
 import merkleOrchardAbi from "../../abi/IBalancerMerkleOrchard.json";
 import { ethers, Wallet } from "ethers";
 
@@ -11,14 +11,10 @@ import { bnum, loadTree, scale } from "../../utils";
 
 import { ipfsService } from "./ipfs.service";
 
-import MultiTokenClaim from "./MultiTokenClaim.json";
-
 import {
   ClaimProofTuple,
   ClaimStatus,
   ComputeClaimProofPayload,
-  MultiTokenCurrentRewardsEstimate,
-  MultiTokenCurrentRewardsEstimateResponse,
   MultiTokenPendingClaims,
   Report,
   Snapshot,
@@ -26,7 +22,7 @@ import {
 } from "./types";
 
 import { Network } from "../../types";
-import { stakingAddress } from "../../config";
+import { networkChainIdMap, stakingAddress } from "../../config";
 import { soliditySha3 } from "web3-utils";
 import { Dapp } from "../..";
 
@@ -40,7 +36,7 @@ export class ClaimService {
   public async getMultiTokensPendingClaims(
     account: string
   ): Promise<MultiTokenPendingClaims[]> {
-    const tokenClaimsInfo = this.getTokenClaimsInfo();
+    const tokenClaimsInfo = await this.getTokenClaimsInfo();
     if (tokenClaimsInfo != null) {
       const multiTokenPendingClaims = await Promise.all(
         tokenClaimsInfo.map(tokenClaimInfo =>
@@ -97,73 +93,6 @@ export class ClaimService {
       reports,
       tokenClaimInfo,
       availableToClaim
-    };
-  }
-
-  public async getMultiTokensCurrentRewardsEstimate(
-    account: string
-  ): Promise<{
-    data: MultiTokenCurrentRewardsEstimate[];
-    timestamp: string | null;
-  }> {
-    try {
-      const response = await axios.get<
-        MultiTokenCurrentRewardsEstimateResponse
-      >(
-        `https://api.balancer.finance/liquidity-mining/v1/liquidity-provider-multitoken/${account}`
-      );
-      if (response.data.success) {
-        const multiTokenLiquidityProviders = response.data.result[
-          "liquidity-providers"
-        ]
-          .filter(incentive => incentive.chain_id === 137)
-          .map(incentive => ({
-            ...incentive,
-            token_address: getAddress(incentive.token_address)
-          }));
-
-        const multiTokenCurrentRewardsEstimate: MultiTokenCurrentRewardsEstimate[] = [];
-
-        const multiTokenLiquidityProvidersByToken = Object.entries(
-          groupBy(multiTokenLiquidityProviders, "token_address")
-        );
-
-        for (const [
-          token,
-          liquidityProvider
-        ] of multiTokenLiquidityProvidersByToken) {
-          const rewards = liquidityProvider
-            .reduce(
-              (total, { current_estimate }) => total.plus(current_estimate),
-              bnum(0)
-            )
-            .toString();
-
-          const velocity =
-            liquidityProvider
-              .find(liquidityProvider => Number(liquidityProvider.velocity) > 0)
-              ?.velocity.toString() ?? "0";
-
-          if (Number(rewards) > 0) {
-            multiTokenCurrentRewardsEstimate.push({
-              rewards,
-              velocity,
-              token: getAddress(token)
-            });
-          }
-        }
-
-        return {
-          data: multiTokenCurrentRewardsEstimate,
-          timestamp: response.data.result.current_timestamp
-        };
-      }
-    } catch (e) {
-      console.log("[Claim] Current Rewards Estimate Error", e);
-    }
-    return {
-      data: [],
-      timestamp: null
     };
   }
 
@@ -243,8 +172,17 @@ export class ClaimService {
     ] as ClaimProofTuple;
   }
 
-  private getTokenClaimsInfo() {
-    const tokenClaims = MultiTokenClaim["137"];
+  private async getTokenClaimsInfo() {
+    let tokenClaims;
+    try {
+      const multiTokenClaim = await axios.get(
+        "https://raw.githubusercontent.com/balancer-labs/frontend-v2/develop/src/services/claim/MultiTokenClaim.json"
+      );
+      const chainId = networkChainIdMap[this.network];
+      tokenClaims = multiTokenClaim.data[chainId];
+    } catch (e) {
+      console.log("balancer multi token info error", e);
+    }
 
     if (tokenClaims != null) {
       return (tokenClaims as TokenClaimInfo[]).map(tokenClaim => ({

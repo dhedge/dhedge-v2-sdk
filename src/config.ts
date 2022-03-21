@@ -10,7 +10,7 @@ import { NetworkChainIdMap } from ".";
 require("dotenv").config();
 
 export const factoryAddress: AddressNetworkMap = {
-  [Network.POLYGON]: process.env.STAGING
+  [Network.POLYGON]: process.env.STAGING_CONTRACTS
     ? "0xDd87eCdB10cFF7004276AAbAbd30e7a08F69bb53"
     : "0xfdc7b8bFe0DD3513Cc669bB8d601Cb83e2F69cB0",
   [Network.OPTIMISM]: "0x5e61a079A178f0E5784107a4963baAe0c5a680c6"
