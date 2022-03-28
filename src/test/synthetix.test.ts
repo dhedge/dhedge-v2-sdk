@@ -20,11 +20,11 @@ describe("pool", () => {
   it("should swap sETH into sUSD on Synthetix", async () => {
     const pool = await dhedge.loadPool(TEST_POOL);
     const result = await pool.trade(
-      Dapp.SYHTHETIX,
+      Dapp.SYNTHETIX,
       "sETH",
       "sUSD",
       "1000000000000000",
-      undefined,
+      null,
       options
     );
 

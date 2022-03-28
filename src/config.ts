@@ -27,7 +27,7 @@ export const routerAddress: AddressDappNetworkMap = {
   },
   [Network.OPTIMISM]: {
     [Dapp.UNISWAPV3]: "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
-    [Dapp.SYHTHETIX]: "0x8700dAec35aF8Ff88c16BdF0418774CB3D7599B4"
+    [Dapp.SYNTHETIX]: "0x8700dAec35aF8Ff88c16BdF0418774CB3D7599B4"
   }
 };
 

@@ -249,7 +249,7 @@ export class Pool {
         amountIn,
         slippage
       );
-    } else if (dapp === Dapp.SYHTHETIX) {
+    } else if (dapp === Dapp.SYNTHETIX) {
       const iSynthetix = new ethers.utils.Interface(ISynthetix.abi);
       const assets = [assetFrom, assetTo].map(asset =>
         ethers.utils.formatBytes32String(asset)
