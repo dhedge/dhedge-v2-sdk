@@ -24,7 +24,7 @@ describe("pool", () => {
       "sETH",
       "sUSD",
       "1000000000000000",
-      null,
+      undefined,
       options
     );
 
