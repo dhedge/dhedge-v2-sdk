@@ -1,8 +1,8 @@
-import { ChainId } from "@sushiswap/sdk";
 import { BigNumber } from "ethers";
 
 export enum Network {
-  POLYGON = "polygon"
+  POLYGON = "polygon",
+  OPTIMISM = "optimism"
 }
 
 export enum Dapp {
@@ -10,7 +10,9 @@ export enum Dapp {
   AAVE = "aave",
   ONEINCH = "1inch",
   QUICKSWAP = "quickswap",
-  BALANCER = "balancer"
+  BALANCER = "balancer",
+  UNISWAPV3 = "uniswapV3",
+  SYNTHETIX = "synthetix"
 }
 
 export enum Transaction {
@@ -21,9 +23,16 @@ export enum Transaction {
   CLAIM_DISTRIBIUTIONS = "claimDistributions",
   CLAIM_REWARDS = "claimRewards",
   REMOVE_LIQUIDITY = "removeLiquidity",
+  DECREASE_LIQUIDITY = "decreaseLiquidity",
+  INCREASE_LIQUIDITY = "increaseLiquidity",
+  COLLECT = "collect",
+  MULTI_CALL = "multicall",
   BORROW = "borrow",
   REPAY = "repay",
-  WITHDRAW = "withdraw"
+  WITHDRAW = "withdraw",
+  MINT = "mint",
+  BURN = "burn",
+  SWAP_SYNTHS = "exchangeWithTracking"
 }
 
 export type AddressNetworkMap = Readonly<Record<Network, string>>;
@@ -34,6 +43,8 @@ export type AddressDappMap = {
   [Dapp.ONEINCH]?: string;
   [Dapp.QUICKSWAP]?: string;
   [Dapp.BALANCER]?: string;
+  [Dapp.UNISWAPV3]?: string;
+  [Dapp.SYNTHETIX]?: string;
 };
 
 export type AddressDappNetworkMap = Readonly<Record<Network, AddressDappMap>>;
@@ -57,4 +68,4 @@ export type Reserves = {
   assetB: BigNumber;
 };
 
-export type NetworkChainIdMap = Readonly<Record<Network, ChainId>>;
+export type NetworkChainIdMap = Readonly<Record<Network, number>>;

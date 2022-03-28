@@ -126,6 +126,18 @@ export class Utils {
   }
 
   /**
+   * Returns the decimals of an asset (ERC20) token
+   * @param {string} asset string token address
+   * @returns { number } Balance of asset
+   */
+
+  async getDecimals(asset: string): Promise<number> {
+    const iERC20 = new ethers.Contract(asset, IERC20.abi, this.signer);
+    const decimals = await iERC20.decimals();
+    return decimals;
+  }
+
+  /**
    * Return the minimum amount out for a trade between two assets
    * given the trade amount and slippage
    * @param {Dapp} dApp DApp like Uniswap or Sushiswap

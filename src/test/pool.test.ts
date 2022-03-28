@@ -15,7 +15,7 @@ jest.setTimeout(100000);
 
 describe("pool", () => {
   beforeAll(() => {
-    dhedge = new Dhedge(wallet, Network.POLYGON);
+    dhedge = new Dhedge(wallet, Network.OPTIMISM);
   });
 
   it("checks fund composition", async () => {

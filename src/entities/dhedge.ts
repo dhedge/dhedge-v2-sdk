@@ -77,7 +77,8 @@ export class Dhedge {
       this.signer,
       poolLogic,
       managerLogic,
-      this.utils
+      this.utils,
+      this.factory
     );
   }
 
@@ -101,7 +102,8 @@ export class Dhedge {
       this.signer,
       poolLogic,
       managerLogic,
-      this.utils
+      this.utils,
+      this.factory
     );
   }
 

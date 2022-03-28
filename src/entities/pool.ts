@@ -6,10 +6,19 @@ import { Contract, ethers, Wallet, BigNumber } from "ethers";
 import IERC20 from "../abi/IERC20.json";
 import IMiniChefV2 from "../abi/IMiniChefV2.json";
 import ILendingPool from "../abi/ILendingPool.json";
+import ISynthetix from "../abi/ISynthetix.json";
 import IUniswapV2Router from "../abi/IUniswapV2Router.json";
+import INonfungiblePositionManager from "../abi/INonfungiblePositionManager.json";
 import IBalancerMerkleOrchard from "../abi/IBalancerMerkleOrchard.json";
 import IAaveIncentivesController from "../abi/IAaveIncentivesController.json";
-import { routerAddress, stakingAddress } from "../config";
+import {
+  deadline,
+  MaxUint128,
+  nonfungiblePositionManagerAddress,
+  routerAddress,
+  stakingAddress,
+  SYNTHETIX_TRACKING_CODE
+} from "../config";
 import {
   Dapp,
   Transaction,
@@ -20,10 +29,17 @@ import {
 
 import { Utils } from "./utils";
 import { ClaimService } from "../services/claim-balancer/claim.service";
+import {
+  getUniswapV3Liquidity,
+  getUniswapV3MintParams
+} from "../services/uniswap/V3Liquidity";
+import { FeeAmount } from "@uniswap/v3-sdk";
+import { getUniswapV3SwapTxData } from "../services/uniswap/V3Trade";
 
 export class Pool {
   public readonly poolLogic: Contract;
   public readonly managerLogic: Contract;
+  public readonly factory: Contract;
   public readonly signer: Wallet;
   public readonly address: string;
   public readonly utils: Utils;
@@ -34,7 +50,8 @@ export class Pool {
     signer: Wallet,
     poolLogic: Contract,
     mangerLogic: Contract,
-    utils: Utils
+    utils: Utils,
+    factory: Contract
   ) {
     this.network = network;
     this.poolLogic = poolLogic;
@@ -42,6 +59,7 @@ export class Pool {
     this.managerLogic = mangerLogic;
     this.signer = signer;
     this.utils = utils;
+    this.factory = factory;
   }
 
   /**
@@ -171,12 +189,38 @@ export class Pool {
   }
 
   /**
+   * Approve the liquidity pool token for staking
+   * @param {Dapp} dapp Platform like Sushiswap or Uniswap
+   * @param {string} asset Address of liquidity pool token
+   * @param {BigNumber | string} amount Aamount to be approved
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async approveUniswapV3Liquidity(
+    asset: string,
+    amount: BigNumber | string,
+    options: any = null
+  ): Promise<any> {
+    const iERC20 = new ethers.utils.Interface(IERC20.abi);
+    const approveTxData = iERC20.encodeFunctionData("approve", [
+      nonfungiblePositionManagerAddress[this.network],
+      amount
+    ]);
+    const tx = await this.poolLogic.execTransaction(
+      asset,
+      approveTxData,
+      options
+    );
+    return tx;
+  }
+
+  /**
    * Trade an asset into another asset
    * @param {Dapp} dapp Platform like Sushiswap or Uniswap
    * @param {string} assetFrom Asset to trade from
    * @param {string} assetTo Asset to trade into
    * @param {BigNumber | string} amountIn Amount
-   * @param {BigNumber | string} minAmountOut Minumum amount to receive
+   * @param {number} slippage Slippage tolerance in %
    * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
@@ -205,6 +249,19 @@ export class Pool {
         amountIn,
         slippage
       );
+    } else if (dapp === Dapp.SYNTHETIX) {
+      const iSynthetix = new ethers.utils.Interface(ISynthetix.abi);
+      const assets = [assetFrom, assetTo].map(asset =>
+        ethers.utils.formatBytes32String(asset)
+      );
+      const daoAddress = await this.factory.owner();
+      swapTxData = iSynthetix.encodeFunctionData(Transaction.SWAP_SYNTHS, [
+        assets[0],
+        amountIn,
+        assets[1],
+        daoAddress,
+        SYNTHETIX_TRACKING_CODE
+      ]);
     } else {
       const iUniswapV2Router = new ethers.utils.Interface(IUniswapV2Router.abi);
       const minAmountOut = await this.utils.getMinAmountOut(
@@ -219,7 +276,7 @@ export class Pool {
         minAmountOut,
         [assetFrom, assetTo],
         this.address,
-        Math.floor(Date.now() / 1000) + 60 * 20 // 20 minutes from the current Unix time
+        deadline
       ]);
     }
     const tx = await this.poolLogic.execTransaction(
@@ -251,16 +308,7 @@ export class Pool {
     const iUniswapV2Router = new ethers.utils.Interface(IUniswapV2Router.abi);
     const addLiquidityTxData = iUniswapV2Router.encodeFunctionData(
       Transaction.ADD_LIQUIDITY,
-      [
-        assetA,
-        assetB,
-        amountA,
-        amountB,
-        0,
-        0,
-        this.address,
-        Math.floor(Date.now() / 1000) + 60 * 20 // 20 minutes from the current Unix time
-      ]
+      [assetA, assetB, amountA, amountB, 0, 0, this.address, deadline]
     );
     const tx = await this.poolLogic.execTransaction(
       routerAddress[this.network][dapp],
@@ -289,15 +337,7 @@ export class Pool {
     const iUniswapV2Router = new ethers.utils.Interface(IUniswapV2Router.abi);
     const removeLiquidityTxData = iUniswapV2Router.encodeFunctionData(
       Transaction.REMOVE_LIQUIDITY,
-      [
-        assetA,
-        assetB,
-        amount,
-        0,
-        0,
-        this.address,
-        Math.floor(Date.now() / 1000) + 60 * 20 // 20 minutes from the current Unix time
-      ]
+      [assetA, assetB, amount, 0, 0, this.address, deadline]
     );
     const tx = await this.poolLogic.execTransaction(
       routerAddress[this.network][dapp],
@@ -657,19 +697,207 @@ export class Pool {
       iAaveIncentivesController,
       this.signer
     );
-
     const amount = await aaveIncentivesController.getUserUnclaimedRewards(
       this.address
     );
-
     const claimTxData = iAaveIncentivesController.encodeFunctionData(
       Transaction.CLAIM_REWARDS,
       [assets, amount, this.address]
     );
-
     const tx = await this.poolLogic.execTransaction(
       aaveIncentivesAddress,
       claimTxData,
+      options
+    );
+    return tx;
+  }
+
+  /**
+   * Create UniswapV3 liquidity pool
+   * @param {string} assetA First asset
+   * @param {string} assetB Second asset
+   * @param {BigNumber | string} amountA Amount first asset
+   * @param {BigNumber | string} amountB Amount second asset
+   * @param { number } minPrice Lower price range (assetB per assetA)
+   * @param { number } maxPrice Upper price range (assetB per assetA)
+   * @param { number } minTick Lower tick range
+   * @param { number } maxTick Upper tick range
+   * @param { FeeAmount } feeAmount Fee tier (Low 0.05%, Medium 0.3%, High 1%)
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async addLiquidityUniswapV3(
+    assetA: string,
+    assetB: string,
+    amountA: BigNumber | string,
+    amountB: BigNumber | string,
+    minPrice: number | null,
+    maxPrice: number | null,
+    minTick: number | null,
+    maxTick: number | null,
+    feeAmount: FeeAmount,
+    options: any = null
+  ): Promise<any> {
+    if ((!minPrice || !maxPrice) && (!minTick || !maxTick))
+      throw new Error("Need to provide price or tick range");
+
+    const iNonfungiblePositionManager = new ethers.utils.Interface(
+      INonfungiblePositionManager.abi
+    );
+
+    const mintTxParams = await getUniswapV3MintParams(
+      this,
+      assetA,
+      assetB,
+      amountA,
+      amountB,
+      minPrice,
+      maxPrice,
+      minTick,
+      maxTick,
+      feeAmount
+    );
+    const mintTxData = iNonfungiblePositionManager.encodeFunctionData(
+      Transaction.MINT,
+      [mintTxParams]
+    );
+    const tx = await this.poolLogic.execTransaction(
+      nonfungiblePositionManagerAddress[this.network],
+      mintTxData,
+      options
+    );
+    return tx;
+  }
+
+  /**
+   * Remove liquidity from an UniswapV3 liquidity pool
+   * @param {string} tokenId Token Id of UniswapV3 position
+   * @param {number} amount Amount in percent of assets to be removed
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async removeLiquidityUniswapV3(
+    tokenId: string,
+    amount = 100,
+    options: any = null
+  ): Promise<any> {
+    const iNonfungiblePositionManager = new ethers.utils.Interface(
+      INonfungiblePositionManager.abi
+    );
+    const liquidity = (await getUniswapV3Liquidity(tokenId, this))
+      .mul(amount)
+      .div(100);
+    const decreaseLiquidityTxData = iNonfungiblePositionManager.encodeFunctionData(
+      Transaction.DECREASE_LIQUIDITY,
+      [[tokenId, liquidity, 0, 0, deadline]]
+    );
+    const collectTxData = iNonfungiblePositionManager.encodeFunctionData(
+      Transaction.COLLECT,
+      [[tokenId, this.address, MaxUint128, MaxUint128]]
+    );
+
+    const multicallParams = [decreaseLiquidityTxData, collectTxData];
+
+    if (amount === 100) {
+      const burnTxData = iNonfungiblePositionManager.encodeFunctionData(
+        Transaction.BURN,
+        [tokenId]
+      );
+      multicallParams.push(burnTxData);
+    }
+    const multicallTxData = iNonfungiblePositionManager.encodeFunctionData(
+      Transaction.MULTI_CALL,
+      [multicallParams]
+    );
+    const tx = await this.poolLogic.execTransaction(
+      nonfungiblePositionManagerAddress[this.network],
+      multicallTxData,
+      options
+    );
+    return tx;
+  }
+
+  /**
+   * Increase liquidity of an UniswapV3 liquidity pool
+   * @param {string} tokenId Token Id of UniswapV3 position
+   * @param {BigNumber | string} amountA Amount first asset
+   * @param {BigNumber | string} amountB Amount second asset
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async increaseLiquidityUniswapV3(
+    tokenId: string,
+    amountA: BigNumber | string,
+    amountB: BigNumber | string,
+    options: any = null
+  ): Promise<any> {
+    const iNonfungiblePositionManager = new ethers.utils.Interface(
+      INonfungiblePositionManager.abi
+    );
+    const increaseLiquidityTxData = iNonfungiblePositionManager.encodeFunctionData(
+      Transaction.INCREASE_LIQUIDITY,
+      [[tokenId, amountA, amountB, 0, 0, deadline]]
+    );
+    const tx = await this.poolLogic.execTransaction(
+      nonfungiblePositionManagerAddress[this.network],
+      increaseLiquidityTxData,
+      options
+    );
+    return tx;
+  }
+
+  /**
+   * Claim fees of an UniswapV3 liquidity pool
+   * @param {string} tokenId Token Id of UniswapV3 position
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async claimFeesUniswapV3(tokenId: string, options: any = null): Promise<any> {
+    const iNonfungiblePositionManager = new ethers.utils.Interface(
+      INonfungiblePositionManager.abi
+    );
+    const collectTxData = iNonfungiblePositionManager.encodeFunctionData(
+      Transaction.COLLECT,
+      [[tokenId, this.address, MaxUint128, MaxUint128]]
+    );
+    const tx = await this.poolLogic.execTransaction(
+      nonfungiblePositionManagerAddress[this.network],
+      collectTxData,
+      options
+    );
+    return tx;
+  }
+
+  /**
+   * Trade an asset into another asset
+   * @param {Dapp} dapp Platform like Sushiswap or Uniswap
+   * @param {string} assetFrom Asset to trade from
+   * @param {string} assetTo Asset to trade into
+   * @param {BigNumber | string} amountIn Amount
+   * @param { FeeAmount } feeAmount Fee tier (Low 0.05%, Medium 0.3%, High 1%)
+   * @param {number} slippage Slippage tolerance in %
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async tradeUniswapV3(
+    assetFrom: string,
+    assetTo: string,
+    amountIn: BigNumber | string,
+    feeAmount: FeeAmount,
+    slippage = 0.5,
+    options: any = null
+  ): Promise<any> {
+    const swapxData = await getUniswapV3SwapTxData(
+      this,
+      assetFrom,
+      assetTo,
+      amountIn,
+      slippage,
+      feeAmount
+    );
+    const tx = await this.poolLogic.execTransaction(
+      routerAddress[this.network][Dapp.UNISWAPV3],
+      swapxData,
       options
     );
     return tx;
