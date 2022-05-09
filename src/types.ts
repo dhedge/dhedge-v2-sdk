@@ -13,7 +13,8 @@ export enum Dapp {
   BALANCER = "balancer",
   UNISWAPV3 = "uniswapV3",
   SYNTHETIX = "synthetix",
-  AAVEV3 = "aavev3"
+  AAVEV3 = "aavev3",
+  ARRAKIS = "arrakis"
 }
 
 export enum Transaction {
@@ -33,20 +34,15 @@ export enum Transaction {
   WITHDRAW = "withdraw",
   MINT = "mint",
   BURN = "burn",
-  SWAP_SYNTHS = "exchangeWithTracking"
+  SWAP_SYNTHS = "exchangeWithTracking",
+  ADD_LIQUIDITY_STAKE = "addLiquidityAndStake",
+  REMOVE_LIQUIDITY_UNSTAKE = "removeLiquidityAndUnstake"
 }
 
 export type AddressNetworkMap = Readonly<Record<Network, string>>;
 
 export type AddressDappMap = {
-  [Dapp.SUSHISWAP]?: string;
-  [Dapp.AAVE]?: string;
-  [Dapp.AAVEV3]?: string;
-  [Dapp.ONEINCH]?: string;
-  [Dapp.QUICKSWAP]?: string;
-  [Dapp.BALANCER]?: string;
-  [Dapp.UNISWAPV3]?: string;
-  [Dapp.SYNTHETIX]?: string;
+  [key in Dapp]?: string;
 };
 
 export type AddressDappNetworkMap = Readonly<Record<Network, AddressDappMap>>;

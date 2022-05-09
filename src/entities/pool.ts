@@ -11,6 +11,8 @@ import IUniswapV2Router from "../abi/IUniswapV2Router.json";
 import INonfungiblePositionManager from "../abi/INonfungiblePositionManager.json";
 import IBalancerMerkleOrchard from "../abi/IBalancerMerkleOrchard.json";
 import IAaveIncentivesController from "../abi/IAaveIncentivesController.json";
+import IArrakisV1RouterStaking from "../abi/IArrakisV1RouterStaking.json";
+import ILiquidityGaugeV4 from "../abi/ILiquidityGaugeV4.json";
 import {
   deadline,
   MaxUint128,
@@ -772,99 +774,149 @@ export class Pool {
   }
 
   /**
-   * Remove liquidity from an UniswapV3 liquidity pool
+   * Remove liquidity from an UniswapV3 or Arrakis liquidity pool
+   * @param {Dapp} dapp Platform either UniswapV3 or Arrakis
    * @param {string} tokenId Token Id of UniswapV3 position
    * @param {number} amount Amount in percent of assets to be removed
    * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
-  async removeLiquidityUniswapV3(
+  async decreaseLiquidity(
+    dapp: Dapp,
     tokenId: string,
     amount = 100,
     options: any = null
   ): Promise<any> {
-    const iNonfungiblePositionManager = new ethers.utils.Interface(
-      INonfungiblePositionManager.abi
-    );
-    const liquidity = (await getUniswapV3Liquidity(tokenId, this))
-      .mul(amount)
-      .div(100);
-    const decreaseLiquidityTxData = iNonfungiblePositionManager.encodeFunctionData(
-      Transaction.DECREASE_LIQUIDITY,
-      [[tokenId, liquidity, 0, 0, deadline]]
-    );
-    const collectTxData = iNonfungiblePositionManager.encodeFunctionData(
-      Transaction.COLLECT,
-      [[tokenId, this.address, MaxUint128, MaxUint128]]
-    );
-
-    const multicallParams = [decreaseLiquidityTxData, collectTxData];
-
-    if (amount === 100) {
-      const burnTxData = iNonfungiblePositionManager.encodeFunctionData(
-        Transaction.BURN,
-        [tokenId]
+    let txData;
+    let dappAddress;
+    if (dapp === Dapp.UNISWAPV3) {
+      dappAddress = nonfungiblePositionManagerAddress[this.network];
+      const abi = new ethers.utils.Interface(INonfungiblePositionManager.abi);
+      const liquidity = (await getUniswapV3Liquidity(tokenId, this))
+        .mul(amount)
+        .div(100);
+      const decreaseLiquidityTxData = abi.encodeFunctionData(
+        Transaction.DECREASE_LIQUIDITY,
+        [[tokenId, liquidity, 0, 0, deadline]]
       );
-      multicallParams.push(burnTxData);
+      const collectTxData = abi.encodeFunctionData(Transaction.COLLECT, [
+        [tokenId, this.address, MaxUint128, MaxUint128]
+      ]);
+
+      const multicallParams = [decreaseLiquidityTxData, collectTxData];
+
+      if (amount === 100) {
+        const burnTxData = abi.encodeFunctionData(Transaction.BURN, [tokenId]);
+        multicallParams.push(burnTxData);
+      }
+      txData = abi.encodeFunctionData(Transaction.MULTI_CALL, [
+        multicallParams
+      ]);
+    } else if (dapp === Dapp.ARRAKIS) {
+      dappAddress = routerAddress[this.network][dapp];
+      const abi = new ethers.utils.Interface(IArrakisV1RouterStaking.abi);
+      const liquidity = (await this.utils.getBalance(tokenId, this.address))
+        .mul(amount)
+        .div(100);
+      txData = abi.encodeFunctionData(Transaction.REMOVE_LIQUIDITY_UNSTAKE, [
+        tokenId,
+        liquidity,
+        0,
+        0,
+        this.address
+      ]);
+    } else {
+      throw new Error("dapp not supported");
     }
-    const multicallTxData = iNonfungiblePositionManager.encodeFunctionData(
-      Transaction.MULTI_CALL,
-      [multicallParams]
-    );
+
     const tx = await this.poolLogic.execTransaction(
-      nonfungiblePositionManagerAddress[this.network],
-      multicallTxData,
+      dappAddress,
+      txData,
       options
     );
     return tx;
   }
 
   /**
-   * Increase liquidity of an UniswapV3 liquidity pool
+   * Increase liquidity of an UniswapV3 or Arrakis liquidity pool
+   * @param {Dapp} dapp Platform either UniswapV3 or Arrakis
    * @param {string} tokenId Token Id of UniswapV3 position
    * @param {BigNumber | string} amountA Amount first asset
    * @param {BigNumber | string} amountB Amount second asset
    * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
-  async increaseLiquidityUniswapV3(
+  async increaseLiquidity(
+    dapp: Dapp,
     tokenId: string,
     amountA: BigNumber | string,
     amountB: BigNumber | string,
     options: any = null
   ): Promise<any> {
-    const iNonfungiblePositionManager = new ethers.utils.Interface(
-      INonfungiblePositionManager.abi
-    );
-    const increaseLiquidityTxData = iNonfungiblePositionManager.encodeFunctionData(
-      Transaction.INCREASE_LIQUIDITY,
-      [[tokenId, amountA, amountB, 0, 0, deadline]]
-    );
+    let txData;
+    let dappAddress;
+    if (dapp === Dapp.UNISWAPV3) {
+      dappAddress = nonfungiblePositionManagerAddress[this.network];
+      const abi = new ethers.utils.Interface(INonfungiblePositionManager.abi);
+      txData = abi.encodeFunctionData(Transaction.INCREASE_LIQUIDITY, [
+        [tokenId, amountA, amountB, 0, 0, deadline]
+      ]);
+    } else if (dapp === Dapp.ARRAKIS) {
+      dappAddress = routerAddress[this.network][dapp];
+      const abi = new ethers.utils.Interface(IArrakisV1RouterStaking.abi);
+      txData = abi.encodeFunctionData(Transaction.ADD_LIQUIDITY_STAKE, [
+        tokenId,
+        amountA,
+        amountB,
+        0,
+        0,
+        this.address
+      ]);
+    } else {
+      throw new Error("dapp not supported");
+    }
+
     const tx = await this.poolLogic.execTransaction(
-      nonfungiblePositionManagerAddress[this.network],
-      increaseLiquidityTxData,
+      dappAddress,
+      txData,
       options
     );
     return tx;
   }
 
   /**
-   * Claim fees of an UniswapV3 liquidity pool
-   * @param {string} tokenId Token Id of UniswapV3 position
+   * Claim fees of an UniswapV3 liquidity or Arrakis pool
+   * @param {Dapp} dapp Platform either UniswapV3 or Arrakis
+   * @param {string} tokenId Token Id of UniswapV3 or Arrakis position
    * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
-  async claimFeesUniswapV3(tokenId: string, options: any = null): Promise<any> {
-    const iNonfungiblePositionManager = new ethers.utils.Interface(
-      INonfungiblePositionManager.abi
-    );
-    const collectTxData = iNonfungiblePositionManager.encodeFunctionData(
-      Transaction.COLLECT,
-      [[tokenId, this.address, MaxUint128, MaxUint128]]
-    );
+  async claimFees(
+    dapp: Dapp,
+    tokenId: string,
+    options: any = null
+  ): Promise<any> {
+    let txData;
+    let contractAddress;
+    if (dapp === Dapp.UNISWAPV3) {
+      contractAddress = nonfungiblePositionManagerAddress[this.network];
+      const iNonfungiblePositionManager = new ethers.utils.Interface(
+        INonfungiblePositionManager.abi
+      );
+      txData = iNonfungiblePositionManager.encodeFunctionData(
+        Transaction.COLLECT,
+        [[tokenId, this.address, MaxUint128, MaxUint128]]
+      );
+    } else if (dapp === Dapp.ARRAKIS) {
+      contractAddress = tokenId;
+      const abi = new ethers.utils.Interface(ILiquidityGaugeV4.abi);
+      txData = abi.encodeFunctionData("claim_rewards()", []);
+    } else {
+      throw new Error("dapp not supported");
+    }
     const tx = await this.poolLogic.execTransaction(
-      nonfungiblePositionManagerAddress[this.network],
-      collectTxData,
+      contractAddress,
+      txData,
       options
     );
     return tx;
