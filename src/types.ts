@@ -12,7 +12,8 @@ export enum Dapp {
   QUICKSWAP = "quickswap",
   BALANCER = "balancer",
   UNISWAPV3 = "uniswapV3",
-  SYNTHETIX = "synthetix"
+  SYNTHETIX = "synthetix",
+  AAVEV3 = "aavev3"
 }
 
 export enum Transaction {
@@ -40,6 +41,7 @@ export type AddressNetworkMap = Readonly<Record<Network, string>>;
 export type AddressDappMap = {
   [Dapp.SUSHISWAP]?: string;
   [Dapp.AAVE]?: string;
+  [Dapp.AAVEV3]?: string;
   [Dapp.ONEINCH]?: string;
   [Dapp.QUICKSWAP]?: string;
   [Dapp.BALANCER]?: string;
