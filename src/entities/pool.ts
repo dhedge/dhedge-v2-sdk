@@ -13,6 +13,8 @@ import IBalancerMerkleOrchard from "../abi/IBalancerMerkleOrchard.json";
 import IAaveIncentivesController from "../abi/IAaveIncentivesController.json";
 import IArrakisV1RouterStaking from "../abi/IArrakisV1RouterStaking.json";
 import ILiquidityGaugeV4 from "../abi/ILiquidityGaugeV4.json";
+import IBalancerRewardsGauge from "../abi/IBalancerRewardsGauge.json";
+
 import {
   deadline,
   MaxUint128,
@@ -218,6 +220,33 @@ export class Pool {
   }
 
   /**
+   * Approve the asset for provided spender address
+   * @param {string} spender Spender address
+   * @param {string} asset Address of asset
+   * @param {BigNumber | string} amount to be approved
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async approveSpender(
+    spender: string,
+    asset: string,
+    amount: BigNumber | string,
+    options: any = null
+  ): Promise<any> {
+    const iERC20 = new ethers.utils.Interface(IERC20.abi);
+    const approveTxData = iERC20.encodeFunctionData("approve", [
+      spender,
+      amount
+    ]);
+    const tx = await this.poolLogic.execTransaction(
+      asset,
+      approveTxData,
+      options
+    );
+    return tx;
+  }
+
+  /**
    * Trade an asset into another asset
    * @param {Dapp} dapp Platform like Sushiswap or Uniswap
    * @param {string} assetFrom Asset to trade from
@@ -377,7 +406,30 @@ export class Pool {
       stakeTxData,
       options
     );
+    return tx;
+  }
 
+  /**
+   * Stake liquidity pool tokens in gauge contract
+   * @param {string} gauge Gauge contract address
+   * @param {BigNumber | string} amount Amount of liquidity pool tokens
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async stakeInGauge(
+    gauge: string,
+    amount: BigNumber | string,
+    options: any = null
+  ): Promise<any> {
+    const rewardsGauge = new ethers.utils.Interface(IBalancerRewardsGauge.abi);
+    const stakeTxData = rewardsGauge.encodeFunctionData("deposit(uint256)", [
+      amount
+    ]);
+    const tx = await this.poolLogic.execTransaction(
+      gauge,
+      stakeTxData,
+      options
+    );
     return tx;
   }
 
@@ -411,11 +463,35 @@ export class Pool {
   }
 
   /**
+   * Unstake liquidity pool tokens from gauge contract
+   * @param {string} gauge Gauge contract address
+   * @param {BigNumber | string} amount Amount of liquidity pool tokens
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async unstakeFromGauge(
+    gauge: string,
+    amount: BigNumber | string,
+    options: any = null
+  ): Promise<any> {
+    const rewardsGauge = new ethers.utils.Interface(IBalancerRewardsGauge.abi);
+    const unstakeTxData = rewardsGauge.encodeFunctionData("withdraw(uint256)", [
+      amount
+    ]);
+    const tx = await this.poolLogic.execTransaction(
+      gauge,
+      unstakeTxData,
+      options
+    );
+    return tx;
+  }
+
+  /**
    * Lend asset to a lending pool
    * @param {Dapp} dapp Platform like Aave
    * @param {string} asset Asset
    * @param {BigNumber | string} amount Amount of asset to lend
-   * @param {number} referrralCode Code from Aave referral program
+   * @param {number} referralCode Code from Aave referral program
    * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
@@ -423,7 +499,7 @@ export class Pool {
     dapp: Dapp,
     asset: string,
     amount: BigNumber | string,
-    referrralCode = 0,
+    referralCode = 0,
     options: any = null
   ): Promise<any> {
     const iLendingPool = new ethers.utils.Interface(ILendingPool.abi);
@@ -431,7 +507,7 @@ export class Pool {
       asset,
       amount,
       this.address,
-      referrralCode
+      referralCode
     ]);
     const tx = await this.poolLogic.execTransaction(
       routerAddress[this.network][dapp],
@@ -473,7 +549,7 @@ export class Pool {
    * @param {Dapp} dapp Platform like Aave
    * @param {string} asset Asset
    * @param  {BigNumber | string} amount Amount of asset to lend
-   * @param {number} referrralCode Code from Aave referral program
+   * @param {number} referralCode Code from Aave referral program
    * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
@@ -481,7 +557,7 @@ export class Pool {
     dapp: Dapp,
     asset: string,
     amount: BigNumber | string,
-    referrralCode = 0,
+    referralCode = 0,
     options: any = null
   ): Promise<any> {
     const iLendingPool = new ethers.utils.Interface(ILendingPool.abi);
@@ -489,7 +565,7 @@ export class Pool {
       asset,
       amount,
       2,
-      referrralCode,
+      referralCode,
       this.address
     ]);
     const tx = await this.poolLogic.execTransaction(
@@ -887,8 +963,8 @@ export class Pool {
   /**
    * Claim fees of an UniswapV3 liquidity or Arrakis pool
    * @param {Dapp} dapp Platform either UniswapV3 or Arrakis
-   * @param {string} tokenId Token Id of UniswapV3 or Arrakis position
-   * @param {any} options Transaction options
+   * @param {string} tokenId Token Id of UniswapV3 or Gauge address
+   * @param {any} options Transaction option
    * @returns {Promise<any>} Transaction
    */
   async claimFees(
@@ -907,7 +983,7 @@ export class Pool {
         Transaction.COLLECT,
         [[tokenId, this.address, MaxUint128, MaxUint128]]
       );
-    } else if (dapp === Dapp.ARRAKIS) {
+    } else if (dapp === Dapp.ARRAKIS || dapp === Dapp.BALANCER) {
       contractAddress = tokenId;
       const abi = new ethers.utils.Interface(ILiquidityGaugeV4.abi);
       txData = abi.encodeFunctionData("claim_rewards()", []);

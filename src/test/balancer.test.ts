@@ -1,21 +1,19 @@
-import { Dhedge, ethers } from "..";
-import { Network } from "../types";
+import { Dhedge } from "..";
+import { Dapp, Network } from "../types";
 import { TEST_POOL } from "./constants";
+import { getTxOptions } from "./txOptions";
 
 import { wallet } from "./wallet";
 
 let dhedge: Dhedge;
+let options: any;
 
 jest.setTimeout(100000);
 
-const options = {
-  gasLimit: 2000000,
-  gasPrice: ethers.utils.parseUnits("1000", "gwei")
-};
-
 describe("pool", () => {
-  beforeAll(() => {
+  beforeAll(async () => {
     dhedge = new Dhedge(wallet, Network.POLYGON);
+    options = await getTxOptions();
   });
 
   // it("approves unlimited USDC on Balancer", async () => {
@@ -95,11 +93,79 @@ describe("pool", () => {
   //   expect(result).not.toBe(null);
   // });
 
-  it("claims balancer rewards", async () => {
+  // it("claims balancer rewards", async () => {
+  //   let result;
+  //   const pool = await dhedge.loadPool(TEST_POOL);
+  //   try {
+  //     result = await pool.harvestBalancerRewards(options);
+  //     console.log("result", result);
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  //   expect(result).not.toBe(null);
+  // });
+
+  //   it("adds 5 WMATIC to a WMATIC/stMATIC balancer pool", async () => {
+  //     let result;
+  //     const pool = await dhedge.loadPool(TEST_POOL);
+  //     const assets = [WMATIC, STMATIC];
+  //     const amounts = ["5000000000000000000", "0"];
+  //     try {
+  //       result = await pool.joinBalancerPool(
+  //         "0xaf5e0b5425de1f5a630a8cb5aa9d97b8141c908d000200000000000000000366",
+  //         assets,
+  //         amounts,
+  //         options
+  //       );
+  //       console.log("result", result);
+  //     } catch (e) {
+  //       console.log(e);
+  //     }
+  //     expect(result).not.toBe(null);
+  //   });
+
+  // it("allows unlimited WMATIC-stMATIC LP on gauge", async () => {
+  //   let result;
+  //   const pool = await dhedge.loadPool(TEST_POOL);
+  //   try {
+  //     result = await pool.approveSpender(
+  //       "0x9928340f9E1aaAd7dF1D95E27bd9A5c715202a56",
+  //       WMATIC_STMATIC_LP,
+  //       ethers.constants.MaxUint256,
+  //       options
+  //     );
+  //     console.log("result", result);
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  //   expect(result).not.toBe(null);
+  // });
+
+  // it("stakes WMATIC-stMATIC LP in gauge", async () => {
+  //   let result;
+  //   const pool = await dhedge.loadPool(TEST_POOL);
+  //   try {
+  //     result = await pool.stakeInGauge(
+  //       "0x9928340f9E1aaAd7dF1D95E27bd9A5c715202a56",
+  //       "4978534455005333156",
+  //       options
+  //     );
+  //     console.log("result", result);
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  //   expect(result).not.toBe(null);
+  // });
+
+  it("claim fess pf staked WMATIC-stMATIC LP in gauge", async () => {
     let result;
     const pool = await dhedge.loadPool(TEST_POOL);
     try {
-      result = await pool.harvestBalancerRewards(options);
+      result = await pool.claimFees(
+        Dapp.BALANCER,
+        "0x9928340f9E1aaAd7dF1D95E27bd9A5c715202a56",
+        options
+      );
       console.log("result", result);
     } catch (e) {
       console.log(e);
