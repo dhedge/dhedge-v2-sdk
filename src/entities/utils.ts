@@ -295,25 +295,29 @@ export class Utils {
     pool: Pool,
     balancerPoolId: string,
     assets: string[],
+    singleExitAssetIndex: null | number,
     amount: string | ethers.BigNumber
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): Promise<any> {
     const minimumAmountOut = new Array(assets.length).fill(0);
     const iBalancerV2Vault = new ethers.utils.Interface(IBalancerV2Vault.abi);
+    const userTxData =
+      singleExitAssetIndex === null
+        ? ethers.utils.defaultAbiCoder.encode(
+            ["uint256", "uint256"],
+            [1, amount]
+          )
+        : ethers.utils.defaultAbiCoder.encode(
+            ["uint256", "uint256", "uint256"],
+            [0, amount, singleExitAssetIndex]
+          );
+
     const txData = [
       balancerPoolId,
       pool.address,
       pool.address,
-      [
-        assets,
-        minimumAmountOut,
-        ethers.utils.defaultAbiCoder.encode(
-          ["uint256", "uint256"],
-          [1, amount]
-        ),
-        false
-      ]
+      [assets, minimumAmountOut, userTxData, false]
     ];
     const exitPoolTx = iBalancerV2Vault.encodeFunctionData("exitPool", txData);
     return exitPoolTx;

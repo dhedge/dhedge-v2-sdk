@@ -1,6 +1,6 @@
 import { Dhedge } from "..";
-import { Dapp, Network } from "../types";
-import { TEST_POOL } from "./constants";
+import { Network } from "../types";
+import { STMATIC, TEST_POOL, WMATIC } from "./constants";
 import { getTxOptions } from "./txOptions";
 
 import { wallet } from "./wallet";
@@ -157,13 +157,52 @@ describe("pool", () => {
   //   expect(result).not.toBe(null);
   // });
 
-  it("claim fess pf staked WMATIC-stMATIC LP in gauge", async () => {
+  // it("claim fess pf staked WMATIC-stMATIC LP in gauge", async () => {
+  //   let result;
+  //   const pool = await dhedge.loadPool(TEST_POOL);
+  //   try {
+  //     result = await pool.claimFees(
+  //       Dapp.BALANCER,
+  //       "0x9928340f9E1aaAd7dF1D95E27bd9A5c715202a56",
+  //       options
+  //     );
+  //     console.log("result", result);
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  //   expect(result).not.toBe(null);
+  // });
+
+  // it("unstakes WMATIC-stMATIC LP from gauge", async () => {
+  //   let result;
+  //   const pool = await dhedge.loadPool(TEST_POOL);
+  //   try {
+  //     result = await pool.unstakeFromGauge(
+  //       "0x9928340f9E1aaAd7dF1D95E27bd9A5c715202a56",
+  //       "4978534455005333156",
+  //       options
+  //     );
+  //     console.log("result", result);
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  //   expect(result).not.toBe(null);
+  // });
+
+  it("exits from WMATIC-stMATIC LP into WMATIC", async () => {
     let result;
     const pool = await dhedge.loadPool(TEST_POOL);
+    const assets = [WMATIC, STMATIC];
+    const amount = await dhedge.utils.getBalance(
+      "0xaF5E0B5425dE1F5a630A8cB5AA9D97B8141C908D",
+      pool.address
+    );
     try {
-      result = await pool.claimFees(
-        Dapp.BALANCER,
-        "0x9928340f9E1aaAd7dF1D95E27bd9A5c715202a56",
+      result = await pool.exitBalancerPool(
+        "0xaf5e0b5425de1f5a630a8cb5aa9d97b8141c908d000200000000000000000366",
+        assets,
+        amount,
+        1,
         options
       );
       console.log("result", result);

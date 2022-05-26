@@ -700,6 +700,7 @@ export class Pool {
    * @param {string} poolId Balancer pool id
    * @param {string[] | } assets Array of balancer pool assets
    * @param {BigNumber | string } amount Amount of pool tokens to withdraw
+   * @param { null | number } singleExitAssetIndex Index of asset to withdraw to
    * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
@@ -707,12 +708,14 @@ export class Pool {
     poolId: string,
     assets: string[],
     amount: string | BigNumber,
+    singleExitAssetIndex: number | null = null,
     options: any = null
   ): Promise<any> {
     const exitPoolTxData = this.utils.getBalancerExitPoolTx(
       this,
       poolId,
       assets,
+      singleExitAssetIndex,
       amount
     );
     const tx = await this.poolLogic.execTransaction(
