@@ -88,7 +88,6 @@ export class Dhedge {
    * @returns {Pool} Loaded Pool
    */
   public async loadPool(address: string): Promise<Pool> {
-    this.validatePool(address);
     const poolLogic = new Contract(address, PoolLogic.abi, this.signer);
     const managerLogicAddress = await poolLogic.poolManagerLogic();
     const managerLogic = new Contract(
@@ -105,15 +104,5 @@ export class Dhedge {
       this.utils,
       this.factory
     );
-  }
-
-  /**
-   * Check if pool address is valid
-   * @param {string} address Pool address
-   * @returns {boolean} Is valid pool address
-   */
-  private async validatePool(address: string): Promise<void> {
-    const isPool = await this.factory.isPool(address);
-    if (!isPool) throw new Error("Given address not a pool");
   }
 }
