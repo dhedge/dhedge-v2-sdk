@@ -872,8 +872,8 @@ export class Pool {
       dappAddress = nonfungiblePositionManagerAddress[this.network];
       const abi = new ethers.utils.Interface(INonfungiblePositionManager.abi);
       const liquidity = (await getUniswapV3Liquidity(tokenId, this))
-        .mul(amount)
-        .div(100);
+        .mul(Math.round(amount * 1e4))
+        .div(1e6);
       const decreaseLiquidityTxData = abi.encodeFunctionData(
         Transaction.DECREASE_LIQUIDITY,
         [[tokenId, liquidity, 0, 0, deadline]]
@@ -895,8 +895,8 @@ export class Pool {
       dappAddress = routerAddress[this.network][dapp];
       const abi = new ethers.utils.Interface(IArrakisV1RouterStaking.abi);
       const liquidity = (await this.utils.getBalance(tokenId, this.address))
-        .mul(amount)
-        .div(100);
+        .mul(Math.round(amount * 1e4))
+        .div(1e6);
       txData = abi.encodeFunctionData(Transaction.REMOVE_LIQUIDITY_UNSTAKE, [
         tokenId,
         liquidity,

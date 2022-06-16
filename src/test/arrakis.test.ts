@@ -14,7 +14,7 @@ jest.setTimeout(100000);
 describe("pool", () => {
   beforeAll(async () => {
     dhedge = new Dhedge(wallet, Network.POLYGON);
-    options = await getTxOptions();
+    options = await getTxOptions(Network.POLYGON);
   });
 
   // it("approves unlimited WETH on  Arrakis", async () => {
@@ -69,7 +69,7 @@ describe("pool", () => {
     const result = await pool.decreaseLiquidity(
       Dapp.ARRAKIS,
       ARRAKIS_USDC_WETH_GAUGE,
-      100,
+      50.6576575755,
       options
     );
     console.log("result", result);
