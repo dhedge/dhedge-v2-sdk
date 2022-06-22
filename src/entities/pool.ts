@@ -40,6 +40,7 @@ import {
 } from "../services/uniswap/V3Liquidity";
 import { FeeAmount } from "@uniswap/v3-sdk";
 import { getUniswapV3SwapTxData } from "../services/uniswap/V3Trade";
+import { getEasySwapperTxData } from "../services/toros/easySwapper";
 
 export class Pool {
   public readonly poolLogic: Contract;
@@ -265,52 +266,67 @@ export class Pool {
     options: any = null
   ): Promise<any> {
     let swapTxData: string;
-    if (dapp === Dapp.ONEINCH) {
-      const chainId = networkChainIdMap[this.network];
-      const apiUrl = `https://api.1inch.exchange/v4.0/${chainId}/swap?fromTokenAddress=${assetFrom}&toTokenAddress=${assetTo}&amount=${amountIn.toString()}&fromAddress=${
-        this.address
-      }&destReceiver=${
-        this.address
-      }&slippage=${slippage.toString()}&disableEstimate=true`;
-      const response = await axios.get(apiUrl);
-      swapTxData = response.data.tx.data;
-    } else if (dapp === Dapp.BALANCER) {
-      swapTxData = await this.utils.getBalancerSwapTx(
-        this,
-        assetFrom,
-        assetTo,
-        amountIn,
-        slippage
-      );
-    } else if (dapp === Dapp.SYNTHETIX) {
-      const iSynthetix = new ethers.utils.Interface(ISynthetix.abi);
-      const assets = [assetFrom, assetTo].map(asset =>
-        ethers.utils.formatBytes32String(asset)
-      );
-      const daoAddress = await this.factory.owner();
-      swapTxData = iSynthetix.encodeFunctionData(Transaction.SWAP_SYNTHS, [
-        assets[0],
-        amountIn,
-        assets[1],
-        daoAddress,
-        SYNTHETIX_TRACKING_CODE
-      ]);
-    } else {
-      const iUniswapV2Router = new ethers.utils.Interface(IUniswapV2Router.abi);
-      const minAmountOut = await this.utils.getMinAmountOut(
-        dapp,
-        assetFrom,
-        assetTo,
-        amountIn,
-        slippage
-      );
-      swapTxData = iUniswapV2Router.encodeFunctionData(Transaction.SWAP, [
-        amountIn,
-        minAmountOut,
-        [assetFrom, assetTo],
-        this.address,
-        deadline
-      ]);
+    switch (dapp) {
+      case Dapp.ONEINCH:
+        const chainId = networkChainIdMap[this.network];
+        const apiUrl = `https://api.1inch.exchange/v4.0/${chainId}/swap?fromTokenAddress=${assetFrom}&toTokenAddress=${assetTo}&amount=${amountIn.toString()}&fromAddress=${
+          this.address
+        }&destReceiver=${
+          this.address
+        }&slippage=${slippage.toString()}&disableEstimate=true`;
+        const response = await axios.get(apiUrl);
+        swapTxData = response.data.tx.data;
+        break;
+      case Dapp.BALANCER:
+        swapTxData = await this.utils.getBalancerSwapTx(
+          this,
+          assetFrom,
+          assetTo,
+          amountIn,
+          slippage
+        );
+        break;
+      case Dapp.SYNTHETIX:
+        const iSynthetix = new ethers.utils.Interface(ISynthetix.abi);
+        const assets = [assetFrom, assetTo].map(asset =>
+          ethers.utils.formatBytes32String(asset)
+        );
+        const daoAddress = await this.factory.owner();
+        swapTxData = iSynthetix.encodeFunctionData(Transaction.SWAP_SYNTHS, [
+          assets[0],
+          amountIn,
+          assets[1],
+          daoAddress,
+          SYNTHETIX_TRACKING_CODE
+        ]);
+        break;
+      case Dapp.TOROS:
+        swapTxData = await getEasySwapperTxData(
+          this,
+          assetFrom,
+          assetTo,
+          ethers.BigNumber.from(amountIn),
+          slippage
+        );
+        break;
+      default:
+        const iUniswapV2Router = new ethers.utils.Interface(
+          IUniswapV2Router.abi
+        );
+        const minAmountOut = await this.utils.getMinAmountOut(
+          dapp,
+          assetFrom,
+          assetTo,
+          amountIn,
+          slippage
+        );
+        swapTxData = iUniswapV2Router.encodeFunctionData(Transaction.SWAP, [
+          amountIn,
+          minAmountOut,
+          [assetFrom, assetTo],
+          this.address,
+          deadline
+        ]);
     }
     const tx = await this.poolLogic.execTransaction(
       routerAddress[this.network][dapp],
