@@ -4,13 +4,13 @@ import { Dapp, Pool } from "../..";
 import IDhedgeEasySwapper from "../../abi/IDhedgeEasySwapper.json";
 import { routerAddress } from "../../config";
 import { getChainlinkPriceInUsd } from "../chainLink/price";
-import { isTorosPool, loadTorosPool } from "./pool";
+import { isPool, loadPool } from "./pool";
 
 export async function getPoolDepositAsset(
   pool: Pool,
   poolAddress: string
 ): Promise<string> {
-  const torosPool = await loadTorosPool(pool, poolAddress);
+  const torosPool = await loadPool(pool, poolAddress);
   const composition = await torosPool.getComposition();
   return composition.find(e => e.isDeposit)?.asset as string;
 }
@@ -19,7 +19,7 @@ export async function getTorosPoolTokenPrice(
   pool: Pool,
   poolAddress: string
 ): Promise<ethers.BigNumber> {
-  const torosPool = await loadTorosPool(pool, poolAddress);
+  const torosPool = await loadPool(pool, poolAddress);
   return await torosPool.poolLogic.tokenPrice();
 }
 
@@ -71,7 +71,7 @@ export async function getEasySwapperTxData(
   slippage: number
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any> {
-  const isWithdrawal = await isTorosPool(pool, assetFrom);
+  const isWithdrawal = await isPool(pool, assetFrom);
   const [torosAsset, investAsset] = isWithdrawal
     ? [assetFrom, assetTo]
     : [assetTo, assetFrom];
