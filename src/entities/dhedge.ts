@@ -111,7 +111,7 @@ export class Dhedge {
    * @param {string} address Pool address
    * @returns {boolean} Is valid pool address
    */
-  async validatePool(address: string): Promise<boolean> {
-    return await this.factory.isPool(address);
+  validatePool(address: string): Promise<boolean> {
+    return this.factory.isPool(address);
   }
 }
