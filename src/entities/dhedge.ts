@@ -105,4 +105,13 @@ export class Dhedge {
       this.factory
     );
   }
+
+  /**
+   * Check if pool address is valid
+   * @param {string} address Pool address
+   * @returns {boolean} Is valid pool address
+   */
+  validatePool(address: string): Promise<boolean> {
+    return this.factory.isPool(address);
+  }
 }
