@@ -9,10 +9,10 @@ import { isPool, loadPool } from "./pool";
 export async function getPoolDepositAsset(
   pool: Pool,
   poolAddress: string
-): Promise<string> {
+): Promise<string | undefined> {
   const torosPool = await loadPool(pool, poolAddress);
   const composition = await torosPool.getComposition();
-  return composition.find(e => e.isDeposit)?.asset as string;
+  return composition.find(e => e.isDeposit)?.asset;
 }
 
 export async function getTorosPoolTokenPrice(
@@ -91,6 +91,7 @@ export async function getEasySwapperTxData(
     ]);
   } else {
     const depositAsset = await getPoolDepositAsset(pool, torosAsset);
+    if (!depositAsset) throw new Error("no deposit assets");
     const minAmountOut = await getEasySwapperDepositQuote(
       pool,
       torosAsset,
