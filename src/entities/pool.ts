@@ -837,7 +837,10 @@ export class Pool {
     feeAmount: FeeAmount,
     options: any = null
   ): Promise<any> {
-    if ((!minPrice || !maxPrice) && (!minTick || !maxTick))
+    if (
+      (minPrice === null || maxPrice === null) &&
+      (minTick === null || maxTick === null)
+    )
       throw new Error("Need to provide price or tick range");
 
     const iNonfungiblePositionManager = new ethers.utils.Interface(
