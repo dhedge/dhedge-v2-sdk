@@ -41,6 +41,7 @@ import {
 import { FeeAmount } from "@uniswap/v3-sdk";
 import { getUniswapV3SwapTxData } from "../services/uniswap/V3Trade";
 import { getEasySwapperTxData } from "../services/toros/easySwapper";
+import { getOneInchProtocols } from "../services/oneInch/protocols";
 
 export class Pool {
   public readonly poolLogic: Contract;
@@ -269,11 +270,12 @@ export class Pool {
     switch (dapp) {
       case Dapp.ONEINCH:
         const chainId = networkChainIdMap[this.network];
+        const protocols = await getOneInchProtocols(chainId);
         const apiUrl = `https://api.1inch.exchange/v4.0/${chainId}/swap?fromTokenAddress=${assetFrom}&toTokenAddress=${assetTo}&amount=${amountIn.toString()}&fromAddress=${
           this.address
         }&destReceiver=${
           this.address
-        }&slippage=${slippage.toString()}&disableEstimate=true`;
+        }&slippage=${slippage.toString()}&disableEstimate=true${protocols}`;
         const response = await axios.get(apiUrl);
         swapTxData = response.data.tx.data;
         break;

@@ -1,6 +1,6 @@
 import { Dhedge } from "..";
 import { Dapp, Network } from "../types";
-import { TEST_POOL, USDC, WETH } from "./constants";
+import { TEST_POOL, USDC, WBTC } from "./constants";
 import { getTxOptions } from "./txOptions";
 
 import { wallet } from "./wallet";
@@ -33,14 +33,14 @@ describe("pool", () => {
   //     expect(result).not.toBe(null);
   //   });
 
-  it("trades 1 USDC into WETH on 1Inch", async () => {
+  it("trades 1 USDC into WBTC on 1Inch", async () => {
     let result;
     const pool = await dhedge.loadPool(TEST_POOL);
     try {
       result = await pool.trade(
         Dapp.ONEINCH,
         USDC,
-        WETH,
+        WBTC,
         "1000000",
         0.5,
         options
