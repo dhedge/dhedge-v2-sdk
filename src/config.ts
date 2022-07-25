@@ -2,7 +2,8 @@ import {
   Dapp,
   AddressNetworkMap,
   Network,
-  AddressDappNetworkMap
+  AddressDappNetworkMap,
+  LyraMarketNetworkMap
 } from "./types";
 import { NetworkChainIdMap } from ".";
 
@@ -13,7 +14,8 @@ export const factoryAddress: AddressNetworkMap = {
   [Network.POLYGON]: process.env.STAGING_CONTRACTS
     ? "0xDd87eCdB10cFF7004276AAbAbd30e7a08F69bb53"
     : "0xfdc7b8bFe0DD3513Cc669bB8d601Cb83e2F69cB0",
-  [Network.OPTIMISM]: "0x5e61a079A178f0E5784107a4963baAe0c5a680c6"
+  [Network.OPTIMISM]: "0x5e61a079A178f0E5784107a4963baAe0c5a680c6",
+  [Network.OPTIMISM_KOVAN]: "0x697F895d1e2a934F14C4f33Cad92fcDdd114F748"
 };
 
 export const routerAddress: AddressDappNetworkMap = {
@@ -34,6 +36,9 @@ export const routerAddress: AddressDappNetworkMap = {
     [Dapp.AAVEV3]: "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
     [Dapp.ONEINCH]: "0x1111111254760F7ab3F16433eea9304126DCd199",
     [Dapp.TOROS]: "0x15B7199AA9b9CaE9e611d858ab458aea8D36555B"
+  },
+  [Network.OPTIMISM_KOVAN]: {
+    [Dapp.LYRA]: "0xd24955B7AB75FaD5542769105d862FC76A76AF7f"
   }
 };
 
@@ -42,7 +47,10 @@ export const dappFactoryAddress: AddressDappNetworkMap = {
     [Dapp.SUSHISWAP]: "0xc35DADB65012eC5796536bD9864eD8773aBc74C4",
     [Dapp.QUICKSWAP]: "0x5757371414417b8C6CAad45bAeF941aBc7d3Ab32"
   },
-  [Network.OPTIMISM]: {}
+  [Network.OPTIMISM]: {},
+  [Network.OPTIMISM_KOVAN]: {
+    [Dapp.LYRA]: "0xDc06D81A68948544A6B453Df55CcD172061c6d6e"
+  }
 };
 
 export const stakingAddress: AddressDappNetworkMap = {
@@ -51,28 +59,40 @@ export const stakingAddress: AddressDappNetworkMap = {
     [Dapp.BALANCER]: "0x0F3e0c4218b7b0108a3643cFe9D3ec0d4F57c54e",
     [Dapp.AAVE]: "0x357D51124f59836DeD84c8a1730D72B749d8BC23"
   },
-  [Network.OPTIMISM]: {}
+  [Network.OPTIMISM]: {},
+  [Network.OPTIMISM_KOVAN]: {}
 };
 
 export const nonfungiblePositionManagerAddress: AddressNetworkMap = {
   [Network.POLYGON]: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
-  [Network.OPTIMISM]: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88"
+  [Network.OPTIMISM]: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
+  [Network.OPTIMISM_KOVAN]: ""
 };
 
 export const networkChainIdMap: NetworkChainIdMap = {
   [Network.POLYGON]: 137,
-  [Network.OPTIMISM]: 10
+  [Network.OPTIMISM]: 10,
+  [Network.OPTIMISM_KOVAN]: 69
 };
 
 export const balancerSubgraph: AddressNetworkMap = {
   [Network.POLYGON]:
     "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-polygon-v2",
-  [Network.OPTIMISM]: ""
+  [Network.OPTIMISM]: "",
+  [Network.OPTIMISM_KOVAN]: ""
 };
 
 export const multiCallAddress: AddressNetworkMap = {
   [Network.POLYGON]: "0x275617327c958bD06b5D6b871E7f491D76113dd8",
-  [Network.OPTIMISM]: ""
+  [Network.OPTIMISM]: "",
+  [Network.OPTIMISM_KOVAN]: ""
+};
+
+export const lyraOptionMarkets: LyraMarketNetworkMap = {
+  [Network.OPTIMISM]: { ETH: "0x1d42a98848e022908069c2c545aE44Cc78509Bc8" },
+  [Network.OPTIMISM_KOVAN]: {
+    ETH: "0xDc06D81A68948544A6B453Df55CcD172061c6d6e"
+  }
 };
 
 export const deadline = Math.floor(Date.now() / 1000) + 60 * 20;

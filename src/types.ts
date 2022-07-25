@@ -2,7 +2,8 @@ import { BigNumber } from "ethers";
 
 export enum Network {
   POLYGON = "polygon",
-  OPTIMISM = "optimism"
+  OPTIMISM = "optimism",
+  OPTIMISM_KOVAN = "optimism-kovan"
 }
 
 export enum Dapp {
@@ -15,7 +16,8 @@ export enum Dapp {
   SYNTHETIX = "synthetix",
   AAVEV3 = "aavev3",
   ARRAKIS = "arrakis",
-  TOROS = "toros"
+  TOROS = "toros",
+  LYRA = "lyra"
 }
 
 export enum Transaction {
@@ -68,3 +70,12 @@ export type Reserves = {
 };
 
 export type NetworkChainIdMap = Readonly<Record<Network, number>>;
+
+export type LyraOptionMarket = "ETH";
+export type AddressMarketMap = {
+  [key in LyraOptionMarket]: string;
+};
+
+export type LyraMarketNetworkMap = {
+  [key in Network]?: AddressMarketMap;
+};
