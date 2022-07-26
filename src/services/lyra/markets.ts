@@ -25,7 +25,7 @@ export async function getExpiries(
   return result.map(e => e[1].toNumber());
 }
 
-export async function getStrike(
+export async function getOptionStrike(
   market: LyraOptionMarket,
   strike: number,
   expiry: number,

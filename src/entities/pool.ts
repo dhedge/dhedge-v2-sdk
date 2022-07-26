@@ -29,7 +29,10 @@ import {
   Transaction,
   FundComposition,
   AssetEnabled,
-  Network
+  Network,
+  LyraOptionMarket,
+  LyraOptionType,
+  LyraTradeType
 } from "../types";
 
 import { Utils } from "./utils";
@@ -42,6 +45,7 @@ import { FeeAmount } from "@uniswap/v3-sdk";
 import { getUniswapV3SwapTxData } from "../services/uniswap/V3Trade";
 import { getEasySwapperTxData } from "../services/toros/easySwapper";
 import { getOneInchProtocols } from "../services/oneInch/protocols";
+import { getLyraOptionTxData } from "../services/lyra/trade";
 
 export class Pool {
   public readonly poolLogic: Contract;
@@ -1051,6 +1055,52 @@ export class Pool {
     );
     const tx = await this.poolLogic.execTransaction(
       routerAddress[this.network][Dapp.UNISWAPV3],
+      swapxData,
+      options
+    );
+    return tx;
+  }
+
+  /**
+   * Trade options on lyra
+   * @param {LyraOptionMarket} market Underlying mareket e.g. ETH
+   * @param {LyraOptionType} optionType Call or put
+   * @param {number} expiry Expiry timestamp
+   * @param { number} strike Strike price
+   * @param { LyraTradeType} tradeType By or sell
+   * @param {BigNumber | string } optionAmount Option amount
+   * @param {string } assetIn  Asset to invest
+   * @param {BigNumber | string } amountIn Amount of asset to invest
+   * @param { number} slippage Slippage tolerance in %
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async tradeLyraOption(
+    market: LyraOptionMarket,
+    optionType: LyraOptionType,
+    expiry: number,
+    strike: number,
+    tradeType: LyraTradeType,
+    optionAmount: BigNumber | string,
+    assetIn: string,
+    amountIn: BigNumber | string,
+    slippage = 0.5,
+    options: any = null
+  ): Promise<any> {
+    const swapxData = await getLyraOptionTxData(
+      this,
+      market,
+      optionType,
+      expiry,
+      strike,
+      tradeType,
+      optionAmount,
+      amountIn,
+      assetIn,
+      slippage
+    );
+    const tx = await this.poolLogic.execTransaction(
+      routerAddress[this.network][Dapp.LYRA],
       swapxData,
       options
     );
