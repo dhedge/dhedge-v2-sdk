@@ -6,7 +6,8 @@ import { LyraOptionMarket, LyraOptionType, LyraTradeType } from "../../types";
 import { getOptionStrike } from "./markets";
 import IOptionMarketWrapper from "../../abi/IOptionMarketWrapper.json";
 import { lyraOptionMarkets } from "../../config";
-import { getLyraTradeOptionType } from "./tradeOptionType";
+import { getLyraCallPutType, getLyraTradeOptionType } from "./tradeOptionType";
+import { getOptionPositions } from "./positions";
 
 export async function getLyraOptionTxData(
   pool: Pool,
@@ -27,24 +28,48 @@ export async function getLyraOptionTxData(
     pool.network,
     pool.signer
   );
+  const strikeId = optionStrike[0];
+  const lyraOptionType = getLyraTradeOptionType(optionType, tradeType);
 
-  //TODO Check for existing position and add to or close position
+  const positions = await getOptionPositions(pool, market);
+  const existingPosition = positions.filter(
+    e =>
+      e.strikeId.toString() === strikeId.toString() &&
+      getLyraCallPutType(optionType).includes(e.optionType) &&
+      e.state === 1
+  );
+  const positionId =
+    existingPosition.length > 0 ? existingPosition[0].positionId : 0;
+
+  let txFunction = "openPosition";
+  if (existingPosition.length > 0) {
+    if (
+      //sell long positions
+      (tradeType === "sell" &&
+        [0, 1].includes(existingPosition[0].optionType)) ||
+      //cover short positions
+      (tradeType === "buy" && [3, 4].includes(existingPosition[0].optionType))
+    ) {
+      txFunction = "forceClosePosition";
+    }
+  }
+
   //TODO Calculate min cost and max cost with slippage
   console.log("slippage", slippage);
-  //TODO Check if we can derive the amountIn from the assetIn and option amount
+  //Maybe TODO Check if we can derive the amountIn from the assetIn and option amount
 
   const iOptionMarketWrapper = new ethers.utils.Interface(
     IOptionMarketWrapper.abi
   );
-  const tradeTx = iOptionMarketWrapper.encodeFunctionData("openPosition", [
+  const tradeTx = iOptionMarketWrapper.encodeFunctionData(txFunction, [
     [
       lyraOptionMarkets[pool.network]![market],
       optionStrike[0], // strike Id
-      0, // position Id
+      positionId, // position Id
       1, // iteration
       0, // set collateral to
       0, // current collateral
-      getLyraTradeOptionType(optionType, tradeType), // optionType
+      lyraOptionType, // optionType
       optionAmount, // amount
       0, // min cost
       ethers.constants.MaxUint256, // max cost

@@ -10,3 +10,11 @@ export function getLyraTradeOptionType(
     return optionType === "call" ? 3 : 4;
   }
 }
+
+export function getLyraCallPutType(optionType: LyraOptionType): number[] {
+  if (optionType === "call") {
+    return [0, 3];
+  } else {
+    return [1, 4];
+  }
+}

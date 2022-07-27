@@ -48,4 +48,24 @@ describe("pool", () => {
     }
     expect(result).not.toBe(null);
   });
+
+  // it("sells 1 1500 Call with expiry August 17th", async () => {
+  //   let result;
+  //   const pool = await dhedge.loadPool(TEST_POOL);
+  //   try {
+  //     result = await pool.tradeLyraOption(
+  //       "ETH",
+  //       "call",
+  //       1660744800,
+  //       1500,
+  //       "sell",
+  //       "1000000000000000000",
+  //       "0x2400D0469bfdA59FB0233c3027349D83F1a0f4c8",
+  //       "0"
+  //     );
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  //   expect(result).not.toBe(null);
+  // });
 });

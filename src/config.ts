@@ -95,6 +95,13 @@ export const lyraOptionMarkets: LyraMarketNetworkMap = {
   }
 };
 
+export const lyraOptionToken: LyraMarketNetworkMap = {
+  [Network.OPTIMISM]: { ETH: "0xCfDfF4E171133D55dE2e45c66a0E144a135D93f2" },
+  [Network.OPTIMISM_KOVAN]: {
+    ETH: "0x17977c2220b9964618ad6ee2ef3839d9478d69bb"
+  }
+};
+
 export const deadline = Math.floor(Date.now() / 1000) + 60 * 20;
 export const MaxUint128 = "0xffffffffffffffffffffffffffffffff";
 export const UNISWAPV3_QUOTER_ADDRESS =
