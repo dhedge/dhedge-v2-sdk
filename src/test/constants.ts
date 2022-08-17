@@ -26,4 +26,4 @@ export const DAI = "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1";
 export const USDy = "0x1ec50880101022c11530a069690f5446d1464592";
 export const WBTC = "0x68f180fcCe6836688e9084f035309E29Bf0A2095";
 
-export const TEST_POOL = "0x6195aa1ccc3dd4fa28c7e53b41e3dc2378fb1cac";
+export const TEST_POOL = "0xe8912a1722bf69b37d0b92cc9ae8c98e5bcc8a50";

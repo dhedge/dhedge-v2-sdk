@@ -3,6 +3,18 @@ import IOptionMarket from "../../abi/IOptionMarket.json";
 import { ethers, LyraOptionMarket, Network } from "../..";
 import { lyraOptionMarkets } from "../../config";
 import { Wallet } from "ethers";
+import Lyra, { Deployment } from "@lyrafinance/lyra-js";
+
+export async function testLyra(): Promise<any> {
+  const lyra = new Lyra(Deployment.Kovan);
+  // Fetch all markets
+  const market = await lyra.market("eth");
+  console.log(
+    "market",
+    market.__marketData.exchangeParams.spotPrice.toString()
+  );
+  return market;
+}
 
 export async function getExpiries(
   market: LyraOptionMarket,
@@ -22,12 +34,26 @@ export async function getExpiries(
     boardIds.map((e: any) => iOptionMarket.getOptionBoard(e))
   );
 
-  return result.map(e => e[1].toNumber());
+  return result.map((e: any) => e.expiry.toNumber());
 }
 
 export async function getOptionStrike(
   market: LyraOptionMarket,
   strike: number,
+  expiry: number,
+  network: Network,
+  signer: Wallet
+): Promise<any> {
+  const strikes = await getOptionStrikes(market, expiry, network, signer);
+  const filteredStrike = strikes.filter((e: number) => e === strike);
+  if (filteredStrike.length === 0)
+    throw new Error("no option found for provided strike");
+
+  return filteredStrike[0];
+}
+
+export async function getOptionStrikes(
+  market: LyraOptionMarket,
   expiry: number,
   network: Network,
   signer: Wallet
@@ -43,15 +69,14 @@ export async function getOptionStrike(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     boardIds.map((e: any) => iOptionMarket.getBoardAndStrikeDetails(e))
   );
-  const filteredBoard = result.filter(e => e[0][1].toNumber() === expiry);
+  const filteredBoard: any[] = result.filter(
+    (e: any) => e[0].expiry.toNumber() === expiry
+  );
+
   if (filteredBoard.length === 0)
     throw new Error("no option found for provided expiry");
 
-  const filteredStrike = filteredBoard[0][1].filter(
-    (e: any) => parseFloat(ethers.utils.formatEther(e[1])) === strike
+  return filteredBoard[0][1].map((e: any) =>
+    parseFloat(ethers.utils.formatEther(e.strikePrice))
   );
-  if (filteredStrike.length === 0)
-    throw new Error("no option found for provided strike");
-
-  return filteredStrike[0];
 }

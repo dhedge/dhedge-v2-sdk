@@ -22,8 +22,9 @@ import {
   networkChainIdMap,
   stakingAddress
 } from "../config";
-import { Dapp, Network, Reserves } from "../types";
+import { Dapp, LyraOptionMarket, Network, Reserves } from "../types";
 import { Pool } from ".";
+import { getExpiries, getOptionStrikes } from "../services/lyra/markets";
 
 export class Utils {
   network: Network;
@@ -321,5 +322,16 @@ export class Utils {
     ];
     const exitPoolTx = iBalancerV2Vault.encodeFunctionData("exitPool", txData);
     return exitPoolTx;
+  }
+
+  async getLyraOptionExpiries(market: LyraOptionMarket): Promise<number[]> {
+    return await getExpiries(market, this.network, this.signer);
+  }
+
+  async getLyraOptionStrikes(
+    market: LyraOptionMarket,
+    expiry: number
+  ): Promise<number[]> {
+    return await getOptionStrikes(market, expiry, this.network, this.signer);
   }
 }

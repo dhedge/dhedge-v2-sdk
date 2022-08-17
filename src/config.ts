@@ -89,16 +89,16 @@ export const multiCallAddress: AddressNetworkMap = {
 };
 
 export const lyraOptionMarkets: LyraMarketNetworkMap = {
-  [Network.OPTIMISM]: { ETH: "0x1d42a98848e022908069c2c545aE44Cc78509Bc8" },
+  [Network.OPTIMISM]: { eth: "0x1d42a98848e022908069c2c545aE44Cc78509Bc8" },
   [Network.OPTIMISM_KOVAN]: {
-    ETH: "0xDc06D81A68948544A6B453Df55CcD172061c6d6e"
+    eth: "0xDc06D81A68948544A6B453Df55CcD172061c6d6e"
   }
 };
 
 export const lyraOptionToken: LyraMarketNetworkMap = {
-  [Network.OPTIMISM]: { ETH: "0xCfDfF4E171133D55dE2e45c66a0E144a135D93f2" },
+  [Network.OPTIMISM]: { eth: "0xCfDfF4E171133D55dE2e45c66a0E144a135D93f2" },
   [Network.OPTIMISM_KOVAN]: {
-    ETH: "0x17977c2220b9964618ad6ee2ef3839d9478d69bb"
+    eth: "0x17977c2220b9964618ad6ee2ef3839d9478d69bb"
   }
 };
 
