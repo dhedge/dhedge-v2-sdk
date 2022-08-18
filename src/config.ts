@@ -3,9 +3,11 @@ import {
   AddressNetworkMap,
   Network,
   AddressDappNetworkMap,
-  LyraMarketNetworkMap
+  LyraMarketNetworkMap,
+  LyraNetworkMap
 } from "./types";
 import { NetworkChainIdMap } from ".";
+import { Deployment } from "@lyrafinance/lyra-js";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require("dotenv").config();
@@ -100,6 +102,11 @@ export const lyraOptionToken: LyraMarketNetworkMap = {
   [Network.OPTIMISM_KOVAN]: {
     eth: "0x17977c2220b9964618ad6ee2ef3839d9478d69bb"
   }
+};
+
+export const lyraNetworkMap: LyraNetworkMap = {
+  [Network.OPTIMISM]: Deployment.Mainnet,
+  [Network.OPTIMISM_KOVAN]: Deployment.Kovan
 };
 
 export const deadline = Math.floor(Date.now() / 1000) + 60 * 20;

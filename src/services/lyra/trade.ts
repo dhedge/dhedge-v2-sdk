@@ -3,7 +3,7 @@
 import { BigNumber, ethers } from "ethers";
 import { Pool } from "../..";
 import { LyraOptionMarket, LyraOptionType, LyraTradeType } from "../../types";
-import { getOptionStrike } from "./markets";
+import { getStrike } from "./markets";
 import IOptionMarketWrapper from "../../abi/IOptionMarketWrapper.json";
 import { lyraOptionMarkets } from "../../config";
 import { getLyraCallPutType, getLyraTradeOptionType } from "./tradeOptionType";
@@ -21,20 +21,14 @@ export async function getLyraOptionTxData(
   assetIn: string,
   slippage = 0.5
 ): Promise<any> {
-  const optionStrike = await getOptionStrike(
-    market,
-    strike,
-    expiry,
-    pool.network,
-    pool.signer
-  );
-  const strikeId = optionStrike[0];
+  const optionStrike = await getStrike(pool.network, market, expiry, strike);
+  const strikeId = optionStrike.id;
   const lyraOptionType = getLyraTradeOptionType(optionType, tradeType);
 
   const positions = await getOptionPositions(pool, market);
   const existingPosition = positions.filter(
     e =>
-      e.strikeId.toString() === strikeId.toString() &&
+      e.strikeId.toNumber() === strikeId &&
       getLyraCallPutType(optionType).includes(e.optionType) &&
       e.state === 1
   );
@@ -64,7 +58,7 @@ export async function getLyraOptionTxData(
   const tradeTx = iOptionMarketWrapper.encodeFunctionData(txFunction, [
     [
       lyraOptionMarkets[pool.network]![market],
-      optionStrike[0], // strike Id
+      strikeId, // strike Id
       positionId, // position Id
       1, // iteration
       0, // set collateral to

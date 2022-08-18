@@ -24,7 +24,8 @@ import {
 } from "../config";
 import { Dapp, LyraOptionMarket, Network, Reserves } from "../types";
 import { Pool } from ".";
-import { getExpiries, getOptionStrikes } from "../services/lyra/markets";
+import { getExpiries, getStrike, getStrikes } from "../services/lyra/markets";
+import { Strike } from "@lyrafinance/lyra-js";
 
 export class Utils {
   network: Network;
@@ -325,13 +326,21 @@ export class Utils {
   }
 
   async getLyraOptionExpiries(market: LyraOptionMarket): Promise<number[]> {
-    return await getExpiries(market, this.network, this.signer);
+    return await getExpiries(this.network, market);
   }
 
   async getLyraOptionStrikes(
     market: LyraOptionMarket,
     expiry: number
-  ): Promise<number[]> {
-    return await getOptionStrikes(market, expiry, this.network, this.signer);
+  ): Promise<Strike[]> {
+    return await getStrikes(this.network, market, expiry);
+  }
+
+  async getLyraOptionStrike(
+    market: LyraOptionMarket,
+    expiry: number,
+    strike: number
+  ): Promise<Strike> {
+    return await getStrike(this.network, market, expiry, strike);
   }
 }

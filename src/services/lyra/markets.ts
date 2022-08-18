@@ -1,82 +1,52 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import IOptionMarket from "../../abi/IOptionMarket.json";
 import { ethers, LyraOptionMarket, Network } from "../..";
-import { lyraOptionMarkets } from "../../config";
-import { Wallet } from "ethers";
-import Lyra, { Deployment } from "@lyrafinance/lyra-js";
+import { lyraNetworkMap } from "../../config";
+import Lyra, { Board, Strike } from "@lyrafinance/lyra-js";
 
-export async function testLyra(): Promise<any> {
-  const lyra = new Lyra(Deployment.Kovan);
-  // Fetch all markets
-  const market = await lyra.market("eth");
-  console.log(
-    "market",
-    market.__marketData.exchangeParams.spotPrice.toString()
-  );
-  return market;
+export async function getBoard(
+  network: Network,
+  market: LyraOptionMarket,
+  expiry: number
+): Promise<Board> {
+  const lyra = new Lyra(lyraNetworkMap[network]);
+  const optionMarket = await lyra.market(market);
+  const filteredBoards = optionMarket
+    .liveBoards()
+    .filter(e => e.expiryTimestamp === expiry);
+  if (filteredBoards.length === 0) throw new Error("no lyra board for expiry");
+  return filteredBoards[0];
 }
 
 export async function getExpiries(
-  market: LyraOptionMarket,
   network: Network,
-  signer: Wallet
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  market: LyraOptionMarket
 ): Promise<number[]> {
-  const iOptionMarket = new ethers.Contract(
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    lyraOptionMarkets[network]![market],
-    IOptionMarket.abi,
-    signer
-  );
-  const boardIds = await iOptionMarket.getLiveBoards();
-  const result = await Promise.all(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    boardIds.map((e: any) => iOptionMarket.getOptionBoard(e))
-  );
-
-  return result.map((e: any) => e.expiry.toNumber());
+  const lyra = new Lyra(lyraNetworkMap[network]);
+  const optionMarket = await lyra.market(market);
+  return optionMarket.liveBoards().map(e => e.expiryTimestamp);
 }
 
-export async function getOptionStrike(
-  market: LyraOptionMarket,
-  strike: number,
-  expiry: number,
+export async function getStrikes(
   network: Network,
-  signer: Wallet
-): Promise<any> {
-  const strikes = await getOptionStrikes(market, expiry, network, signer);
-  const filteredStrike = strikes.filter((e: number) => e === strike);
+  market: LyraOptionMarket,
+  expiry: number
+): Promise<Strike[]> {
+  return (await getBoard(network, market, expiry)).strikes();
+}
+
+export async function getStrike(
+  network: Network,
+  market: LyraOptionMarket,
+  expiry: number,
+  strike: number
+): Promise<Strike> {
+  const strikes = await getStrikes(network, market, expiry);
+  const filteredStrike = strikes.filter(
+    (e: Strike) =>
+      parseFloat(ethers.utils.formatEther(e.strikePrice)) === strike
+  );
   if (filteredStrike.length === 0)
     throw new Error("no option found for provided strike");
 
   return filteredStrike[0];
-}
-
-export async function getOptionStrikes(
-  market: LyraOptionMarket,
-  expiry: number,
-  network: Network,
-  signer: Wallet
-): Promise<any> {
-  const iOptionMarket = new ethers.Contract(
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    lyraOptionMarkets[network]![market],
-    IOptionMarket.abi,
-    signer
-  );
-  const boardIds = await iOptionMarket.getLiveBoards();
-  const result = await Promise.all(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    boardIds.map((e: any) => iOptionMarket.getBoardAndStrikeDetails(e))
-  );
-  const filteredBoard: any[] = result.filter(
-    (e: any) => e[0].expiry.toNumber() === expiry
-  );
-
-  if (filteredBoard.length === 0)
-    throw new Error("no option found for provided expiry");
-
-  return filteredBoard[0][1].map((e: any) =>
-    parseFloat(ethers.utils.formatEther(e.strikePrice))
-  );
 }
