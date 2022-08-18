@@ -1,16 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import IOptionToken from "../../abi/IOptionToken.json";
-import { ethers, LyraOptionMarket, Pool } from "../..";
-import { lyraOptionToken } from "../../config";
+import { ethers, Pool } from "../..";
 
 export async function getOptionPositions(
   pool: Pool,
-  market: LyraOptionMarket
+  optionToken: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any[]> {
   const iOptionToken = new ethers.Contract(
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    lyraOptionToken[pool.network]![market],
+    optionToken,
     IOptionToken.abi,
     pool.signer
   );

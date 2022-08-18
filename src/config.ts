@@ -3,7 +3,6 @@ import {
   AddressNetworkMap,
   Network,
   AddressDappNetworkMap,
-  LyraMarketNetworkMap,
   LyraNetworkMap
 } from "./types";
 import { NetworkChainIdMap } from ".";
@@ -88,20 +87,6 @@ export const multiCallAddress: AddressNetworkMap = {
   [Network.POLYGON]: "0x275617327c958bD06b5D6b871E7f491D76113dd8",
   [Network.OPTIMISM]: "",
   [Network.OPTIMISM_KOVAN]: ""
-};
-
-export const lyraOptionMarkets: LyraMarketNetworkMap = {
-  [Network.OPTIMISM]: { eth: "0x1d42a98848e022908069c2c545aE44Cc78509Bc8" },
-  [Network.OPTIMISM_KOVAN]: {
-    eth: "0xDc06D81A68948544A6B453Df55CcD172061c6d6e"
-  }
-};
-
-export const lyraOptionToken: LyraMarketNetworkMap = {
-  [Network.OPTIMISM]: { eth: "0xCfDfF4E171133D55dE2e45c66a0E144a135D93f2" },
-  [Network.OPTIMISM_KOVAN]: {
-    eth: "0x17977c2220b9964618ad6ee2ef3839d9478d69bb"
-  }
 };
 
 export const lyraNetworkMap: LyraNetworkMap = {

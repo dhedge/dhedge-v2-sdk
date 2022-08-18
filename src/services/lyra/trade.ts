@@ -1,31 +1,30 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { BigNumber, ethers } from "ethers";
 import { Pool } from "../..";
 import { LyraOptionMarket, LyraOptionType, LyraTradeType } from "../../types";
 import { getStrike } from "./markets";
 import IOptionMarketWrapper from "../../abi/IOptionMarketWrapper.json";
-import { lyraOptionMarkets } from "../../config";
 import { getLyraCallPutType, getLyraTradeOptionType } from "./tradeOptionType";
 import { getOptionPositions } from "./positions";
+import { getQuote } from "./quote";
 
 export async function getLyraOptionTxData(
   pool: Pool,
   market: LyraOptionMarket,
   optionType: LyraOptionType,
   expiry: number,
-  strike: number,
+  strikePrice: number,
   tradeType: LyraTradeType,
   optionAmount: BigNumber | string,
-  amountIn: BigNumber | string,
-  assetIn: string,
-  slippage = 0.5
+  assetIn: string
 ): Promise<any> {
-  const optionStrike = await getStrike(pool.network, market, expiry, strike);
-  const strikeId = optionStrike.id;
-  const lyraOptionType = getLyraTradeOptionType(optionType, tradeType);
+  const strike = await getStrike(pool.network, market, expiry, strikePrice);
+  const strikeId = strike.id;
 
-  const positions = await getOptionPositions(pool, market);
+  const positions = await getOptionPositions(
+    pool,
+    strike.market().contractAddresses.optionToken
+  );
   const existingPosition = positions.filter(
     e =>
       e.strikeId.toNumber() === strikeId &&
@@ -35,6 +34,7 @@ export async function getLyraOptionTxData(
   const positionId =
     existingPosition.length > 0 ? existingPosition[0].positionId : 0;
 
+  let lyraOptionType = getLyraTradeOptionType(optionType, tradeType);
   let txFunction = "openPosition";
   if (existingPosition.length > 0) {
     if (
@@ -44,30 +44,34 @@ export async function getLyraOptionTxData(
       //cover short positions
       (tradeType === "buy" && [3, 4].includes(existingPosition[0].optionType))
     ) {
-      txFunction = "forceClosePosition";
+      lyraOptionType = existingPosition[0].optionType;
+      txFunction = "closePosition";
     }
   }
 
-  //TODO Calculate min cost and max cost with slippage
-  console.log("slippage", slippage);
-  //Maybe TODO Check if we can derive the amountIn from the assetIn and option amount
+  const amountIn = ethers.BigNumber.from(optionAmount);
+  const quote = await getQuote(strike, optionType, tradeType, amountIn);
+  const netPremiun =
+    tradeType === "buy"
+      ? quote.premium.add(quote.fee)
+      : quote.premium.sub(quote.fee);
 
   const iOptionMarketWrapper = new ethers.utils.Interface(
     IOptionMarketWrapper.abi
   );
   const tradeTx = iOptionMarketWrapper.encodeFunctionData(txFunction, [
     [
-      lyraOptionMarkets[pool.network]![market],
+      strike.market().contractAddresses.optionMarket,
       strikeId, // strike Id
       positionId, // position Id
       1, // iteration
       0, // set collateral to
       0, // current collateral
       lyraOptionType, // optionType
-      optionAmount, // amount
-      0, // min cost
-      ethers.constants.MaxUint256, // max cost
-      amountIn, // input amount
+      amountIn, // amount
+      tradeType === "sell" ? netPremiun : 0, // min cost
+      tradeType === "buy" ? netPremiun : ethers.constants.MaxUint256, // max cost
+      tradeType === "buy" ? netPremiun : 0, // input amount
       assetIn // input asset
     ]
   ]);

@@ -46,7 +46,7 @@ export async function getStrike(
       parseFloat(ethers.utils.formatEther(e.strikePrice)) === strike
   );
   if (filteredStrike.length === 0)
-    throw new Error("no option found for provided strike");
+    throw new Error("no option found for strike price");
 
   return filteredStrike[0];
 }

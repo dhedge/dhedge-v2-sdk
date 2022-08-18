@@ -1063,28 +1063,24 @@ export class Pool {
 
   /**
    * Trade options on lyra
-   * @param {LyraOptionMarket} market Underlying mareket e.g. ETH
-   * @param {LyraOptionType} optionType Call or put
+   * @param {LyraOptionMarket} market Underlying market e.g. eth
    * @param {number} expiry Expiry timestamp
    * @param { number} strike Strike price
+   * @param {LyraOptionType} optionType Call or put
    * @param { LyraTradeType} tradeType By or sell
    * @param {BigNumber | string } optionAmount Option amount
    * @param {string } assetIn  Asset to invest
-   * @param {BigNumber | string } amountIn Amount of asset to invest
-   * @param { number} slippage Slippage tolerance in %
    * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
   async tradeLyraOption(
     market: LyraOptionMarket,
-    optionType: LyraOptionType,
     expiry: number,
     strike: number,
+    optionType: LyraOptionType,
     tradeType: LyraTradeType,
     optionAmount: BigNumber | string,
     assetIn: string,
-    amountIn: BigNumber | string,
-    slippage = 0.5,
     options: any = null
   ): Promise<any> {
     const swapxData = await getLyraOptionTxData(
@@ -1095,9 +1091,7 @@ export class Pool {
       strike,
       tradeType,
       optionAmount,
-      amountIn,
-      assetIn,
-      slippage
+      assetIn
     );
     const tx = await this.poolLogic.execTransaction(
       routerAddress[this.network][Dapp.LYRA],

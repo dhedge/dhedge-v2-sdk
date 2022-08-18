@@ -77,10 +77,6 @@ export type AddressMarketMap = {
   [key in LyraOptionMarket]: string;
 };
 
-export type LyraMarketNetworkMap = {
-  [key in Network]?: AddressMarketMap;
-};
-
 export type LyraTradeType = "buy" | "sell";
 export type LyraOptionType = "call" | "put";
 export type LyraNetworkMap = { [key in Network]?: Deployment };

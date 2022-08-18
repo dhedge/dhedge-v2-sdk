@@ -1,4 +1,4 @@
-import { Contract, ethers, Wallet } from "ethers";
+import { BigNumber, Contract, ethers, Wallet } from "ethers";
 import {
   Token,
   TokenAmount,
@@ -22,10 +22,18 @@ import {
   networkChainIdMap,
   stakingAddress
 } from "../config";
-import { Dapp, LyraOptionMarket, Network, Reserves } from "../types";
+import {
+  Dapp,
+  LyraOptionMarket,
+  LyraOptionType,
+  LyraTradeType,
+  Network,
+  Reserves
+} from "../types";
 import { Pool } from ".";
 import { getExpiries, getStrike, getStrikes } from "../services/lyra/markets";
-import { Strike } from "@lyrafinance/lyra-js";
+import { Quote, Strike } from "@lyrafinance/lyra-js";
+import { getQuote } from "../services/lyra/quote";
 
 export class Utils {
   network: Network;
@@ -342,5 +350,19 @@ export class Utils {
     strike: number
   ): Promise<Strike> {
     return await getStrike(this.network, market, expiry, strike);
+  }
+
+  async getLyraOptionQuote(
+    strike: Strike,
+    type: LyraOptionType,
+    tradeType: LyraTradeType,
+    amount: BigNumber | string
+  ): Promise<Quote> {
+    return await getQuote(
+      strike,
+      type,
+      tradeType,
+      ethers.BigNumber.from(amount)
+    );
   }
 }
