@@ -46,6 +46,8 @@ import { getUniswapV3SwapTxData } from "../services/uniswap/V3Trade";
 import { getEasySwapperTxData } from "../services/toros/easySwapper";
 import { getOneInchProtocols } from "../services/oneInch/protocols";
 import { getLyraOptionTxData } from "../services/lyra/trade";
+import { Position } from "@lyrafinance/lyra-js";
+import { getPositions } from "../services/lyra/positions";
 
 export class Pool {
   public readonly poolLogic: Contract;
@@ -1099,5 +1101,13 @@ export class Pool {
       options
     );
     return tx;
+  }
+
+  /**
+   * Gets Lyra option positions
+   * @returns {Promise<Position>} Transaction
+   */
+  async getLyraOptions(): Promise<Position[]> {
+    return await getPositions(this);
   }
 }

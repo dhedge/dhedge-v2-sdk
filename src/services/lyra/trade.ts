@@ -4,8 +4,8 @@ import { Pool } from "../..";
 import { LyraOptionMarket, LyraOptionType, LyraTradeType } from "../../types";
 import { getStrike } from "./markets";
 import IOptionMarketWrapper from "../../abi/IOptionMarketWrapper.json";
-import { getLyraCallPutType, getLyraTradeOptionType } from "./tradeOptionType";
-import { getOptionPositions } from "./positions";
+import { getLyraTradeOptionType } from "./tradeOptionType";
+import { getPositions } from "./positions";
 import { getQuote } from "./quote";
 
 export async function getLyraOptionTxData(
@@ -21,30 +21,29 @@ export async function getLyraOptionTxData(
   const strike = await getStrike(pool.network, market, expiry, strikePrice);
   const strikeId = strike.id;
 
-  const positions = await getOptionPositions(
-    pool,
-    strike.market().contractAddresses.optionToken
-  );
-  const existingPosition = positions.filter(
+  const positions = await getPositions(pool);
+  const filteredPosition = positions.filter(
     e =>
-      e.strikeId.toNumber() === strikeId &&
-      getLyraCallPutType(optionType).includes(e.optionType) &&
-      e.state === 1
+      e.id === strikeId && e.isCall == (optionType === "call") && e.state === 1
   );
-  const positionId =
-    existingPosition.length > 0 ? existingPosition[0].positionId : 0;
+  const positionId = filteredPosition.length > 0 ? filteredPosition[0].id : 0;
 
-  let lyraOptionType = getLyraTradeOptionType(optionType, tradeType);
+  let lyraOptionType = getLyraTradeOptionType(
+    optionType === "call",
+    tradeType === "buy"
+  );
   let txFunction = "openPosition";
-  if (existingPosition.length > 0) {
+  if (filteredPosition.length > 0) {
     if (
       //sell long positions
-      (tradeType === "sell" &&
-        [0, 1].includes(existingPosition[0].optionType)) ||
+      (tradeType === "sell" && filteredPosition[0].isLong) ||
       //cover short positions
-      (tradeType === "buy" && [3, 4].includes(existingPosition[0].optionType))
+      (tradeType === "buy" && !filteredPosition[0].isLong)
     ) {
-      lyraOptionType = existingPosition[0].optionType;
+      lyraOptionType = getLyraTradeOptionType(
+        filteredPosition[0].isCall,
+        filteredPosition[0].isLong
+      );
       txFunction = "closePosition";
     }
   }

@@ -72,8 +72,8 @@ describe("pool", () => {
   //       "eth",
   //       1663164000,
   //       1700,
-  //       "put",
-  //       "buy",
+  //       "call",
+  //       "sell",
   //       "1000000000000000000",
   //       "0x2400D0469bfdA59FB0233c3027349D83F1a0f4c8"
   //     );
@@ -83,19 +83,31 @@ describe("pool", () => {
   //   expect(result).not.toBe(null);
   // });
 
-  it("sells 0.5 1800 Call with expiry September 14th", async () => {
+  // it("sells 0.5 1800 Call with expiry September 14th", async () => {
+  //   let result;
+  //   const pool = await dhedge.loadPool(TEST_POOL);
+  //   try {
+  //     result = await pool.tradeLyraOption(
+  //       "eth",
+  //       1663164000,
+  //       1700,
+  //       "put",
+  //       "sell",
+  //       "1000000000000000000",
+  //       "0x2400D0469bfdA59FB0233c3027349D83F1a0f4c8"
+  //     );
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  //   expect(result).not.toBe(null);
+  // });
+
+  it("it gets a Lyra balances", async () => {
     let result;
     const pool = await dhedge.loadPool(TEST_POOL);
     try {
-      result = await pool.tradeLyraOption(
-        "eth",
-        1663164000,
-        1700,
-        "put",
-        "sell",
-        "1000000000000000000",
-        "0x2400D0469bfdA59FB0233c3027349D83F1a0f4c8"
-      );
+      result = await pool.getLyraOptions();
+      console.log(result);
     } catch (e) {
       console.log(e);
     }

@@ -1,20 +1,10 @@
-import { LyraOptionType, LyraTradeType } from "../../types";
-
 export function getLyraTradeOptionType(
-  optionType: LyraOptionType,
-  tradeType: LyraTradeType
+  isCall: boolean,
+  isLong: boolean
 ): number {
-  if (tradeType === "buy") {
-    return optionType === "call" ? 0 : 1;
+  if (isCall) {
+    return isLong ? 0 : 1;
   } else {
-    return optionType === "call" ? 3 : 4;
-  }
-}
-
-export function getLyraCallPutType(optionType: LyraOptionType): number[] {
-  if (optionType === "call") {
-    return [0, 3];
-  } else {
-    return [1, 4];
+    return isLong ? 3 : 4;
   }
 }
