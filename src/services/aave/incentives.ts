@@ -19,6 +19,5 @@ export async function getAaveV3ClaimTxData(
     pool.address,
     rewardAsset
   ]);
-  console.log(claimTxData);
   return claimTxData;
 }
