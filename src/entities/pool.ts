@@ -42,6 +42,7 @@ import { FeeAmount } from "@uniswap/v3-sdk";
 import { getUniswapV3SwapTxData } from "../services/uniswap/V3Trade";
 import { getEasySwapperTxData } from "../services/toros/easySwapper";
 import { getOneInchProtocols } from "../services/oneInch/protocols";
+import { getAaveV3ClaimTxData } from "../services/aave/incentives";
 
 export class Pool {
   public readonly poolLogic: Contract;
@@ -807,6 +808,27 @@ export class Pool {
     );
     const tx = await this.poolLogic.execTransaction(
       aaveIncentivesAddress,
+      claimTxData,
+      options
+    );
+    return tx;
+  }
+
+  /**
+   * Claim rewards from Aave platform
+   * @param {string[]} assets Assets invested in Aave
+   * @param {string} rewardAssets Reward token address
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async harvestAaveV3Rewards(
+    assets: string[],
+    rewardAsset: string,
+    options: any = null
+  ): Promise<any> {
+    const claimTxData = await getAaveV3ClaimTxData(this, assets, rewardAsset);
+    const tx = await this.poolLogic.execTransaction(
+      stakingAddress[this.network][Dapp.AAVEV3] as string,
       claimTxData,
       options
     );

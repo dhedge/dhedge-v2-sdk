@@ -1,6 +1,6 @@
 import { Dhedge } from "..";
-import { Dapp, Network } from "../types";
-import { TEST_POOL, WETH } from "./constants";
+import { Network } from "../types";
+import { OP, TEST_POOL, USDC, WBTC, WETH } from "./constants";
 
 import { wallet } from "./wallet";
 
@@ -51,17 +51,17 @@ describe("pool", () => {
   //   expect(result).not.toBe(null);
   // });
 
-  it("borrows 0.001 WETH from Aave lending pool", async () => {
-    let result;
-    const pool = await dhedge.loadPool(TEST_POOL);
-    try {
-      result = await pool.borrow(Dapp.AAVEV3, WETH, "1000000000000000");
-      console.log(result);
-    } catch (e) {
-      console.log(e);
-    }
-    expect(result).not.toBe(null);
-  });
+  // it("borrows 0.001 WETH from Aave lending pool", async () => {
+  //   let result;
+  //   const pool = await dhedge.loadPool(TEST_POOL);
+  //   try {
+  //     result = await pool.borrow(Dapp.AAVEV3, WETH, "1000000000000000");
+  //     console.log(result);
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  //   expect(result).not.toBe(null);
+  // });
 
   // it("reapys 1USDC to Aave lending pool", async () => {
   //   let result;
@@ -98,4 +98,31 @@ describe("pool", () => {
   //   }
   //   expect(result).not.toBe(null);
   // });
+
+  // it("gets Aave assets for underlying", async () => {
+  //   let result;
+  //   const pool = await dhedge.loadPool(TEST_POOL);
+  //   try {
+  //     result = await getAaveAssetsForUnderlying(pool, Dapp.AAVEV3, [
+  //       USDC,
+  //       WETH
+  //     ]);
+  //     console.log(result);
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  //   expect(result).not.toBe(null);
+  // });
+
+  it("claims rewards from AaveV3", async () => {
+    let result;
+    const pool = await dhedge.loadPool(TEST_POOL);
+    try {
+      result = await pool.harvestAaveV3Rewards([USDC, WETH, WBTC], OP);
+      console.log(result);
+    } catch (e) {
+      console.log(e);
+    }
+    expect(result).not.toBe(null);
+  });
 });

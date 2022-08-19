@@ -49,11 +49,23 @@ export const stakingAddress: AddressDappNetworkMap = {
   [Network.POLYGON]: {
     [Dapp.SUSHISWAP]: "0x0769fd68dFb93167989C6f7254cd0D766Fb2841F",
     [Dapp.BALANCER]: "0x0F3e0c4218b7b0108a3643cFe9D3ec0d4F57c54e",
-    [Dapp.AAVE]: "0x357D51124f59836DeD84c8a1730D72B749d8BC23"
+    [Dapp.AAVE]: "0x357D51124f59836DeD84c8a1730D72B749d8BC23",
+    [Dapp.AAVEV3]: "0x929EC64c34a17401F460460D4B9390518E5B473e"
   },
-  [Network.OPTIMISM]: {}
+  [Network.OPTIMISM]: {
+    [Dapp.AAVEV3]: "0x929EC64c34a17401F460460D4B9390518E5B473e"
+  }
 };
 
+export const aaveAddressProvider: AddressDappNetworkMap = {
+  [Network.POLYGON]: {
+    [Dapp.AAVE]: "0xd05e3E715d945B59290df0ae8eF85c1BdB684744",
+    [Dapp.AAVEV3]: "0xa97684ead0e402dC232d5A977953DF7ECBaB3CDb"
+  },
+  [Network.OPTIMISM]: {
+    [Dapp.AAVEV3]: "0xa97684ead0e402dC232d5A977953DF7ECBaB3CDb"
+  }
+};
 export const nonfungiblePositionManagerAddress: AddressNetworkMap = {
   [Network.POLYGON]: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
   [Network.OPTIMISM]: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88"
