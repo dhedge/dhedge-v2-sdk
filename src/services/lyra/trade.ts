@@ -24,7 +24,9 @@ export async function getLyraOptionTxData(
   const positions = await getPositions(pool);
   const filteredPosition = positions.filter(
     e =>
-      e.id === strikeId && e.isCall == (optionType === "call") && e.state === 1
+      e.strikeId === strikeId &&
+      e.isCall == (optionType === "call") &&
+      e.state === 1
   );
   const positionId = filteredPosition.length > 0 ? filteredPosition[0].id : 0;
 

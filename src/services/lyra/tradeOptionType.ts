@@ -3,8 +3,8 @@ export function getLyraTradeOptionType(
   isLong: boolean
 ): number {
   if (isCall) {
-    return isLong ? 0 : 1;
+    return isLong ? 0 : 3;
   } else {
-    return isLong ? 3 : 4;
+    return isLong ? 1 : 4;
   }
 }
