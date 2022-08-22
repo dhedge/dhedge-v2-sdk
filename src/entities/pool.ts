@@ -1107,7 +1107,7 @@ export class Pool {
    * Gets Lyra option positions
    * @returns {Promise<Position>} Transaction
    */
-  async getLyraOptions(): Promise<Position[]> {
+  async getLyraPositions(): Promise<Position[]> {
     return await getPositions(this);
   }
 }
