@@ -17,7 +17,7 @@ export async function getLyraOptionTxData(
   tradeType: LyraTradeType,
   optionAmount: BigNumber | string,
   assetIn: string
-): Promise<any> {
+): Promise<string> {
   const strike = await getStrike(pool.network, market, expiry, strikePrice);
   const strikeId = strike.id;
 
