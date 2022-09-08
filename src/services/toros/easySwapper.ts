@@ -8,10 +8,16 @@ import { isPool, loadPool } from "./pool";
 
 export async function getPoolDepositAsset(
   pool: Pool,
-  poolAddress: string
+  poolAddress: string,
+  investAsset: string
 ): Promise<string | undefined> {
   const torosPool = await loadPool(pool, poolAddress);
   const composition = await torosPool.getComposition();
+  if (
+    composition.find(e => e.asset.toLowerCase() === investAsset.toLowerCase())
+      ?.isDeposit
+  )
+    return investAsset;
   return composition.find(e => e.isDeposit)?.asset;
 }
 
@@ -90,7 +96,11 @@ export async function getEasySwapperTxData(
       minAmountOut.mul(10000 - slippage * 100).div(10000)
     ]);
   } else {
-    const depositAsset = await getPoolDepositAsset(pool, torosAsset);
+    const depositAsset = await getPoolDepositAsset(
+      pool,
+      torosAsset,
+      investAsset
+    );
     if (!depositAsset) throw new Error("no deposit assets");
     const minAmountOut = await getEasySwapperDepositQuote(
       pool,
