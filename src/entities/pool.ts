@@ -1072,6 +1072,7 @@ export class Pool {
    * @param { LyraTradeType} tradeType By or sell
    * @param {BigNumber | string } optionAmount Option amount
    * @param {string } assetIn  Asset to invest
+   * @param {BigNumber | string } collateralChangeAmount Collateral amount to add when shorting options and to remove when covering shorts
    * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
@@ -1083,6 +1084,7 @@ export class Pool {
     tradeType: LyraTradeType,
     optionAmount: BigNumber | string,
     assetIn: string,
+    collateralChangeAmount: BigNumber | string = "0",
     options: any = null
   ): Promise<any> {
     const swapxData = await getLyraOptionTxData(
@@ -1093,7 +1095,8 @@ export class Pool {
       strike,
       tradeType,
       optionAmount,
-      assetIn
+      assetIn,
+      BigNumber.from(collateralChangeAmount)
     );
     const tx = await this.poolLogic.execTransaction(
       routerAddress[this.network][Dapp.LYRA],

@@ -13,7 +13,7 @@ export const getTxOptions = async (network: Network): Promise<any> => {
         .toFixed(0),
       maxFeePerGas: new BigNumber(result.data.fast.maxFee)
         .shiftedBy(9)
-        .toFixed(0),
+        .toFixed(0)
     };
   } else {
     return { gasLimit: "3000000" };

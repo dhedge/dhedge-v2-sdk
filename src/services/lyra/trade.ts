@@ -16,7 +16,8 @@ export async function getLyraOptionTxData(
   strikePrice: number,
   tradeType: LyraTradeType,
   optionAmount: BigNumber | string,
-  assetIn: string
+  assetIn: string,
+  collateralAmount: BigNumber
 ): Promise<string> {
   const strike = await getStrike(pool.network, market, expiry, strikePrice);
   const strikeId = strike.id;
@@ -34,8 +35,22 @@ export async function getLyraOptionTxData(
     optionType === "call",
     tradeType === "buy"
   );
+
+  const amountIn = BigNumber.from(optionAmount);
+  const quote = await getQuote(strike, optionType, tradeType, amountIn);
+  const netPremiun =
+    tradeType === "buy"
+      ? quote.premium.add(quote.fee)
+      : quote.premium.sub(quote.fee);
+
   let txFunction = "openPosition";
+  let inputAmount = tradeType === "buy" ? netPremiun : collateralAmount;
+  let currentCollateral = BigNumber.from(0);
+  let setCollateral = collateralAmount;
   if (filteredPosition.length > 0) {
+    currentCollateral =
+      filteredPosition[0].collateral?.amount ?? BigNumber.from(0);
+    setCollateral = currentCollateral.add(collateralAmount);
     if (
       //sell long positions
       (tradeType === "sell" && filteredPosition[0].isLong) ||
@@ -47,32 +62,31 @@ export async function getLyraOptionTxData(
         filteredPosition[0].isLong
       );
       txFunction = "closePosition";
+      setCollateral = currentCollateral.sub(collateralAmount);
+      inputAmount =
+        filteredPosition[0].isLong || collateralAmount.gt(netPremiun)
+          ? BigNumber.from(0)
+          : netPremiun.sub(collateralAmount);
     }
   }
-
-  const amountIn = ethers.BigNumber.from(optionAmount);
-  const quote = await getQuote(strike, optionType, tradeType, amountIn);
-  const netPremiun =
-    tradeType === "buy"
-      ? quote.premium.add(quote.fee)
-      : quote.premium.sub(quote.fee);
 
   const iOptionMarketWrapper = new ethers.utils.Interface(
     IOptionMarketWrapper.abi
   );
+
   const tradeTx = iOptionMarketWrapper.encodeFunctionData(txFunction, [
     [
       strike.market().contractAddresses.optionMarket,
       strikeId, // strike Id
       positionId, // position Id
       1, // iteration
-      0, // set collateral to
-      0, // current collateral
+      setCollateral, // set collateral to
+      currentCollateral, // current collateral
       lyraOptionType, // optionType
       amountIn, // amount
       tradeType === "sell" ? netPremiun : 0, // min cost
       tradeType === "buy" ? netPremiun : ethers.constants.MaxUint256, // max cost
-      tradeType === "buy" ? netPremiun : 0, // input amount
+      inputAmount,
       assetIn // input asset
     ]
   ]);
