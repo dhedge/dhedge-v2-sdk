@@ -50,9 +50,7 @@ export const dappFactoryAddress: AddressDappNetworkMap = {
     [Dapp.QUICKSWAP]: "0x5757371414417b8C6CAad45bAeF941aBc7d3Ab32"
   },
   [Network.OPTIMISM]: {},
-  [Network.OPTIMISM_KOVAN]: {
-    [Dapp.LYRA]: "0xDc06D81A68948544A6B453Df55CcD172061c6d6e"
-  }
+  [Network.OPTIMISM_KOVAN]: {}
 };
 
 export const stakingAddress: AddressDappNetworkMap = {
