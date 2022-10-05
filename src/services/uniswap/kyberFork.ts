@@ -2,7 +2,12 @@
 import { computePoolAddress } from "@kyberswap/ks-sdk-elastic";
 import { Token } from "@uniswap/sdk-core";
 import { FeeAmount } from "@uniswap/v3-sdk";
-import { dappFactoryAddress, kyberTickReaderAddress } from "../../config";
+import {
+  dappFactoryAddress,
+  kyberTickReaderAddress,
+  networkChainIdMap,
+  nonfungiblePositionManagerAddress
+} from "../../config";
 import { Pool } from "../../entities";
 import { Dapp, Network } from "../../types";
 import { call } from "../../utils/contract";
@@ -50,4 +55,37 @@ export async function getKyberPreviousTicks(
     )
   );
   return tickResults.map(e => e[0]);
+}
+
+export async function getKyberOwedFees(
+  pool: Pool,
+  tokenId: string,
+  assetA: string,
+  assetB: string,
+  fee: FeeAmount
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): Promise<any> {
+  const chainId = networkChainIdMap[pool.network];
+  const decimals = await Promise.all(
+    [assetA, assetB].map(asset => pool.utils.getDecimals(asset))
+  );
+  const tokenA = new Token(chainId, assetA, decimals[0]);
+  const tokenB = new Token(chainId, assetB, decimals[1]);
+  const kyberPoolAddress = getKyberPoolAddress(
+    pool.network,
+    tokenA,
+    tokenB,
+    fee
+  );
+  const tickResults = await call(pool.signer, IKyberTickReader.abi, [
+    kyberTickReaderAddress[pool.network],
+    "getTotalFeesOwedToPosition",
+    [
+      nonfungiblePositionManagerAddress[pool.network][Dapp.KYBER],
+      kyberPoolAddress,
+      tokenId
+    ]
+  ]);
+
+  return tickResults;
 }

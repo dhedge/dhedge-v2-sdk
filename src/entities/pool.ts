@@ -35,7 +35,7 @@ import {
 import { Utils } from "./utils";
 import { ClaimService } from "../services/claim-balancer/claim.service";
 import {
-  getUniswapV3Liquidity,
+  getUniswapV3DecreaseLiqTxData,
   getUniswapV3MintTxData
 } from "../services/uniswap/V3Liquidity";
 import { FeeAmount } from "@uniswap/v3-sdk";
@@ -886,13 +886,13 @@ export class Pool {
       maxTick,
       feeAmount
     );
-    console.log(options);
-    // const tx = await this.poolLogic.execTransaction(
-    //   nonfungiblePositionManagerAddress[this.network][dapp],
-    //   mintTxData,
-    //   options
-    // );
-    return mintTxData;
+
+    const tx = await this.poolLogic.execTransaction(
+      nonfungiblePositionManagerAddress[this.network][dapp],
+      mintTxData,
+      options
+    );
+    return tx;
   }
 
   /**
@@ -911,29 +911,9 @@ export class Pool {
   ): Promise<any> {
     let txData;
     let dappAddress;
-    if (dapp === Dapp.UNISWAPV3) {
-      dappAddress = nonfungiblePositionManagerAddress[this.network];
-      const abi = new ethers.utils.Interface(INonfungiblePositionManager.abi);
-      const liquidity = (await getUniswapV3Liquidity(dapp, tokenId, this))
-        .mul(Math.round(amount * 1e4))
-        .div(1e6);
-      const decreaseLiquidityTxData = abi.encodeFunctionData(
-        Transaction.DECREASE_LIQUIDITY,
-        [[tokenId, liquidity, 0, 0, deadline]]
-      );
-      const collectTxData = abi.encodeFunctionData(Transaction.COLLECT, [
-        [tokenId, this.address, MaxUint128, MaxUint128]
-      ]);
-
-      const multicallParams = [decreaseLiquidityTxData, collectTxData];
-
-      if (amount === 100) {
-        const burnTxData = abi.encodeFunctionData(Transaction.BURN, [tokenId]);
-        multicallParams.push(burnTxData);
-      }
-      txData = abi.encodeFunctionData(Transaction.MULTI_CALL, [
-        multicallParams
-      ]);
+    if (dapp === Dapp.UNISWAPV3 || dapp === Dapp.KYBER) {
+      dappAddress = nonfungiblePositionManagerAddress[this.network][dapp];
+      txData = await getUniswapV3DecreaseLiqTxData(this, dapp, tokenId, amount);
     } else if (dapp === Dapp.ARRAKIS) {
       dappAddress = routerAddress[this.network][dapp];
       const abi = new ethers.utils.Interface(IArrakisV1RouterStaking.abi);
@@ -950,7 +930,6 @@ export class Pool {
     } else {
       throw new Error("dapp not supported");
     }
-
     const tx = await this.poolLogic.execTransaction(
       dappAddress,
       txData,
