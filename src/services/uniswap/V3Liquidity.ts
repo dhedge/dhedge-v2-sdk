@@ -9,13 +9,14 @@ import {
 } from "@uniswap/v3-sdk";
 import { ethers } from "ethers";
 import JSBI from "jsbi";
-import { Pool } from "../..";
+import { Dapp, Pool, Transaction } from "../..";
 import {
   networkChainIdMap,
   nonfungiblePositionManagerAddress
 } from "../../config";
-import { UniswapV3MintParams } from "./types";
 import INonfungiblePositionManager from "../../abi/INonfungiblePositionManager.json";
+import IKyberNonfungiblePositionManager from "../../abi/IKyberNonfungiblePositionManager.json";
+import { getKyberPoolAddress } from "./kyberFork";
 
 export function tryParsePrice(
   baseToken: Token,
@@ -63,8 +64,9 @@ export function tryParseTick(
   return nearestUsableTick(tick, TICK_SPACINGS[feeAmount]);
 }
 
-export async function getUniswapV3MintParams(
+export async function getUniswapV3MintTxData(
   pool: Pool,
+  dapp: Dapp,
   assetA: string,
   assetB: string,
   amountA: string | ethers.BigNumber,
@@ -74,7 +76,7 @@ export async function getUniswapV3MintParams(
   minTick: number | null,
   maxTick: number | null,
   feeAmount: FeeAmount
-): Promise<UniswapV3MintParams> {
+): Promise<string> {
   let tickLower = 0;
   let tickUpper = 0;
   const chainId = networkChainIdMap[pool.network];
@@ -87,6 +89,9 @@ export async function getUniswapV3MintParams(
     ? [tokenA, tokenB]
     : [tokenB, tokenA];
   const invertPrice = !tokenA.equals(token0);
+
+  const contract = getKyberPoolAddress(pool.network, tokenA, tokenB, feeAmount);
+  console.log("contratc", contract);
 
   if (minPrice && maxPrice) {
     tickLower = invertPrice
@@ -105,27 +110,54 @@ export async function getUniswapV3MintParams(
 
   const deadline = Math.floor(Date.now() / 1000) + 60 * 20;
 
-  return [
-    token0.address,
-    token1.address,
-    feeAmount,
-    tickLower,
-    tickUpper,
-    amount0,
-    amount1,
-    "0",
-    "0",
-    pool.address,
-    deadline
-  ];
+  const abi =
+    dapp === Dapp.KYBER
+      ? IKyberNonfungiblePositionManager.abi
+      : INonfungiblePositionManager.abi;
+  const iNonfungiblePositionManager = new ethers.utils.Interface(abi);
+  let txParams;
+  if (dapp == Dapp.KYBER) {
+    txParams = [
+      token0.address,
+      token1.address,
+      feeAmount,
+      tickLower,
+      tickUpper,
+      [-410, -409],
+      amount0,
+      amount1,
+      "0",
+      "0",
+      pool.address,
+      deadline
+    ];
+  } else {
+    txParams = [
+      token0.address,
+      token1.address,
+      feeAmount,
+      tickLower,
+      tickUpper,
+      amount0,
+      amount1,
+      "0",
+      "0",
+      pool.address,
+      deadline
+    ];
+  }
+  return iNonfungiblePositionManager.encodeFunctionData(Transaction.MINT, [
+    txParams
+  ]);
 }
 
 export async function getUniswapV3Liquidity(
+  dapp: Dapp,
   tokenId: string,
   pool: Pool
 ): Promise<ethers.BigNumber> {
   const iNonfungiblePositionManager = new ethers.Contract(
-    nonfungiblePositionManagerAddress[pool.network],
+    nonfungiblePositionManagerAddress[pool.network][dapp] as string,
     INonfungiblePositionManager.abi,
     pool.signer
   );

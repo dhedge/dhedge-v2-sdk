@@ -36,7 +36,7 @@ import { Utils } from "./utils";
 import { ClaimService } from "../services/claim-balancer/claim.service";
 import {
   getUniswapV3Liquidity,
-  getUniswapV3MintParams
+  getUniswapV3MintTxData
 } from "../services/uniswap/V3Liquidity";
 import { FeeAmount } from "@uniswap/v3-sdk";
 import { getUniswapV3SwapTxData } from "../services/uniswap/V3Trade";
@@ -197,21 +197,22 @@ export class Pool {
   }
 
   /**
-   * Approve the liquidity pool token for staking
-   * @param {Dapp} dapp Platform like Sushiswap or Uniswap
+   * Approve token for UniV3 pools
+   * @param {Dapp} dapp Platform either UniswapV3 or Kyber
    * @param {string} asset Address of liquidity pool token
    * @param {BigNumber | string} amount Aamount to be approved
    * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
   async approveUniswapV3Liquidity(
+    dapp: Dapp,
     asset: string,
     amount: BigNumber | string,
     options: any = null
   ): Promise<any> {
     const iERC20 = new ethers.utils.Interface(IERC20.abi);
     const approveTxData = iERC20.encodeFunctionData("approve", [
-      nonfungiblePositionManagerAddress[this.network],
+      nonfungiblePositionManagerAddress[this.network][dapp],
       amount
     ]);
     const tx = await this.poolLogic.execTransaction(
@@ -837,6 +838,7 @@ export class Pool {
 
   /**
    * Create UniswapV3 liquidity pool
+   * @param {Dapp} dapp Platform either UniswapV3 or Kyber
    * @param {string} assetA First asset
    * @param {string} assetB Second asset
    * @param {BigNumber | string} amountA Amount first asset
@@ -850,6 +852,7 @@ export class Pool {
    * @returns {Promise<any>} Transaction
    */
   async addLiquidityUniswapV3(
+    dapp: Dapp,
     assetA: string,
     assetB: string,
     amountA: BigNumber | string,
@@ -867,12 +870,9 @@ export class Pool {
     )
       throw new Error("Need to provide price or tick range");
 
-    const iNonfungiblePositionManager = new ethers.utils.Interface(
-      INonfungiblePositionManager.abi
-    );
-
-    const mintTxParams = await getUniswapV3MintParams(
+    const mintTxData = await getUniswapV3MintTxData(
       this,
+      dapp,
       assetA,
       assetB,
       amountA,
@@ -883,16 +883,13 @@ export class Pool {
       maxTick,
       feeAmount
     );
-    const mintTxData = iNonfungiblePositionManager.encodeFunctionData(
-      Transaction.MINT,
-      [mintTxParams]
-    );
-    const tx = await this.poolLogic.execTransaction(
-      nonfungiblePositionManagerAddress[this.network],
-      mintTxData,
-      options
-    );
-    return tx;
+    console.log(options);
+    // const tx = await this.poolLogic.execTransaction(
+    //   nonfungiblePositionManagerAddress[this.network][dapp],
+    //   mintTxData,
+    //   options
+    // );
+    return mintTxData;
   }
 
   /**
@@ -914,7 +911,7 @@ export class Pool {
     if (dapp === Dapp.UNISWAPV3) {
       dappAddress = nonfungiblePositionManagerAddress[this.network];
       const abi = new ethers.utils.Interface(INonfungiblePositionManager.abi);
-      const liquidity = (await getUniswapV3Liquidity(tokenId, this))
+      const liquidity = (await getUniswapV3Liquidity(dapp, tokenId, this))
         .mul(Math.round(amount * 1e4))
         .div(1e6);
       const decreaseLiquidityTxData = abi.encodeFunctionData(
@@ -977,10 +974,14 @@ export class Pool {
   ): Promise<any> {
     let txData;
     let dappAddress;
-    if (dapp === Dapp.UNISWAPV3) {
-      dappAddress = nonfungiblePositionManagerAddress[this.network];
+    if (dapp === Dapp.UNISWAPV3 || dapp === Dapp.KYBER) {
+      dappAddress = nonfungiblePositionManagerAddress[this.network][dapp];
+      const functionName =
+        dapp === Dapp.UNISWAPV3
+          ? Transaction.INCREASE_LIQUIDITY
+          : Transaction.ADD_LIQUIDITY;
       const abi = new ethers.utils.Interface(INonfungiblePositionManager.abi);
-      txData = abi.encodeFunctionData(Transaction.INCREASE_LIQUIDITY, [
+      txData = abi.encodeFunctionData(functionName, [
         [tokenId, amountA, amountB, 0, 0, deadline]
       ]);
     } else if (dapp === Dapp.ARRAKIS) {
