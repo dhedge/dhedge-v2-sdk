@@ -78,7 +78,7 @@ export const nonfungiblePositionManagerAddress: AddressDappNetworkMap = {
 };
 
 export const kyberTickReaderAddress: AddressNetworkMap = {
-  [Network.POLYGON]: "0x5F1dddbf348aC2fbe22a163e30F99F9ECE3DD50a",
+  [Network.POLYGON]: "0x165c68077ac06c83800d19200e6E2B08D02dE75D",
   [Network.OPTIMISM]: ""
 };
 

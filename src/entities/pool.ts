@@ -870,6 +870,9 @@ export class Pool {
     )
       throw new Error("Need to provide price or tick range");
 
+    if ((minTick === null || maxTick === null) && dapp === Dapp.KYBER)
+      throw new Error("Need to provide tick range for Kyber pool");
+
     const mintTxData = await getUniswapV3MintTxData(
       this,
       dapp,

@@ -49,8 +49,8 @@ describe("pool", () => {
         stmaticBalance,
         null,
         null,
-        -409,
-        -408,
+        -422,
+        -403,
         10,
         options
       );

@@ -16,7 +16,7 @@ import {
 } from "../../config";
 import INonfungiblePositionManager from "../../abi/INonfungiblePositionManager.json";
 import IKyberNonfungiblePositionManager from "../../abi/IKyberNonfungiblePositionManager.json";
-import { getKyberPoolAddress } from "./kyberFork";
+import { getKyberPreviousTicks } from "./kyberFork";
 
 export function tryParsePrice(
   baseToken: Token,
@@ -90,9 +90,6 @@ export async function getUniswapV3MintTxData(
     : [tokenB, tokenA];
   const invertPrice = !tokenA.equals(token0);
 
-  const contract = getKyberPoolAddress(pool.network, tokenA, tokenB, feeAmount);
-  console.log("contratc", contract);
-
   if (minPrice && maxPrice) {
     tickLower = invertPrice
       ? tryParseTick(token1, token0, feeAmount, maxPrice.toString())
@@ -117,13 +114,22 @@ export async function getUniswapV3MintTxData(
   const iNonfungiblePositionManager = new ethers.utils.Interface(abi);
   let txParams;
   if (dapp == Dapp.KYBER) {
+    const previousTicks = await getKyberPreviousTicks(
+      pool,
+      tokenA,
+      tokenB,
+      feeAmount,
+      tickLower,
+      tickUpper
+    );
+
     txParams = [
       token0.address,
       token1.address,
       feeAmount,
       tickLower,
       tickUpper,
-      [-410, -409],
+      previousTicks,
       amount0,
       amount1,
       "0",
