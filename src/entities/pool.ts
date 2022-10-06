@@ -36,7 +36,8 @@ import { Utils } from "./utils";
 import { ClaimService } from "../services/claim-balancer/claim.service";
 import {
   getUniswapV3DecreaseLiqTxData,
-  getUniswapV3MintTxData
+  getUniswapV3MintTxData,
+  nonfungiblePositionManagerAbi
 } from "../services/uniswap/V3Liquidity";
 import { FeeAmount } from "@uniswap/v3-sdk";
 import { getUniswapV3SwapTxData } from "../services/uniswap/V3Trade";
@@ -962,8 +963,9 @@ export class Pool {
         dapp === Dapp.UNISWAPV3
           ? Transaction.INCREASE_LIQUIDITY
           : Transaction.ADD_LIQUIDITY;
-      const abi = new ethers.utils.Interface(INonfungiblePositionManager.abi);
-      txData = abi.encodeFunctionData(functionName, [
+      txData = nonfungiblePositionManagerAbi(
+        dapp
+      ).encodeFunctionData(functionName, [
         [tokenId, amountA, amountB, 0, 0, deadline]
       ]);
     } else if (dapp === Dapp.ARRAKIS) {

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Dhedge } from "..";
 import { Dapp, Network } from "../types";
-import { TEST_POOL } from "./constants";
+import { STMATIC, TEST_POOL, WMATIC } from "./constants";
 import { getTxOptions } from "./txOptions";
 
 import { wallet } from "./wallet";
@@ -61,30 +61,32 @@ describe("pool", () => {
   //   expect(result).not.toBe(null);
   // });
 
-  it("should remove liquidity from an existing pool ", async () => {
-    const pool = await dhedge.loadPool(TEST_POOL);
-    const result = await pool.decreaseLiquidity(
-      Dapp.KYBER,
-      "5632",
-      100,
-      options
-    );
-    console.log("result", result);
-    expect(result).not.toBe(null);
-  });
-
-  // it("should increase liquidity in an existing pool WETH/WBTC pool", async () => {
+  // it("should remove liquidity from an existing pool ", async () => {
   //   const pool = await dhedge.loadPool(TEST_POOL);
-  //   const result = await pool.increaseLiquidity(
-  //     Dapp.UNISWAPV3,
-  //     "110507",
-  //     "244838",
-  //     "258300000000000",
+  //   const result = await pool.decreaseLiquidity(
+  //     Dapp.KYBER,
+  //     "5728",
+  //     50,
   //     options
   //   );
   //   console.log("result", result);
   //   expect(result).not.toBe(null);
   // });
+
+  it("should increase liquidity in an existing pool", async () => {
+    const pool = await dhedge.loadPool(TEST_POOL);
+    const wmaticBalance = await dhedge.utils.getBalance(WMATIC, pool.address);
+    const stmaticBalance = await dhedge.utils.getBalance(STMATIC, pool.address);
+    const result = await pool.increaseLiquidity(
+      Dapp.KYBER,
+      "5728",
+      wmaticBalance,
+      stmaticBalance,
+      options
+    );
+    console.log("result", result);
+    expect(result).not.toBe(null);
+  });
 
   // it("should claim fees an existing pool", async () => {
   //   const pool = await dhedge.loadPool(TEST_POOL);
