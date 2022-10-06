@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { computePoolAddress } from "@kyberswap/ks-sdk-elastic";
 import { Token } from "@uniswap/sdk-core";
@@ -6,12 +7,17 @@ import {
   dappFactoryAddress,
   kyberTickReaderAddress,
   networkChainIdMap,
-  nonfungiblePositionManagerAddress
+  nonfungiblePositionManagerAddress,
+  stakingAddress
 } from "../../config";
 import { Pool } from "../../entities";
-import { Dapp, Network } from "../../types";
+import { Dapp, Network, Transaction } from "../../types";
 import { call } from "../../utils/contract";
 import IKyberTickReader from "../../abi/IKyberTickReader.json";
+import IKyberSwapElasticLM from "../../abi/IKyberSwapElasticLM.json";
+import { ethers } from "../..";
+import { getUniswapV3Position } from "./V3Liquidity";
+import { BigNumber } from "ethers";
 
 export function getKyberPoolAddress(
   network: Network,
@@ -28,6 +34,21 @@ export function getKyberPoolAddress(
     initCodeHashManualOverride:
       "0xc597aba1bb02db42ba24a8878837965718c032f8b46be94a6e46452a9f89ca01"
   });
+}
+
+export async function getKyberPoolAddressByAddress(
+  pool: Pool,
+  addressA: string,
+  addressB: string,
+  fee: FeeAmount
+): Promise<string> {
+  const chainId = networkChainIdMap[pool.network];
+  const decimals = await Promise.all(
+    [addressA, addressB].map(asset => pool.utils.getDecimals(asset))
+  );
+  const tokenA = new Token(chainId, addressA, decimals[0]);
+  const tokenB = new Token(chainId, addressB, decimals[1]);
+  return getKyberPoolAddress(pool.network, tokenA, tokenB, fee);
 }
 
 export async function getKyberPreviousTicks(
@@ -65,16 +86,10 @@ export async function getKyberOwedFees(
   fee: FeeAmount
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any> {
-  const chainId = networkChainIdMap[pool.network];
-  const decimals = await Promise.all(
-    [assetA, assetB].map(asset => pool.utils.getDecimals(asset))
-  );
-  const tokenA = new Token(chainId, assetA, decimals[0]);
-  const tokenB = new Token(chainId, assetB, decimals[1]);
-  const kyberPoolAddress = getKyberPoolAddress(
-    pool.network,
-    tokenA,
-    tokenB,
+  const kyberPoolAddress = await getKyberPoolAddressByAddress(
+    pool,
+    assetA,
+    assetB,
     fee
   );
   const tickResults = await call(pool.signer, IKyberTickReader.abi, [
@@ -88,4 +103,64 @@ export async function getKyberOwedFees(
   ]);
 
   return tickResults;
+}
+
+export function getKyberDepositTxData(tokenId: string): string {
+  const iKyberSwapElasticLM = new ethers.utils.Interface(
+    IKyberSwapElasticLM.abi
+  );
+  return iKyberSwapElasticLM.encodeFunctionData(Transaction.DEPOSIT, [
+    [tokenId]
+  ]);
+}
+
+export async function getKyberPosition(
+  pool: Pool,
+  tokenId: string
+): Promise<{ pId: number; position: any }> {
+  const position = await getUniswapV3Position(Dapp.KYBER, tokenId, pool);
+  const { fee, token0, token1 } = position.info;
+  const kyberPoolAddress = await getKyberPoolAddressByAddress(
+    pool,
+    token0,
+    token1,
+    fee
+  );
+
+  const poolLength = await call(pool.signer, IKyberSwapElasticLM.abi, [
+    stakingAddress[pool.network][Dapp.KYBER],
+    "poolLength",
+    []
+  ]);
+  const pids = [...Array(BigNumber.from(poolLength).toNumber()).keys()];
+
+  const poolInfos = await Promise.all(
+    pids.map(pid =>
+      call(pool.signer, IKyberSwapElasticLM.abi, [
+        stakingAddress[pool.network][Dapp.KYBER],
+        "getPoolInfo",
+        [pid]
+      ])
+    )
+  );
+  const pId = pids.find(
+    (_, index) => poolInfos[index].poolAddress === kyberPoolAddress
+  );
+  if (!pId) throw new Error("no pId found for token");
+  return { position, pId };
+}
+
+export async function getKyberStakeTxData(
+  pool: Pool,
+  tokenId: string
+): Promise<string> {
+  const { pId, position } = await getKyberPosition(pool, tokenId);
+  const iKyberSwapElasticLM = new ethers.utils.Interface(
+    IKyberSwapElasticLM.abi
+  );
+  return iKyberSwapElasticLM.encodeFunctionData(Transaction.JOIN, [
+    pId,
+    [tokenId],
+    [position.pos.liquidity]
+  ]);
 }

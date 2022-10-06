@@ -44,6 +44,10 @@ import { getUniswapV3SwapTxData } from "../services/uniswap/V3Trade";
 import { getEasySwapperTxData } from "../services/toros/easySwapper";
 import { getOneInchProtocols } from "../services/oneInch/protocols";
 import { getAaveV3ClaimTxData } from "../services/aave/incentives";
+import {
+  getKyberDepositTxData,
+  getKyberStakeTxData
+} from "../services/uniswap/kyberFork";
 
 export class Pool {
   public readonly poolLogic: Contract;
@@ -403,7 +407,7 @@ export class Pool {
 
   /**
    * Stake liquidity pool tokens in a yield farm
-   * @param {Dapp} dapp Platform like Sushiswap or Uniswap
+   * @param {Dapp} dapp Platform like Sushiswap or Kyber
    * @param {string} asset Liquidity pool token
    * @param {BigNumber | string} amount Amount of liquidity pool tokens
    * @param {any} options Transaction options
@@ -412,16 +416,23 @@ export class Pool {
   async stake(
     dapp: Dapp,
     asset: string,
-    amount: BigNumber | string,
+    amount: BigNumber | string | null,
     options: any = null
   ): Promise<any> {
-    const iMiniChefV2 = new ethers.utils.Interface(IMiniChefV2.abi);
-    const poolId = await this.utils.getLpPoolId(dapp, asset);
-    const stakeTxData = iMiniChefV2.encodeFunctionData(Transaction.DEPOSIT, [
-      poolId,
-      amount,
-      this.address
-    ]);
+    if (dapp !== Dapp.SUSHISWAP && dapp !== Dapp.KYBER)
+      throw new Error("dapp not supported");
+    let stakeTxData;
+    if (dapp === Dapp.SUSHISWAP) {
+      const iMiniChefV2 = new ethers.utils.Interface(IMiniChefV2.abi);
+      const poolId = await this.utils.getLpPoolId(dapp, asset);
+      stakeTxData = iMiniChefV2.encodeFunctionData(Transaction.DEPOSIT, [
+        poolId,
+        amount,
+        this.address
+      ]);
+    } else {
+      stakeTxData = getKyberStakeTxData(this, asset);
+    }
     const tx = await this.poolLogic.execTransaction(
       stakingAddress[this.network][dapp],
       stakeTxData,
@@ -1062,5 +1073,25 @@ export class Pool {
       options
     );
     return tx;
+  }
+
+  /**
+   * Deposit liquidity pool token in a yield farm
+   * @param {Dapp} dapp Platform like  Kyber
+   * @param {string} tokenId Liquidity pool token ID
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async depositLP(
+    dapp: Dapp,
+    tokenId: string,
+    options: any = null
+  ): Promise<any> {
+    if (dapp !== Dapp.KYBER) throw new Error("dapp not supported");
+    return await this.poolLogic.execTransaction(
+      stakingAddress[this.network][dapp],
+      getKyberDepositTxData(tokenId),
+      options
+    );
   }
 }

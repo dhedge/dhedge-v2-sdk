@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Dhedge } from "..";
 import { Dapp, Network } from "../types";
-import { STMATIC, TEST_POOL, WMATIC } from "./constants";
+import { TEST_POOL } from "./constants";
 import { getTxOptions } from "./txOptions";
 
 import { wallet } from "./wallet";
@@ -73,17 +73,31 @@ describe("pool", () => {
   //   expect(result).not.toBe(null);
   // });
 
-  it("should increase liquidity in an existing pool", async () => {
+  // it("should increase liquidity in an existing pool", async () => {
+  //   const pool = await dhedge.loadPool(TEST_POOL);
+  //   const wmaticBalance = await dhedge.utils.getBalance(WMATIC, pool.address);
+  //   const stmaticBalance = await dhedge.utils.getBalance(STMATIC, pool.address);
+  //   const result = await pool.increaseLiquidity(
+  //     Dapp.KYBER,
+  //     "5728",
+  //     wmaticBalance,
+  //     stmaticBalance,
+  //     options
+  //   );
+  //   console.log("result", result);
+  //   expect(result).not.toBe(null);
+  // });
+
+  // it("should deposit pool token", async () => {
+  //   const pool = await dhedge.loadPool(TEST_POOL);
+  //   const result = await pool.deposit(Dapp.KYBER, "5728", null, options);
+  //   console.log("result", result);
+  //   expect(result).not.toBe(null);
+  // });
+
+  it("should stake pool token", async () => {
     const pool = await dhedge.loadPool(TEST_POOL);
-    const wmaticBalance = await dhedge.utils.getBalance(WMATIC, pool.address);
-    const stmaticBalance = await dhedge.utils.getBalance(STMATIC, pool.address);
-    const result = await pool.increaseLiquidity(
-      Dapp.KYBER,
-      "5728",
-      wmaticBalance,
-      stmaticBalance,
-      options
-    );
+    const result = await pool.stake(Dapp.KYBER, "5728", null, options);
     console.log("result", result);
     expect(result).not.toBe(null);
   });
@@ -109,21 +123,6 @@ describe("pool", () => {
   //   } catch (e) {
   //     console.log(e);
   //   }
-  //   expect(result).not.toBe(null);
-  // });
-
-  // it("should swap USDC into WETH on UniswapV3 pool", async () => {
-  //   const pool = await dhedge.loadPool(TEST_POOL);
-  //   const result = await pool.tradeUniswapV3(
-  //     USDC,
-  //     WETH,
-  //     "1000000",
-  //     FeeAmount.LOW,
-  //     1,
-  //     options
-  //   );
-
-  //   console.log(result);
   //   expect(result).not.toBe(null);
   // });
 });
