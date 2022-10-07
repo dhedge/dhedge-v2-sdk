@@ -39,7 +39,8 @@ export enum Transaction {
   SWAP_SYNTHS = "exchangeWithTracking",
   ADD_LIQUIDITY_STAKE = "addLiquidityAndStake",
   REMOVE_LIQUIDITY_UNSTAKE = "removeLiquidityAndUnstake",
-  JOIN = "join"
+  JOIN = "join",
+  EXIT = "exit"
 }
 
 export type AddressNetworkMap = Readonly<Record<Network, string>>;

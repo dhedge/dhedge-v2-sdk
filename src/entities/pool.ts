@@ -46,7 +46,8 @@ import { getOneInchProtocols } from "../services/oneInch/protocols";
 import { getAaveV3ClaimTxData } from "../services/aave/incentives";
 import {
   getKyberDepositTxData,
-  getKyberStakeTxData
+  getKyberStakeTxData,
+  getKyberUnStakeTxData
 } from "../services/uniswap/kyberFork";
 
 export class Pool {
@@ -467,7 +468,7 @@ export class Pool {
 
   /**
    * Unstake liquidity pool tokens from a yield farm
-   * @param {Dapp} dapp Platform like Sushiswap or Uniswap
+   * @param {Dapp} dapp Platform like Sushiswap or Kyber
    * @param {string} asset Liquidity pool token
    * @param  {BigNumber | string} amount Amount of liquidity pool tokens
    * @param {any} options Transaction options
@@ -476,16 +477,23 @@ export class Pool {
   async unStake(
     dapp: Dapp,
     asset: string,
-    amount: BigNumber | string,
+    amount: BigNumber | string | null,
     options: any = null
   ): Promise<any> {
-    const iMiniChefV2 = new ethers.utils.Interface(IMiniChefV2.abi);
-    const poolId = await this.utils.getLpPoolId(dapp, asset);
-    const unStakeTxData = iMiniChefV2.encodeFunctionData(Transaction.WITHDRAW, [
-      poolId,
-      amount,
-      this.address
-    ]);
+    if (dapp !== Dapp.SUSHISWAP && dapp !== Dapp.KYBER)
+      throw new Error("dapp not supported");
+    let unStakeTxData;
+    if (dapp === Dapp.SUSHISWAP) {
+      const iMiniChefV2 = new ethers.utils.Interface(IMiniChefV2.abi);
+      const poolId = await this.utils.getLpPoolId(dapp, asset);
+      unStakeTxData = iMiniChefV2.encodeFunctionData(Transaction.WITHDRAW, [
+        poolId,
+        amount,
+        this.address
+      ]);
+    } else {
+      unStakeTxData = getKyberUnStakeTxData(this, asset);
+    }
     const tx = await this.poolLogic.execTransaction(
       stakingAddress[this.network][dapp],
       unStakeTxData,

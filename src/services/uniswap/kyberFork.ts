@@ -164,3 +164,27 @@ export async function getKyberStakeTxData(
     [position.pos.liquidity]
   ]);
 }
+
+export async function getKyberUnStakeTxData(
+  pool: Pool,
+  tokenId: string
+): Promise<string> {
+  const pId = await call(pool.signer, IKyberSwapElasticLM.abi, [
+    stakingAddress[pool.network][Dapp.KYBER],
+    "getJoinedPools",
+    [tokenId]
+  ]);
+  const userInfo = await call(pool.signer, IKyberSwapElasticLM.abi, [
+    stakingAddress[pool.network][Dapp.KYBER],
+    "getUserInfo",
+    [tokenId, pId[0]]
+  ]);
+  const iKyberSwapElasticLM = new ethers.utils.Interface(
+    IKyberSwapElasticLM.abi
+  );
+  return iKyberSwapElasticLM.encodeFunctionData(Transaction.EXIT, [
+    pId[0],
+    [tokenId],
+    [userInfo.liquidity]
+  ]);
+}
