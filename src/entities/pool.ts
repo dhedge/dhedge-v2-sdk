@@ -45,7 +45,7 @@ import { getEasySwapperTxData } from "../services/toros/easySwapper";
 import { getOneInchProtocols } from "../services/oneInch/protocols";
 import { getAaveV3ClaimTxData } from "../services/aave/incentives";
 import {
-  getKyberDepositTxData,
+  getKyberDepositWithdrawTxData,
   getKyberHarvestTxData,
   getKyberStakeTxData,
   getKyberUnStakeTxData
@@ -1093,7 +1093,7 @@ export class Pool {
 
   /**
    * Deposit liquidity pool token in a yield farm
-   * @param {Dapp} dapp Platform like  Kyber
+   * @param {Dapp} dapp Platform like Kyber
    * @param {string} tokenId Liquidity pool token ID
    * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
@@ -1106,7 +1106,27 @@ export class Pool {
     if (dapp !== Dapp.KYBER) throw new Error("dapp not supported");
     return await this.poolLogic.execTransaction(
       stakingAddress[this.network][dapp],
-      getKyberDepositTxData(tokenId),
+      getKyberDepositWithdrawTxData(tokenId, Transaction.DEPOSIT),
+      options
+    );
+  }
+
+  /**
+   * Witdrwa liquidity pool token from a yield farm
+   * @param {Dapp} dapp Platform like Kyber
+   * @param {string} tokenId Liquidity pool token ID
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async withdrawLP(
+    dapp: Dapp,
+    tokenId: string,
+    options: any = null
+  ): Promise<any> {
+    if (dapp !== Dapp.KYBER) throw new Error("dapp not supported");
+    return await this.poolLogic.execTransaction(
+      stakingAddress[this.network][dapp],
+      getKyberDepositWithdrawTxData(tokenId, Transaction.WITHDRAW),
       options
     );
   }

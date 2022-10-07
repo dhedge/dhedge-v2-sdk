@@ -106,13 +106,14 @@ export async function getKyberOwedFees(
   return tickResults;
 }
 
-export function getKyberDepositTxData(tokenId: string): string {
+export function getKyberDepositWithdrawTxData(
+  tokenId: string,
+  transaction: Transaction
+): string {
   const iKyberSwapElasticLM = new ethers.utils.Interface(
     IKyberSwapElasticLM.abi
   );
-  return iKyberSwapElasticLM.encodeFunctionData(Transaction.DEPOSIT, [
-    [tokenId]
-  ]);
+  return iKyberSwapElasticLM.encodeFunctionData(transaction, [[tokenId]]);
 }
 
 export async function getKyberPosition(

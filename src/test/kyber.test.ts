@@ -61,18 +61,6 @@ describe("pool", () => {
   //   expect(result).not.toBe(null);
   // });
 
-  // it("should remove liquidity from an existing pool ", async () => {
-  //   const pool = await dhedge.loadPool(TEST_POOL);
-  //   const result = await pool.decreaseLiquidity(
-  //     Dapp.KYBER,
-  //     "5728",
-  //     50,
-  //     options
-  //   );
-  //   console.log("result", result);
-  //   expect(result).not.toBe(null);
-  // });
-
   // it("should increase liquidity in an existing pool", async () => {
   //   const pool = await dhedge.loadPool(TEST_POOL);
   //   const wmaticBalance = await dhedge.utils.getBalance(WMATIC, pool.address);
@@ -88,9 +76,9 @@ describe("pool", () => {
   //   expect(result).not.toBe(null);
   // });
 
-  // it("should deposit pool token", async () => {
+  // it("should deposit pool token nft into yield farm", async () => {
   //   const pool = await dhedge.loadPool(TEST_POOL);
-  //   const result = await pool.deposit(Dapp.KYBER, "5728", null, options);
+  //   const result = await pool.depositLp(Dapp.KYBER, "5728", options);
   //   console.log("result", result);
   //   expect(result).not.toBe(null);
   // });
@@ -102,6 +90,13 @@ describe("pool", () => {
   //   expect(result).not.toBe(null);
   // });
 
+  // it("should harvest rewards", async () => {
+  //   const pool = await dhedge.loadPool(TEST_POOL);
+  //   const result = await pool.harvestRewards(Dapp.KYBER, "5125", options);
+  //   console.log("result", result);
+  //   expect(result).not.toBe(null);
+  // });
+
   // it("should unstake pool token", async () => {
   //   const pool = await dhedge.loadPool(TEST_POOL);
   //   const result = await pool.unStake(Dapp.KYBER, "5728", null, options);
@@ -109,34 +104,22 @@ describe("pool", () => {
   //   expect(result).not.toBe(null);
   // });
 
-  it("should harvest rewards", async () => {
-    const pool = await dhedge.loadPool(TEST_POOL);
-    const result = await pool.harvestRewards(Dapp.KYBER, "5125", options);
-    console.log("result", result);
-    expect(result).not.toBe(null);
-  });
-
-  // it("should claim fees an existing pool", async () => {
+  // it("should withdraw pool token nft from yield farm", async () => {
   //   const pool = await dhedge.loadPool(TEST_POOL);
-  //   const result = await pool.claimFeesUniswapV3("54929", options);
+  //   const result = await pool.withdrawLP(Dapp.KYBER, "5728", options);
   //   console.log("result", result);
   //   expect(result).not.toBe(null);
   // });
 
-  // it("approves unlimited USDC to swap on UniswapV3", async () => {
-  //   let result;
-  //   const pool = await dhedge.loadPool(TEST_POOL);
-  //   try {
-  //     result = await pool.approve(
-  //       Dapp.UNISWAPV3,
-  //       USDC,
-  //       ethers.constants.MaxInt256,
-  //       options
-  //     );
-  //     console.log(result);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
+  it("should remove liquidity from an existing pool ", async () => {
+    const pool = await dhedge.loadPool(TEST_POOL);
+    const result = await pool.decreaseLiquidity(
+      Dapp.KYBER,
+      "5728",
+      100,
+      options
+    );
+    console.log("result", result);
+    expect(result).not.toBe(null);
+  });
 });
