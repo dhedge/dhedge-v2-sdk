@@ -18,6 +18,7 @@ import IKyberSwapElasticLM from "../../abi/IKyberSwapElasticLM.json";
 import { ethers } from "../..";
 import { getUniswapV3Position } from "./V3Liquidity";
 import { BigNumber } from "ethers";
+import { defaultAbiCoder } from "ethers/lib/utils";
 
 export function getKyberPoolAddress(
   network: Network,
@@ -186,5 +187,27 @@ export async function getKyberUnStakeTxData(
     pId[0],
     [tokenId],
     [userInfo.liquidity]
+  ]);
+}
+
+export async function getKyberHarvestTxData(
+  pool: Pool,
+  tokenId: string
+): Promise<string> {
+  const pId = await call(pool.signer, IKyberSwapElasticLM.abi, [
+    stakingAddress[pool.network][Dapp.KYBER],
+    "getJoinedPools",
+    [tokenId]
+  ]);
+  const encodeData = defaultAbiCoder.encode(
+    ["tupple(uint256[] pIds)"],
+    [{ pIds: pId }]
+  );
+  const iKyberSwapElasticLM = new ethers.utils.Interface(
+    IKyberSwapElasticLM.abi
+  );
+  return iKyberSwapElasticLM.encodeFunctionData(Transaction.HARVEST_MULTIPLE, [
+    [tokenId],
+    [encodeData]
   ]);
 }

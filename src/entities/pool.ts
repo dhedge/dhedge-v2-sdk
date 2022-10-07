@@ -46,6 +46,7 @@ import { getOneInchProtocols } from "../services/oneInch/protocols";
 import { getAaveV3ClaimTxData } from "../services/aave/incentives";
 import {
   getKyberDepositTxData,
+  getKyberHarvestTxData,
   getKyberStakeTxData,
   getKyberUnStakeTxData
 } from "../services/uniswap/kyberFork";
@@ -657,12 +658,19 @@ export class Pool {
     asset: string,
     options: any = null
   ): Promise<any> {
-    const iMiniChefV2 = new ethers.utils.Interface(IMiniChefV2.abi);
-    const poolId = await this.utils.getLpPoolId(dapp, asset);
-    const harvestTxData = iMiniChefV2.encodeFunctionData(Transaction.HARVEST, [
-      poolId,
-      this.address
-    ]);
+    let harvestTxData;
+    if (dapp === Dapp.SUSHISWAP) {
+      const iMiniChefV2 = new ethers.utils.Interface(IMiniChefV2.abi);
+      const poolId = await this.utils.getLpPoolId(dapp, asset);
+      harvestTxData = iMiniChefV2.encodeFunctionData(Transaction.HARVEST, [
+        poolId,
+        this.address
+      ]);
+    } else if (dapp === Dapp.KYBER) {
+      harvestTxData = await getKyberHarvestTxData(this, asset);
+    } else {
+      throw new Error("dapp not supported");
+    }
     const tx = await this.poolLogic.execTransaction(
       stakingAddress[this.network][dapp],
       harvestTxData,

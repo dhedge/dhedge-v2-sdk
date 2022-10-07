@@ -40,7 +40,8 @@ export enum Transaction {
   ADD_LIQUIDITY_STAKE = "addLiquidityAndStake",
   REMOVE_LIQUIDITY_UNSTAKE = "removeLiquidityAndUnstake",
   JOIN = "join",
-  EXIT = "exit"
+  EXIT = "exit",
+  HARVEST_MULTIPLE = "harvestMultiplePools"
 }
 
 export type AddressNetworkMap = Readonly<Record<Network, string>>;

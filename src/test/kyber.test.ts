@@ -102,9 +102,16 @@ describe("pool", () => {
   //   expect(result).not.toBe(null);
   // });
 
-  it("should unstake pool token", async () => {
+  // it("should unstake pool token", async () => {
+  //   const pool = await dhedge.loadPool(TEST_POOL);
+  //   const result = await pool.unStake(Dapp.KYBER, "5728", null, options);
+  //   console.log("result", result);
+  //   expect(result).not.toBe(null);
+  // });
+
+  it("should harvest rewards", async () => {
     const pool = await dhedge.loadPool(TEST_POOL);
-    const result = await pool.unStake(Dapp.KYBER, "5728", null, options);
+    const result = await pool.harvestRewards(Dapp.KYBER, "5125", options);
     console.log("result", result);
     expect(result).not.toBe(null);
   });
