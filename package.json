@@ -38,6 +38,8 @@
     "@balancer-labs/sor": "^2.0.0-beta.3",
     "@ethersproject/bignumber": "^5.5.0",
     "@ethersproject/providers": "5.0.12",
+    "@kyberswap/ks-sdk-core": "^0.0.16",
+    "@kyberswap/ks-sdk-elastic": "^0.0.43",
     "@sushiswap/sdk": "5.0.0-canary.7",
     "@uniswap/sdk-core": "^3.0.1",
     "@uniswap/v3-sdk": "^3.8.2",

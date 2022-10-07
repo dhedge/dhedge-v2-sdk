@@ -35,14 +35,21 @@ import {
 import { Utils } from "./utils";
 import { ClaimService } from "../services/claim-balancer/claim.service";
 import {
-  getUniswapV3Liquidity,
-  getUniswapV3MintParams
+  getUniswapV3DecreaseLiqTxData,
+  getUniswapV3MintTxData,
+  nonfungiblePositionManagerAbi
 } from "../services/uniswap/V3Liquidity";
 import { FeeAmount } from "@uniswap/v3-sdk";
 import { getUniswapV3SwapTxData } from "../services/uniswap/V3Trade";
 import { getEasySwapperTxData } from "../services/toros/easySwapper";
 import { getOneInchProtocols } from "../services/oneInch/protocols";
 import { getAaveV3ClaimTxData } from "../services/aave/incentives";
+import {
+  getKyberDepositWithdrawTxData,
+  getKyberHarvestTxData,
+  getKyberStakeTxData,
+  getKyberUnStakeTxData
+} from "../services/uniswap/kyberFork";
 
 export class Pool {
   public readonly poolLogic: Contract;
@@ -197,21 +204,22 @@ export class Pool {
   }
 
   /**
-   * Approve the liquidity pool token for staking
-   * @param {Dapp} dapp Platform like Sushiswap or Uniswap
+   * Approve token for UniV3 pools
+   * @param {Dapp} dapp Platform either UniswapV3 or Kyber
    * @param {string} asset Address of liquidity pool token
    * @param {BigNumber | string} amount Aamount to be approved
    * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
   async approveUniswapV3Liquidity(
+    dapp: Dapp,
     asset: string,
     amount: BigNumber | string,
     options: any = null
   ): Promise<any> {
     const iERC20 = new ethers.utils.Interface(IERC20.abi);
     const approveTxData = iERC20.encodeFunctionData("approve", [
-      nonfungiblePositionManagerAddress[this.network],
+      nonfungiblePositionManagerAddress[this.network][dapp],
       amount
     ]);
     const tx = await this.poolLogic.execTransaction(
@@ -401,7 +409,7 @@ export class Pool {
 
   /**
    * Stake liquidity pool tokens in a yield farm
-   * @param {Dapp} dapp Platform like Sushiswap or Uniswap
+   * @param {Dapp} dapp Platform like Sushiswap or Kyber
    * @param {string} asset Liquidity pool token
    * @param {BigNumber | string} amount Amount of liquidity pool tokens
    * @param {any} options Transaction options
@@ -410,16 +418,23 @@ export class Pool {
   async stake(
     dapp: Dapp,
     asset: string,
-    amount: BigNumber | string,
+    amount: BigNumber | string | null,
     options: any = null
   ): Promise<any> {
-    const iMiniChefV2 = new ethers.utils.Interface(IMiniChefV2.abi);
-    const poolId = await this.utils.getLpPoolId(dapp, asset);
-    const stakeTxData = iMiniChefV2.encodeFunctionData(Transaction.DEPOSIT, [
-      poolId,
-      amount,
-      this.address
-    ]);
+    if (dapp !== Dapp.SUSHISWAP && dapp !== Dapp.KYBER)
+      throw new Error("dapp not supported");
+    let stakeTxData;
+    if (dapp === Dapp.SUSHISWAP) {
+      const iMiniChefV2 = new ethers.utils.Interface(IMiniChefV2.abi);
+      const poolId = await this.utils.getLpPoolId(dapp, asset);
+      stakeTxData = iMiniChefV2.encodeFunctionData(Transaction.DEPOSIT, [
+        poolId,
+        amount,
+        this.address
+      ]);
+    } else {
+      stakeTxData = getKyberStakeTxData(this, asset);
+    }
     const tx = await this.poolLogic.execTransaction(
       stakingAddress[this.network][dapp],
       stakeTxData,
@@ -454,7 +469,7 @@ export class Pool {
 
   /**
    * Unstake liquidity pool tokens from a yield farm
-   * @param {Dapp} dapp Platform like Sushiswap or Uniswap
+   * @param {Dapp} dapp Platform like Sushiswap or Kyber
    * @param {string} asset Liquidity pool token
    * @param  {BigNumber | string} amount Amount of liquidity pool tokens
    * @param {any} options Transaction options
@@ -463,16 +478,23 @@ export class Pool {
   async unStake(
     dapp: Dapp,
     asset: string,
-    amount: BigNumber | string,
+    amount: BigNumber | string | null,
     options: any = null
   ): Promise<any> {
-    const iMiniChefV2 = new ethers.utils.Interface(IMiniChefV2.abi);
-    const poolId = await this.utils.getLpPoolId(dapp, asset);
-    const unStakeTxData = iMiniChefV2.encodeFunctionData(Transaction.WITHDRAW, [
-      poolId,
-      amount,
-      this.address
-    ]);
+    if (dapp !== Dapp.SUSHISWAP && dapp !== Dapp.KYBER)
+      throw new Error("dapp not supported");
+    let unStakeTxData;
+    if (dapp === Dapp.SUSHISWAP) {
+      const iMiniChefV2 = new ethers.utils.Interface(IMiniChefV2.abi);
+      const poolId = await this.utils.getLpPoolId(dapp, asset);
+      unStakeTxData = iMiniChefV2.encodeFunctionData(Transaction.WITHDRAW, [
+        poolId,
+        amount,
+        this.address
+      ]);
+    } else {
+      unStakeTxData = getKyberUnStakeTxData(this, asset);
+    }
     const tx = await this.poolLogic.execTransaction(
       stakingAddress[this.network][dapp],
       unStakeTxData,
@@ -636,12 +658,19 @@ export class Pool {
     asset: string,
     options: any = null
   ): Promise<any> {
-    const iMiniChefV2 = new ethers.utils.Interface(IMiniChefV2.abi);
-    const poolId = await this.utils.getLpPoolId(dapp, asset);
-    const harvestTxData = iMiniChefV2.encodeFunctionData(Transaction.HARVEST, [
-      poolId,
-      this.address
-    ]);
+    let harvestTxData;
+    if (dapp === Dapp.SUSHISWAP) {
+      const iMiniChefV2 = new ethers.utils.Interface(IMiniChefV2.abi);
+      const poolId = await this.utils.getLpPoolId(dapp, asset);
+      harvestTxData = iMiniChefV2.encodeFunctionData(Transaction.HARVEST, [
+        poolId,
+        this.address
+      ]);
+    } else if (dapp === Dapp.KYBER) {
+      harvestTxData = await getKyberHarvestTxData(this, asset);
+    } else {
+      throw new Error("dapp not supported");
+    }
     const tx = await this.poolLogic.execTransaction(
       stakingAddress[this.network][dapp],
       harvestTxData,
@@ -837,6 +866,7 @@ export class Pool {
 
   /**
    * Create UniswapV3 liquidity pool
+   * @param {Dapp} dapp Platform either UniswapV3 or Kyber
    * @param {string} assetA First asset
    * @param {string} assetB Second asset
    * @param {BigNumber | string} amountA Amount first asset
@@ -850,6 +880,7 @@ export class Pool {
    * @returns {Promise<any>} Transaction
    */
   async addLiquidityUniswapV3(
+    dapp: Dapp,
     assetA: string,
     assetB: string,
     amountA: BigNumber | string,
@@ -867,12 +898,12 @@ export class Pool {
     )
       throw new Error("Need to provide price or tick range");
 
-    const iNonfungiblePositionManager = new ethers.utils.Interface(
-      INonfungiblePositionManager.abi
-    );
+    if ((minTick === null || maxTick === null) && dapp === Dapp.KYBER)
+      throw new Error("Need to provide tick range for Kyber pool");
 
-    const mintTxParams = await getUniswapV3MintParams(
+    const mintTxData = await getUniswapV3MintTxData(
       this,
+      dapp,
       assetA,
       assetB,
       amountA,
@@ -883,12 +914,9 @@ export class Pool {
       maxTick,
       feeAmount
     );
-    const mintTxData = iNonfungiblePositionManager.encodeFunctionData(
-      Transaction.MINT,
-      [mintTxParams]
-    );
+
     const tx = await this.poolLogic.execTransaction(
-      nonfungiblePositionManagerAddress[this.network],
+      nonfungiblePositionManagerAddress[this.network][dapp],
       mintTxData,
       options
     );
@@ -911,29 +939,9 @@ export class Pool {
   ): Promise<any> {
     let txData;
     let dappAddress;
-    if (dapp === Dapp.UNISWAPV3) {
-      dappAddress = nonfungiblePositionManagerAddress[this.network];
-      const abi = new ethers.utils.Interface(INonfungiblePositionManager.abi);
-      const liquidity = (await getUniswapV3Liquidity(tokenId, this))
-        .mul(Math.round(amount * 1e4))
-        .div(1e6);
-      const decreaseLiquidityTxData = abi.encodeFunctionData(
-        Transaction.DECREASE_LIQUIDITY,
-        [[tokenId, liquidity, 0, 0, deadline]]
-      );
-      const collectTxData = abi.encodeFunctionData(Transaction.COLLECT, [
-        [tokenId, this.address, MaxUint128, MaxUint128]
-      ]);
-
-      const multicallParams = [decreaseLiquidityTxData, collectTxData];
-
-      if (amount === 100) {
-        const burnTxData = abi.encodeFunctionData(Transaction.BURN, [tokenId]);
-        multicallParams.push(burnTxData);
-      }
-      txData = abi.encodeFunctionData(Transaction.MULTI_CALL, [
-        multicallParams
-      ]);
+    if (dapp === Dapp.UNISWAPV3 || dapp === Dapp.KYBER) {
+      dappAddress = nonfungiblePositionManagerAddress[this.network][dapp];
+      txData = await getUniswapV3DecreaseLiqTxData(this, dapp, tokenId, amount);
     } else if (dapp === Dapp.ARRAKIS) {
       dappAddress = routerAddress[this.network][dapp];
       const abi = new ethers.utils.Interface(IArrakisV1RouterStaking.abi);
@@ -950,7 +958,6 @@ export class Pool {
     } else {
       throw new Error("dapp not supported");
     }
-
     const tx = await this.poolLogic.execTransaction(
       dappAddress,
       txData,
@@ -977,10 +984,15 @@ export class Pool {
   ): Promise<any> {
     let txData;
     let dappAddress;
-    if (dapp === Dapp.UNISWAPV3) {
-      dappAddress = nonfungiblePositionManagerAddress[this.network];
-      const abi = new ethers.utils.Interface(INonfungiblePositionManager.abi);
-      txData = abi.encodeFunctionData(Transaction.INCREASE_LIQUIDITY, [
+    if (dapp === Dapp.UNISWAPV3 || dapp === Dapp.KYBER) {
+      dappAddress = nonfungiblePositionManagerAddress[this.network][dapp];
+      const functionName =
+        dapp === Dapp.UNISWAPV3
+          ? Transaction.INCREASE_LIQUIDITY
+          : Transaction.ADD_LIQUIDITY;
+      txData = nonfungiblePositionManagerAbi(
+        dapp
+      ).encodeFunctionData(functionName, [
         [tokenId, amountA, amountB, 0, 0, deadline]
       ]);
     } else if (dapp === Dapp.ARRAKIS) {
@@ -1077,5 +1089,45 @@ export class Pool {
       options
     );
     return tx;
+  }
+
+  /**
+   * Deposit liquidity pool token in a yield farm
+   * @param {Dapp} dapp Platform like Kyber
+   * @param {string} tokenId Liquidity pool token ID
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async depositLP(
+    dapp: Dapp,
+    tokenId: string,
+    options: any = null
+  ): Promise<any> {
+    if (dapp !== Dapp.KYBER) throw new Error("dapp not supported");
+    return await this.poolLogic.execTransaction(
+      stakingAddress[this.network][dapp],
+      getKyberDepositWithdrawTxData(tokenId, Transaction.DEPOSIT),
+      options
+    );
+  }
+
+  /**
+   * Witdrwa liquidity pool token from a yield farm
+   * @param {Dapp} dapp Platform like Kyber
+   * @param {string} tokenId Liquidity pool token ID
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async withdrawLP(
+    dapp: Dapp,
+    tokenId: string,
+    options: any = null
+  ): Promise<any> {
+    if (dapp !== Dapp.KYBER) throw new Error("dapp not supported");
+    return await this.poolLogic.execTransaction(
+      stakingAddress[this.network][dapp],
+      getKyberDepositWithdrawTxData(tokenId, Transaction.WITHDRAW),
+      options
+    );
   }
 }

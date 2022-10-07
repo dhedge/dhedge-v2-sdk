@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Price, Token } from "@uniswap/sdk-core";
 import {
   encodeSqrtRatioX96,
@@ -9,13 +10,17 @@ import {
 } from "@uniswap/v3-sdk";
 import { ethers } from "ethers";
 import JSBI from "jsbi";
-import { Pool } from "../..";
+import { Dapp, Pool, Transaction } from "../..";
 import {
+  deadline,
+  MaxUint128,
   networkChainIdMap,
   nonfungiblePositionManagerAddress
 } from "../../config";
-import { UniswapV3MintParams } from "./types";
 import INonfungiblePositionManager from "../../abi/INonfungiblePositionManager.json";
+import IKyberNonfungiblePositionManager from "../../abi/IKyberNonfungiblePositionManager.json";
+import { getKyberOwedFees, getKyberPreviousTicks } from "./kyberFork";
+import { Interface } from "ethers/lib/utils";
 
 export function tryParsePrice(
   baseToken: Token,
@@ -63,8 +68,9 @@ export function tryParseTick(
   return nearestUsableTick(tick, TICK_SPACINGS[feeAmount]);
 }
 
-export async function getUniswapV3MintParams(
+export async function getUniswapV3MintTxData(
   pool: Pool,
+  dapp: Dapp,
   assetA: string,
   assetB: string,
   amountA: string | ethers.BigNumber,
@@ -74,7 +80,7 @@ export async function getUniswapV3MintParams(
   minTick: number | null,
   maxTick: number | null,
   feeAmount: FeeAmount
-): Promise<UniswapV3MintParams> {
+): Promise<string> {
   let tickLower = 0;
   let tickUpper = 0;
   const chainId = networkChainIdMap[pool.network];
@@ -103,32 +109,127 @@ export async function getUniswapV3MintParams(
     ? [amountB, amountA]
     : [amountA, amountB];
 
-  const deadline = Math.floor(Date.now() / 1000) + 60 * 20;
+  let txParams;
+  if (dapp == Dapp.KYBER) {
+    const previousTicks = await getKyberPreviousTicks(
+      pool,
+      tokenA,
+      tokenB,
+      feeAmount,
+      tickLower,
+      tickUpper
+    );
 
-  return [
-    token0.address,
-    token1.address,
-    feeAmount,
-    tickLower,
-    tickUpper,
-    amount0,
-    amount1,
-    "0",
-    "0",
-    pool.address,
-    deadline
-  ];
+    txParams = [
+      token0.address,
+      token1.address,
+      feeAmount,
+      tickLower,
+      tickUpper,
+      previousTicks,
+      amount0,
+      amount1,
+      "0",
+      "0",
+      pool.address,
+      deadline
+    ];
+  } else {
+    txParams = [
+      token0.address,
+      token1.address,
+      feeAmount,
+      tickLower,
+      tickUpper,
+      amount0,
+      amount1,
+      "0",
+      "0",
+      pool.address,
+      deadline
+    ];
+  }
+  return nonfungiblePositionManagerAbi(
+    dapp
+  ).encodeFunctionData(Transaction.MINT, [txParams]);
 }
 
-export async function getUniswapV3Liquidity(
+export async function getUniswapV3Position(
+  dapp: Dapp,
   tokenId: string,
   pool: Pool
-): Promise<ethers.BigNumber> {
+): Promise<any> {
   const iNonfungiblePositionManager = new ethers.Contract(
-    nonfungiblePositionManagerAddress[pool.network],
-    INonfungiblePositionManager.abi,
+    nonfungiblePositionManagerAddress[pool.network][dapp] as string,
+    nonfungiblePositionManagerAbi(dapp),
     pool.signer
   );
-  const result = await iNonfungiblePositionManager.positions(tokenId);
-  return result.liquidity;
+  return await iNonfungiblePositionManager.positions(tokenId);
+}
+
+export async function getUniswapV3DecreaseLiqTxData(
+  pool: Pool,
+  dapp: Dapp,
+  tokenId: string,
+  amount = 100
+): Promise<string> {
+  let multicallParams = [];
+  const isKyber = dapp === Dapp.KYBER;
+  const iNonfungiblePositionManager = nonfungiblePositionManagerAbi(dapp);
+
+  const position = await getUniswapV3Position(dapp, tokenId, pool);
+  const liquidity: ethers.BigNumber = isKyber
+    ? position.pos.liquidity
+    : position.liquidity;
+  const tokenAmount = liquidity.mul(Math.round(amount * 1e4)).div(1e6);
+  const decreaseLiquidityTxData = nonfungiblePositionManagerAbi(
+    dapp
+  ).encodeFunctionData(
+    isKyber ? Transaction.REMOVE_LIQUIDITY : Transaction.DECREASE_LIQUIDITY,
+    [[tokenId, tokenAmount, 0, 0, deadline]]
+  );
+  multicallParams.push(decreaseLiquidityTxData);
+
+  if (dapp === Dapp.KYBER) {
+    const burnRTokenTxData = iNonfungiblePositionManager.encodeFunctionData(
+      "burnRTokens",
+      [[tokenId, 0, 0, deadline]]
+    );
+    multicallParams.push(burnRTokenTxData);
+    const { fee, token0, token1 } = position.info;
+    const amounts = await getKyberOwedFees(pool, tokenId, token0, token1, fee);
+    const transferTxData = [token0, token1].map((token, i) =>
+      iNonfungiblePositionManager.encodeFunctionData("transferAllTokens", [
+        token,
+        amounts[i].toString(),
+        pool.address
+      ])
+    );
+    multicallParams = multicallParams.concat(transferTxData);
+  } else {
+    const collectTxData = iNonfungiblePositionManager.encodeFunctionData(
+      Transaction.COLLECT,
+      [[tokenId, pool.address, MaxUint128, MaxUint128]]
+    );
+    multicallParams.push(collectTxData);
+    if (amount === 100) {
+      const burnTxData = iNonfungiblePositionManager.encodeFunctionData(
+        Transaction.BURN,
+        [tokenId]
+      );
+      multicallParams.push(burnTxData);
+    }
+  }
+  return iNonfungiblePositionManager.encodeFunctionData(
+    Transaction.MULTI_CALL,
+    [multicallParams]
+  );
+}
+
+export function nonfungiblePositionManagerAbi(dapp: Dapp): Interface {
+  const abi =
+    dapp === Dapp.KYBER
+      ? IKyberNonfungiblePositionManager.abi
+      : INonfungiblePositionManager.abi;
+  return new ethers.utils.Interface(abi);
 }

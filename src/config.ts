@@ -40,7 +40,8 @@ export const routerAddress: AddressDappNetworkMap = {
 export const dappFactoryAddress: AddressDappNetworkMap = {
   [Network.POLYGON]: {
     [Dapp.SUSHISWAP]: "0xc35DADB65012eC5796536bD9864eD8773aBc74C4",
-    [Dapp.QUICKSWAP]: "0x5757371414417b8C6CAad45bAeF941aBc7d3Ab32"
+    [Dapp.QUICKSWAP]: "0x5757371414417b8C6CAad45bAeF941aBc7d3Ab32",
+    [Dapp.KYBER]: "0x5F1dddbf348aC2fbe22a163e30F99F9ECE3DD50a"
   },
   [Network.OPTIMISM]: {}
 };
@@ -50,7 +51,8 @@ export const stakingAddress: AddressDappNetworkMap = {
     [Dapp.SUSHISWAP]: "0x0769fd68dFb93167989C6f7254cd0D766Fb2841F",
     [Dapp.BALANCER]: "0x0F3e0c4218b7b0108a3643cFe9D3ec0d4F57c54e",
     [Dapp.AAVE]: "0x357D51124f59836DeD84c8a1730D72B749d8BC23",
-    [Dapp.AAVEV3]: "0x929EC64c34a17401F460460D4B9390518E5B473e"
+    [Dapp.AAVEV3]: "0x929EC64c34a17401F460460D4B9390518E5B473e",
+    [Dapp.KYBER]: "0xBdEc4a045446F583dc564C0A227FFd475b329bf0"
   },
   [Network.OPTIMISM]: {
     [Dapp.AAVEV3]: "0x929EC64c34a17401F460460D4B9390518E5B473e"
@@ -66,9 +68,19 @@ export const aaveAddressProvider: AddressDappNetworkMap = {
     [Dapp.AAVEV3]: "0xa97684ead0e402dC232d5A977953DF7ECBaB3CDb"
   }
 };
-export const nonfungiblePositionManagerAddress: AddressNetworkMap = {
-  [Network.POLYGON]: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
-  [Network.OPTIMISM]: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88"
+export const nonfungiblePositionManagerAddress: AddressDappNetworkMap = {
+  [Network.POLYGON]: {
+    [Dapp.UNISWAPV3]: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
+    [Dapp.KYBER]: "0x2b1c7b41f6a8f2b2bc45c3233a5d5fb3cd6dc9a8"
+  },
+  [Network.OPTIMISM]: {
+    [Dapp.UNISWAPV3]: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88"
+  }
+};
+
+export const kyberTickReaderAddress: AddressNetworkMap = {
+  [Network.POLYGON]: "0x165c68077ac06c83800d19200e6E2B08D02dE75D",
+  [Network.OPTIMISM]: ""
 };
 
 export const networkChainIdMap: NetworkChainIdMap = {
