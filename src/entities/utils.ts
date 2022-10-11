@@ -273,6 +273,12 @@ export class Utils {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): Promise<any> {
     const iBalancerV2Vault = new ethers.utils.Interface(IBalancerV2Vault.abi);
+    const bptAddress = ethers.utils.getAddress(balancerPoolId.slice(0, 42));
+    const bptIndex = assets.findIndex(
+      e => e.toLowerCase() === bptAddress.toLocaleLowerCase()
+    );
+    const poolAssetsAmounts = amountsIn.slice();
+    if (bptIndex >= 0) poolAssetsAmounts.splice(bptIndex, 1);
     const txData = [
       balancerPoolId,
       pool.address,
@@ -282,7 +288,7 @@ export class Utils {
         amountsIn,
         ethers.utils.defaultAbiCoder.encode(
           ["uint256", "uint256[]", "uint256"],
-          [1, amountsIn, 0]
+          [1, poolAssetsAmounts, 0]
         ),
         false
       ]
