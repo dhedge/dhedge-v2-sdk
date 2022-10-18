@@ -451,17 +451,20 @@ export class Pool {
     options: any = null
   ): Promise<any> {
     let stakeTxData;
-    if (dapp === Dapp.BALANCER) {
-      const rewardsGauge = new ethers.utils.Interface(
-        IBalancerRewardsGauge.abi
-      );
-      stakeTxData = rewardsGauge.encodeFunctionData("deposit(uint256)", [
-        amount
-      ]);
-    } else if (dapp === Dapp.VELODROME) {
-      stakeTxData = getVelodromeStakeTxData(amount);
-    } else {
-      throw new Error("dapp not supported");
+    switch (dapp) {
+      case Dapp.BALANCER:
+        const rewardsGauge = new ethers.utils.Interface(
+          IBalancerRewardsGauge.abi
+        );
+        stakeTxData = rewardsGauge.encodeFunctionData("deposit(uint256)", [
+          amount
+        ]);
+        break;
+      case Dapp.VELODROME:
+        stakeTxData = getVelodromeStakeTxData(amount);
+        break;
+      default:
+        throw new Error("dapp not supported");
     }
     const tx = await this.poolLogic.execTransaction(
       gauge,
@@ -1107,7 +1110,7 @@ export class Pool {
   }
 
   /**
-   * Create Veliquidity pool
+   * Add liquidity to Velodrome pool
    * @param {string} assetA First asset
    * @param {string} assetB Second asset
    * @param {BigNumber | string} amountA Amount first asset
@@ -1140,7 +1143,7 @@ export class Pool {
   }
 
   /**
-   * Create Veliquidity pool
+   * Remove liquidity from Velodrome pool
    * @param {string} assetA First asset
    * @param {string} assetB Second asset
    * @param {BigNumber | string} amount Amount of LP tokens
