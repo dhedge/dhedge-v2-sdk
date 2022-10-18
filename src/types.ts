@@ -15,7 +15,8 @@ export enum Dapp {
   SYNTHETIX = "synthetix",
   AAVEV3 = "aavev3",
   ARRAKIS = "arrakis",
-  TOROS = "toros"
+  TOROS = "toros",
+  VELODROME = "velodrome"
 }
 
 export enum Transaction {
