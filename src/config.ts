@@ -15,8 +15,7 @@ export const factoryAddress: AddressNetworkMap = {
   [Network.POLYGON]: process.env.STAGING_CONTRACTS
     ? "0xDd87eCdB10cFF7004276AAbAbd30e7a08F69bb53"
     : "0xfdc7b8bFe0DD3513Cc669bB8d601Cb83e2F69cB0",
-  [Network.OPTIMISM]: "0x5e61a079A178f0E5784107a4963baAe0c5a680c6",
-  [Network.OPTIMISM_KOVAN]: "0x697F895d1e2a934F14C4f33Cad92fcDdd114F748"
+  [Network.OPTIMISM]: "0x5e61a079A178f0E5784107a4963baAe0c5a680c6"
 };
 
 export const routerAddress: AddressDappNetworkMap = {
@@ -37,11 +36,8 @@ export const routerAddress: AddressDappNetworkMap = {
     [Dapp.AAVEV3]: "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
     [Dapp.ONEINCH]: "0x1111111254760F7ab3F16433eea9304126DCd199",
     [Dapp.TOROS]: "0xf8C62BD5f2fEf9E1a329c197F32E77AD6866B022",
-    [Dapp.VELODROME]: "0x9c12939390052919aF3155f41Bf4160Fd3666A6f"
+    [Dapp.VELODROME]: "0x9c12939390052919aF3155f41Bf4160Fd3666A6f",
     [Dapp.LYRA]: "0xCCE7819d65f348c64B7Beb205BA367b3fE33763B"
-  },
-  [Network.OPTIMISM_KOVAN]: {
-    [Dapp.LYRA]: "0xd24955B7AB75FaD5542769105d862FC76A76AF7f"
   }
 };
 
@@ -50,8 +46,7 @@ export const dappFactoryAddress: AddressDappNetworkMap = {
     [Dapp.SUSHISWAP]: "0xc35DADB65012eC5796536bD9864eD8773aBc74C4",
     [Dapp.QUICKSWAP]: "0x5757371414417b8C6CAad45bAeF941aBc7d3Ab32"
   },
-  [Network.OPTIMISM]: {},
-  [Network.OPTIMISM_KOVAN]: {}
+  [Network.OPTIMISM]: {}
 };
 
 export const stakingAddress: AddressDappNetworkMap = {
@@ -75,32 +70,27 @@ export const aaveAddressProvider: AddressDappNetworkMap = {
 };
 export const nonfungiblePositionManagerAddress: AddressNetworkMap = {
   [Network.POLYGON]: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
-  [Network.OPTIMISM]: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
-  [Network.OPTIMISM_KOVAN]: ""
+  [Network.OPTIMISM]: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88"
 };
 
 export const networkChainIdMap: NetworkChainIdMap = {
   [Network.POLYGON]: 137,
-  [Network.OPTIMISM]: 10,
-  [Network.OPTIMISM_KOVAN]: 69
+  [Network.OPTIMISM]: 10
 };
 
 export const balancerSubgraph: AddressNetworkMap = {
   [Network.POLYGON]:
     "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-polygon-v2",
-  [Network.OPTIMISM]: "",
-  [Network.OPTIMISM_KOVAN]: ""
+  [Network.OPTIMISM]: ""
 };
 
 export const multiCallAddress: AddressNetworkMap = {
   [Network.POLYGON]: "0x275617327c958bD06b5D6b871E7f491D76113dd8",
-  [Network.OPTIMISM]: "",
-  [Network.OPTIMISM_KOVAN]: ""
+  [Network.OPTIMISM]: ""
 };
 
 export const lyraNetworkMap: LyraNetworkMap = {
-  [Network.OPTIMISM]: Deployment.Mainnet,
-  [Network.OPTIMISM_KOVAN]: Deployment.Kovan
+  [Network.OPTIMISM]: Deployment.Mainnet
 };
 
 export const deadline = Math.floor(Date.now() / 1000) + 60 * 20;

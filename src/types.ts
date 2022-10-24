@@ -3,8 +3,7 @@ import { BigNumber } from "ethers";
 
 export enum Network {
   POLYGON = "polygon",
-  OPTIMISM = "optimism",
-  OPTIMISM_KOVAN = "optimism-kovan"
+  OPTIMISM = "optimism"
 }
 
 export enum Dapp {
@@ -18,7 +17,7 @@ export enum Dapp {
   AAVEV3 = "aavev3",
   ARRAKIS = "arrakis",
   TOROS = "toros",
-  VELODROME = "velodrome"
+  VELODROME = "velodrome",
   LYRA = "lyra"
 }
 
