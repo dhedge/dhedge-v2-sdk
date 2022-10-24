@@ -31,8 +31,7 @@ describe("pool", () => {
       console.log(e);
     }
     result.wait(1);
-    const positions = await getPositions(pool);
-    console.log(positions);
+    const positions = await pool.getLyraPositions("eth");
     expect(positions.length > 0);
   });
 
