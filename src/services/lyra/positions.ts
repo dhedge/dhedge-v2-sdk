@@ -1,9 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Pool } from "../..";
-import { lyraNetworkMap } from "../../config";
-import Lyra, { Position } from "@lyrafinance/lyra-js";
+import { ethers, LyraOptionMarket, LyraPosition, Pool } from "../..";
+import Lyra from "@lyrafinance/lyra-js";
+import IOptionToken from "../../abi/IOptionToken.json";
 
-export async function getPositions(pool: Pool): Promise<Position[]> {
-  const lyra = new Lyra(lyraNetworkMap[pool.network]);
-  return await lyra.openPositions(pool.address);
+export async function getOptionPositions(
+  pool: Pool,
+  market: LyraOptionMarket
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): Promise<LyraPosition[]> {
+  const lyra = new Lyra();
+  const optionMarket = await lyra.market(market);
+  const iOptionToken = new ethers.Contract(
+    optionMarket.__marketData.marketAddresses.optionToken,
+    IOptionToken.abi,
+    pool.signer
+  );
+  return await iOptionToken.getOwnerPositions(pool.address);
 }

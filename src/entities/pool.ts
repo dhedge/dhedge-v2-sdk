@@ -32,7 +32,8 @@ import {
   Network,
   LyraOptionMarket,
   LyraOptionType,
-  LyraTradeType
+  LyraTradeType,
+  LyraPosition
 } from "../types";
 
 import { Utils } from "./utils";
@@ -46,8 +47,7 @@ import { getUniswapV3SwapTxData } from "../services/uniswap/V3Trade";
 import { getEasySwapperTxData } from "../services/toros/easySwapper";
 import { getOneInchProtocols } from "../services/oneInch/protocols";
 import { getLyraOptionTxData } from "../services/lyra/trade";
-import { Position } from "@lyrafinance/lyra-js";
-import { getPositions } from "../services/lyra/positions";
+import { getOptionPositions } from "../services/lyra/positions";
 
 export class Pool {
   public readonly poolLogic: Contract;
@@ -1073,6 +1073,7 @@ export class Pool {
    * @param {BigNumber | string } optionAmount Option amount
    * @param {string } assetIn  Asset to invest
    * @param {BigNumber | string } collateralChangeAmount Collateral amount to add when shorting options and to remove when covering shorts
+   * @param {boolean} isCoveredCall Selling covered call options
    * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
@@ -1085,6 +1086,7 @@ export class Pool {
     optionAmount: BigNumber | string,
     assetIn: string,
     collateralChangeAmount: BigNumber | string = "0",
+    isCoveredCall = false,
     options: any = null
   ): Promise<any> {
     const swapxData = await getLyraOptionTxData(
@@ -1096,7 +1098,8 @@ export class Pool {
       tradeType,
       optionAmount,
       assetIn,
-      BigNumber.from(collateralChangeAmount)
+      BigNumber.from(collateralChangeAmount),
+      isCoveredCall
     );
     const tx = await this.poolLogic.execTransaction(
       routerAddress[this.network][Dapp.LYRA],
@@ -1110,7 +1113,7 @@ export class Pool {
    * Gets Lyra option positions
    * @returns {Promise<Position>} Transaction
    */
-  async getLyraPositions(): Promise<Position[]> {
-    return await getPositions(this);
+  async getLyraPositions(market: LyraOptionMarket): Promise<LyraPosition[]> {
+    return await getOptionPositions(this, market);
   }
 }

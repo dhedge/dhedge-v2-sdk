@@ -4,8 +4,8 @@ import { Pool } from "../..";
 import { LyraOptionMarket, LyraOptionType, LyraTradeType } from "../../types";
 import { getStrike } from "./markets";
 import IOptionMarketWrapper from "../../abi/IOptionMarketWrapper.json";
-import { getLyraTradeOptionType } from "./tradeOptionType";
-import { getPositions } from "./positions";
+import { getLyraTradeOptionType, isCall, isLong } from "./tradeOptionType";
+import { getOptionPositions } from "./positions";
 import { getQuote } from "./quote";
 
 export async function getLyraOptionTxData(
@@ -17,23 +17,26 @@ export async function getLyraOptionTxData(
   tradeType: LyraTradeType,
   optionAmount: BigNumber | string,
   assetIn: string,
-  collateralAmount: BigNumber
+  collateralAmount: BigNumber,
+  isCoveredCall: boolean
 ): Promise<string> {
   const strike = await getStrike(pool.network, market, expiry, strikePrice);
   const strikeId = strike.id;
 
-  const positions = await getPositions(pool);
+  const positions = await getOptionPositions(pool, market);
   const filteredPosition = positions.filter(
     e =>
-      e.strikeId === strikeId &&
-      e.isCall == (optionType === "call") &&
+      e.strikeId.toNumber() === strikeId &&
+      isCall(e.optionType) == (optionType === "call") &&
       e.state === 1
   );
-  const positionId = filteredPosition.length > 0 ? filteredPosition[0].id : 0;
+  const positionId =
+    filteredPosition.length > 0 ? filteredPosition[0].positionId : 0;
 
   let lyraOptionType = getLyraTradeOptionType(
     optionType === "call",
-    tradeType === "buy"
+    tradeType === "buy",
+    isCoveredCall
   );
 
   const amountIn = BigNumber.from(optionAmount);
@@ -48,25 +51,29 @@ export async function getLyraOptionTxData(
   let currentCollateral = BigNumber.from(0);
   let setCollateral = collateralAmount;
   if (filteredPosition.length > 0) {
-    currentCollateral =
-      filteredPosition[0].collateral?.amount ?? BigNumber.from(0);
+    currentCollateral = filteredPosition[0].collateral ?? BigNumber.from(0);
     setCollateral = currentCollateral.add(collateralAmount);
     if (
       //sell long positions
-      (tradeType === "sell" && filteredPosition[0].isLong) ||
+      (tradeType === "sell" && isLong(filteredPosition[0].optionType)) ||
       //cover short positions
-      (tradeType === "buy" && !filteredPosition[0].isLong)
+      (tradeType === "buy" && !isLong(filteredPosition[0].optionType))
     ) {
-      lyraOptionType = getLyraTradeOptionType(
-        filteredPosition[0].isCall,
-        filteredPosition[0].isLong
-      );
+      lyraOptionType = filteredPosition[0].optionType;
       txFunction = "closePosition";
       setCollateral = currentCollateral.sub(collateralAmount);
-      inputAmount =
-        filteredPosition[0].isLong || collateralAmount.gt(netPremiun)
-          ? BigNumber.from(0)
-          : netPremiun.sub(collateralAmount);
+      //cover short
+      if (
+        !isLong(filteredPosition[0].optionType) &&
+        !isCoveredCall &&
+        collateralAmount.gt(netPremiun)
+      ) {
+        inputAmount = netPremiun.sub(collateralAmount);
+      } else if (!isLong(filteredPosition[0].optionType) && isCoveredCall) {
+        inputAmount = netPremiun;
+      } else {
+        inputAmount = BigNumber.from(0);
+      }
     }
   }
 

@@ -80,3 +80,11 @@ export type AddressMarketMap = {
 export type LyraTradeType = "buy" | "sell";
 export type LyraOptionType = "call" | "put";
 export type LyraNetworkMap = { [key in Network]?: Deployment };
+export type LyraPosition = {
+  positionId: BigNumber;
+  strikeId: BigNumber;
+  optionType: number;
+  amount: BigNumber;
+  collateral: BigNumber;
+  state: number;
+};

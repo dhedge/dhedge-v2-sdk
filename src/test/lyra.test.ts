@@ -1,5 +1,6 @@
 import { Dhedge } from "..";
 import { Network } from "../types";
+import { utils } from "ethers";
 import { SUSD, TEST_POOL } from "./constants";
 import { getTxOptions } from "./txOptions";
 import { wallet } from "./wallet";
@@ -13,170 +14,151 @@ describe("pool", () => {
     dhedge = new Dhedge(wallet, Network.OPTIMISM);
   });
 
-  // it("it gets expiries", async () => {
-  //   let result;
-  //   try {
-  //     result = await dhedge.utils.getLyraOptionExpiries("eth");
-  //     console.log(result);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
-
-  // it("it gets strikes", async () => {
-  //   let result;
-  //   try {
-  //     result = await dhedge.utils.getLyraOptionStrikes("eth", 1663164000);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
-
-  // it("it gets specific strike", async () => {
-  //   let result;
-  //   try {
-  //     result = await dhedge.utils.getLyraOptionStrike("eth", 1663164000, 1700);
-  //     console.log(result.market().contractAddresses);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
-
-  // it("it gets a quote", async () => {
-  //   let result;
-  //   try {
-  //     const strike = await dhedge.utils.getLyraOptionStrike(
-  //       "eth",
-  //       1664524800,
-  //       2000
-  //     );
-  //     result = await dhedge.utils.getLyraOptionQuote(
-  //       strike,
-  //       "call",
-  //       "sell",
-  //       "100000000000000000000"
-  //     );
-  //     console.log(result);
-  //     console.log(result.premium.toString());
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
-
-  // it("buys a 1800 Call with expiry September 14th", async () => {
-  //   let result;
-  //   const pool = await dhedge.loadPool(TEST_POOL);
-  //   try {
-  //     result = await pool.tradeLyraOption(
-  //       "eth",
-  //       1663164000,
-  //       1800,
-  //       "put",
-  //       "buy",
-  //       "1000000000000000000",
-  //       "0x2400D0469bfdA59FB0233c3027349D83F1a0f4c8"
-  //     );
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
-
-  // it("sells 1 1700 Call with expiry September 14th", async () => {
-  //   let result;
-  //   const pool = await dhedge.loadPool(TEST_POOL);
-  //   try {
-  //     result = await pool.tradeLyraOption(
-  //       "eth",
-  //       1663164000,
-  //       1700,
-  //       "call",
-  //       "sell",
-  //       "1000000000000000000",
-  //       "0x2400D0469bfdA59FB0233c3027349D83F1a0f4c8"
-  //     );
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
-
-  // it("it gets a Lyra balances", async () => {
-  //   let result;
-  //   const pool = await dhedge.loadPool(TEST_POOL);
-  //   try {
-  //     result = await pool.getLyraPositions();
-  //     console.log(result);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
-
-  // it("sells 1 1700 Call with expiry September 14th", async () => {
-  //   let result;
-  //   const pool = await dhedge.loadPool(TEST_POOL);
-  //   try {
-  //     result = await pool.tradeLyraOption(
-  //       "eth",
-  //       1665129600,
-  //       1600,
-  //       "call",
-  //       "sell",
-  //       "1000000000000000000",
-  //       SUSD,
-  //       "420000000000000000000",
-  //       options
-  //     );
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
-
-  // it("adds 0.1 1600 Call and 10 sUSD collateral with expiry October 7th to position", async () => {
-  //   let result;
-  //   const pool = await dhedge.loadPool(TEST_POOL);
-  //   try {
-  //     result = await pool.tradeLyraOption(
-  //       "eth",
-  //       1665129600,
-  //       1600,
-  //       "call",
-  //       "sell",
-  //       "100000000000000000",
-  //       SUSD,
-  //       "10000000000000000000",
-  //       options
-  //     );
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
-
-  it("closes 1.1 1600 short Call with expiry October 7th", async () => {
+  it("buys 0.1 1400 calls with expiry October 28th", async () => {
     let result;
     const pool = await dhedge.loadPool(TEST_POOL);
     try {
       result = await pool.tradeLyraOption(
         "eth",
-        1665129600,
-        1600,
+        1666944000,
+        1400,
         "call",
         "buy",
-        "500000000000000000",
+        utils.parseEther("0.1"),
+        SUSD
+      );
+    } catch (e) {
+      console.log(e);
+    }
+    result.wait(1);
+    const positions = await getPositions(pool);
+    console.log(positions);
+    expect(positions.length > 0);
+  });
+
+  it("adds 0.05 1400 calls with expiry October 28th", async () => {
+    let result;
+    const pool = await dhedge.loadPool(TEST_POOL);
+    try {
+      result = await pool.tradeLyraOption(
+        "eth",
+        1666944000,
+        1400,
+        "call",
+        "buy",
+        utils.parseEther("0.05"),
         SUSD,
-        "420000000000000000000",
+        "0",
+        false,
         options
       );
     } catch (e) {
       console.log(e);
     }
-    expect(result).not.toBe(null);
+    result.wait(1);
+    const positions = await pool.getLyraPositions("eth");
+    expect(utils.formatEther(positions[0].amount)).toBe("0.15");
+  });
+
+  it("sells 0.1 1300 Covered Call with expiry October 28th", async () => {
+    let result;
+    const pool = await dhedge.loadPool(TEST_POOL);
+    try {
+      result = await pool.tradeLyraOption(
+        "eth",
+        1666944000,
+        1300,
+        "call",
+        "sell",
+        utils.parseEther("0.1"),
+        SUSD,
+        utils.parseEther("0.1"),
+        true,
+        options
+      );
+    } catch (e) {
+      console.log(e);
+    }
+    result.wait(1);
+    const positions = await pool.getLyraPositions("eth");
+    const cCall = positions.find(e => e.optionType === 2);
+    expect(cCall).not.toBe(undefined);
+  });
+
+  it("adds 0.05 1300 Covered Call with expiry October 28th", async () => {
+    let result;
+    const pool = await dhedge.loadPool(TEST_POOL);
+    try {
+      result = await pool.tradeLyraOption(
+        "eth",
+        1666944000,
+        1300,
+        "call",
+        "sell",
+        utils.parseEther("0.05"),
+        SUSD,
+        utils.parseEther("0.05"),
+        true,
+        options
+      );
+    } catch (e) {
+      console.log(e);
+    }
+    result.wait(1);
+    const positions = await pool.getLyraPositions("eth");
+    const cCall = positions.find(e => e.optionType === 2);
+    expect(cCall);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    expect(utils.formatEther(cCall!.amount)).toBe("0.15");
+  });
+
+  it("closes all 0.15 1300 Covered Call with expiry October 28th", async () => {
+    let result;
+    const pool = await dhedge.loadPool(TEST_POOL);
+    try {
+      result = await pool.tradeLyraOption(
+        "eth",
+        1666944000,
+        1300,
+        "call",
+        "buy",
+        utils.parseEther("0.15"),
+        SUSD,
+        utils.parseEther("0.15"),
+        true,
+        options
+      );
+    } catch (e) {
+      console.log(e);
+    }
+    result.wait(1);
+    const positions = await pool.getLyraPositions("eth");
+    const cCall = positions.find(e => e.optionType === 2 && e.state === 1);
+    expect(cCall).toBe(undefined);
+  });
+
+  it("closes all 0.15 1400 Calls with expiry October 28th", async () => {
+    let result;
+    const pool = await dhedge.loadPool(TEST_POOL);
+    try {
+      result = await pool.tradeLyraOption(
+        "eth",
+        1666944000,
+        1400,
+        "call",
+        "sell",
+        utils.parseEther("0.15"),
+        SUSD,
+        "0",
+        false,
+        options
+      );
+    } catch (e) {
+      console.log(e);
+    }
+    result.wait(1);
+    const positions = await pool.getLyraPositions("eth");
+    const call = positions.find(e => e.optionType === 0 && e.state === 1);
+    expect(call).toBe(undefined);
   });
 });
