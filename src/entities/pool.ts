@@ -46,6 +46,15 @@ import { FeeAmount } from "@uniswap/v3-sdk";
 import { getUniswapV3SwapTxData } from "../services/uniswap/V3Trade";
 import { getEasySwapperTxData } from "../services/toros/easySwapper";
 import { getOneInchProtocols } from "../services/oneInch/protocols";
+import { getAaveV3ClaimTxData } from "../services/aave/incentives";
+import {
+  getVelodromeAddLiquidityTxData,
+  getVelodromeRemoveLiquidityTxData
+} from "../services/velodrome/liquidity";
+import {
+  getVelodromeClaimTxData,
+  getVelodromeStakeTxData
+} from "../services/velodrome/staking";
 import { getLyraOptionTxData } from "../services/lyra/trade";
 import { getOptionPositions } from "../services/lyra/positions";
 
@@ -435,20 +444,34 @@ export class Pool {
 
   /**
    * Stake liquidity pool tokens in gauge contract
+   * @param {Dapp} dapp Platform like Balancer or Velodrome
    * @param {string} gauge Gauge contract address
    * @param {BigNumber | string} amount Amount of liquidity pool tokens
    * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
   async stakeInGauge(
+    dapp: Dapp,
     gauge: string,
     amount: BigNumber | string,
     options: any = null
   ): Promise<any> {
-    const rewardsGauge = new ethers.utils.Interface(IBalancerRewardsGauge.abi);
-    const stakeTxData = rewardsGauge.encodeFunctionData("deposit(uint256)", [
-      amount
-    ]);
+    let stakeTxData;
+    switch (dapp) {
+      case Dapp.BALANCER:
+        const rewardsGauge = new ethers.utils.Interface(
+          IBalancerRewardsGauge.abi
+        );
+        stakeTxData = rewardsGauge.encodeFunctionData("deposit(uint256)", [
+          amount
+        ]);
+        break;
+      case Dapp.VELODROME:
+        stakeTxData = getVelodromeStakeTxData(amount);
+        break;
+      default:
+        throw new Error("dapp not supported");
+    }
     const tx = await this.poolLogic.execTransaction(
       gauge,
       stakeTxData,
@@ -820,6 +843,27 @@ export class Pool {
   }
 
   /**
+   * Claim rewards from Aave platform
+   * @param {string[]} assets Assets invested in Aave
+   * @param {string} rewardAssets Reward token address
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async harvestAaveV3Rewards(
+    assets: string[],
+    rewardAsset: string,
+    options: any = null
+  ): Promise<any> {
+    const claimTxData = await getAaveV3ClaimTxData(this, assets, rewardAsset);
+    const tx = await this.poolLogic.execTransaction(
+      stakingAddress[this.network][Dapp.AAVEV3] as string,
+      claimTxData,
+      options
+    );
+    return tx;
+  }
+
+  /**
    * Create UniswapV3 liquidity pool
    * @param {string} assetA First asset
    * @param {string} assetB Second asset
@@ -1004,21 +1048,29 @@ export class Pool {
   ): Promise<any> {
     let txData;
     let contractAddress;
-    if (dapp === Dapp.UNISWAPV3) {
-      contractAddress = nonfungiblePositionManagerAddress[this.network];
-      const iNonfungiblePositionManager = new ethers.utils.Interface(
-        INonfungiblePositionManager.abi
-      );
-      txData = iNonfungiblePositionManager.encodeFunctionData(
-        Transaction.COLLECT,
-        [[tokenId, this.address, MaxUint128, MaxUint128]]
-      );
-    } else if (dapp === Dapp.ARRAKIS || dapp === Dapp.BALANCER) {
-      contractAddress = tokenId;
-      const abi = new ethers.utils.Interface(ILiquidityGaugeV4.abi);
-      txData = abi.encodeFunctionData("claim_rewards()", []);
-    } else {
-      throw new Error("dapp not supported");
+    switch (dapp) {
+      case Dapp.UNISWAPV3:
+        contractAddress = nonfungiblePositionManagerAddress[this.network];
+        const iNonfungiblePositionManager = new ethers.utils.Interface(
+          INonfungiblePositionManager.abi
+        );
+        txData = iNonfungiblePositionManager.encodeFunctionData(
+          Transaction.COLLECT,
+          [[tokenId, this.address, MaxUint128, MaxUint128]]
+        );
+        break;
+      case Dapp.ARRAKIS:
+      case Dapp.BALANCER:
+        contractAddress = tokenId;
+        const abi = new ethers.utils.Interface(ILiquidityGaugeV4.abi);
+        txData = abi.encodeFunctionData("claim_rewards()", []);
+        break;
+      case Dapp.VELODROME:
+        contractAddress = tokenId;
+        txData = getVelodromeClaimTxData(this, tokenId);
+        break;
+      default:
+        throw new Error("dapp not supported");
     }
     const tx = await this.poolLogic.execTransaction(
       contractAddress,
@@ -1058,6 +1110,63 @@ export class Pool {
     const tx = await this.poolLogic.execTransaction(
       routerAddress[this.network][Dapp.UNISWAPV3],
       swapxData,
+      options
+    );
+    return tx;
+  }
+
+  /**
+   * Add liquidity to Velodrome pool
+   * @param {string} assetA First asset
+   * @param {string} assetB Second asset
+   * @param {BigNumber | string} amountA Amount first asset
+   * @param {BigNumber | string} amountB Amount second asset
+   * @param { boolean } isStable Is stable pool
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async addLiquidityVelodrome(
+    assetA: string,
+    assetB: string,
+    amountA: BigNumber | string,
+    amountB: BigNumber | string,
+    isStable: boolean,
+    options: any = null
+  ): Promise<any> {
+    const tx = await this.poolLogic.execTransaction(
+      routerAddress[this.network][Dapp.VELODROME],
+      getVelodromeAddLiquidityTxData(
+        this,
+        assetA,
+        assetB,
+        amountA,
+        amountB,
+        isStable
+      ),
+      options
+    );
+    return tx;
+  }
+
+  /**
+   * Remove liquidity from Velodrome pool
+   * @param {string} assetA First asset
+   * @param {string} assetB Second asset
+   * @param {BigNumber | string} amount Amount of LP tokens
+   * @param { boolean } isStable Is stable pool
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async removeLiquidityVelodrome(
+    assetA: string,
+    assetB: string,
+    amount: BigNumber | string,
+    isStable: boolean,
+    options: any = null
+  ): Promise<any> {
+    const tx = await this.poolLogic.execTransaction(
+      routerAddress[this.network][Dapp.VELODROME],
+      getVelodromeRemoveLiquidityTxData(this, assetA, assetB, amount, isStable),
       options
     );
     return tx;

@@ -18,6 +18,7 @@ export enum Dapp {
   AAVEV3 = "aavev3",
   ARRAKIS = "arrakis",
   TOROS = "toros",
+  VELODROME = "velodrome"
   LYRA = "lyra"
 }
 

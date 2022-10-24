@@ -1,7 +1,8 @@
-import { ethers, Pool } from "../..";
+import { Dapp, ethers, Pool } from "../..";
 
 import IAaveV3PoolAddressProvider from "../../abi/IAaveV3PoolAddressProvider.json";
 import IPriceOracle from "../../abi/IPriceOracle.json";
+import { aaveAddressProvider } from "../../config";
 
 export async function getChainlinkPriceInUsd(
   pool: Pool,
@@ -10,7 +11,7 @@ export async function getChainlinkPriceInUsd(
   //Workaround as Chainlink doesn't have feed registry on Polygon/Optimism
   //Use oracle from Aave which uses Chainlink
   const lendingPoolAddressProvider = new ethers.Contract(
-    "0xa97684ead0e402dC232d5A977953DF7ECBaB3CDb",
+    aaveAddressProvider[pool.network][Dapp.AAVEV3] as string,
     IAaveV3PoolAddressProvider.abi,
     pool.signer
   );

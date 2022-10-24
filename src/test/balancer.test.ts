@@ -1,6 +1,6 @@
 import { Dhedge } from "..";
 import { Network } from "../types";
-import { STMATIC, TEST_POOL, WMATIC } from "./constants";
+import { TEST_POOL, WMATIC } from "./constants";
 import { getTxOptions } from "./txOptions";
 
 import { wallet } from "./wallet";
@@ -13,7 +13,7 @@ jest.setTimeout(100000);
 describe("pool", () => {
   beforeAll(async () => {
     dhedge = new Dhedge(wallet, Network.POLYGON);
-    options = await getTxOptions();
+    options = await getTxOptions(Network.POLYGON);
   });
 
   // it("approves unlimited USDC on Balancer", async () => {
@@ -105,24 +105,28 @@ describe("pool", () => {
   //   expect(result).not.toBe(null);
   // });
 
-  //   it("adds 5 WMATIC to a WMATIC/stMATIC balancer pool", async () => {
-  //     let result;
-  //     const pool = await dhedge.loadPool(TEST_POOL);
-  //     const assets = [WMATIC, STMATIC];
-  //     const amounts = ["5000000000000000000", "0"];
-  //     try {
-  //       result = await pool.joinBalancerPool(
-  //         "0xaf5e0b5425de1f5a630a8cb5aa9d97b8141c908d000200000000000000000366",
-  //         assets,
-  //         amounts,
-  //         options
-  //       );
-  //       console.log("result", result);
-  //     } catch (e) {
-  //       console.log(e);
-  //     }
-  //     expect(result).not.toBe(null);
-  //   });
+  it("adds 5 WMATIC to a WMATIC/stMATIC balancer pool", async () => {
+    let result;
+    const pool = await dhedge.loadPool(TEST_POOL);
+    const assets = [
+      WMATIC,
+      "0xb20fC01D21A50d2C734C4a1262B4404d41fA7BF0",
+      "0xfa68FB4628DFF1028CFEc22b4162FCcd0d45efb6"
+    ];
+    const amounts = ["29500317230801455961187", "0", "0"];
+    try {
+      result = await pool.joinBalancerPool(
+        "0xb20fc01d21a50d2c734c4a1262b4404d41fa7bf000000000000000000000075c",
+        assets,
+        amounts,
+        options
+      );
+      console.log("result", result);
+    } catch (e) {
+      console.log(e);
+    }
+    expect(result).not.toBe(null);
+  });
 
   // it("allows unlimited WMATIC-stMATIC LP on gauge", async () => {
   //   let result;
@@ -189,26 +193,26 @@ describe("pool", () => {
   //   expect(result).not.toBe(null);
   // });
 
-  it("exits from WMATIC-stMATIC LP into WMATIC", async () => {
-    let result;
-    const pool = await dhedge.loadPool(TEST_POOL);
-    const assets = [WMATIC, STMATIC];
-    const amount = await dhedge.utils.getBalance(
-      "0xaF5E0B5425dE1F5a630A8cB5AA9D97B8141C908D",
-      pool.address
-    );
-    try {
-      result = await pool.exitBalancerPool(
-        "0xaf5e0b5425de1f5a630a8cb5aa9d97b8141c908d000200000000000000000366",
-        assets,
-        amount,
-        1,
-        options
-      );
-      console.log("result", result);
-    } catch (e) {
-      console.log(e);
-    }
-    expect(result).not.toBe(null);
-  });
+  // it("exits from WMATIC-stMATIC LP into WMATIC", async () => {
+  //   let result;
+  //   const pool = await dhedge.loadPool(TEST_POOL);
+  //   const assets = [WMATIC, STMATIC];
+  //   const amount = await dhedge.utils.getBalance(
+  //     "0xaF5E0B5425dE1F5a630A8cB5AA9D97B8141C908D",
+  //     pool.address
+  //   );
+  //   try {
+  //     result = await pool.exitBalancerPool(
+  //       "0xaf5e0b5425de1f5a630a8cb5aa9d97b8141c908d000200000000000000000366",
+  //       assets,
+  //       amount,
+  //       1,
+  //       options
+  //     );
+  //     console.log("result", result);
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  //   expect(result).not.toBe(null);
+  // });
 });
