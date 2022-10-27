@@ -30,4 +30,4 @@ export const WSTETH = "0x1F32b1c2345538c0c6f582fCB022739c4A194Ebb";
 export const VEL = "0x3c8B650257cFb5f272f799F5e2b4e65093a11a05";
 export const SUSD = "0x8c6f28f2f1a3c87f0f938b96d27520d9751ec8d9";
 
-export const TEST_POOL = "0x3d45e539df0f9fa6015106a968d732a8f6c2a40b";
+export const TEST_POOL = "TEST_POOL";
