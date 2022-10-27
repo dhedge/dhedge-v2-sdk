@@ -8,6 +8,14 @@ const provider = new ethers.providers.JsonRpcProvider(
 );
 
 // const provider = new ethers.providers.JsonRpcProvider(
+//   `https://opt-kovan.g.alchemy.com/v2/${process.env.ALCHEMY_PROJECT_ID}`
+// );
+
+// const provider = new ethers.providers.JsonRpcProvider(
+//   `https://polygon-mainnet.infura.io/v3/${process.env.INFURA_PROJECT_ID}`
+// );
+
+// const provider = new ethers.providers.JsonRpcProvider(
 //   `https://polygon-mainnet.infura.io/v3/${process.env.INFURA_PROJECT_ID}`
 // );
 

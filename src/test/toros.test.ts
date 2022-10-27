@@ -25,7 +25,7 @@ describe("pool", () => {
     let result;
     const pool = await dhedge.loadPool(ETHBULL3X);
     try {
-      const depositAsset = await getPoolDepositAsset(pool, ETHBULL3X);
+      const depositAsset = await getPoolDepositAsset(pool, ETHBULL3X, USDC);
       if (!depositAsset) throw new Error("no deposit assets");
 
       result = await getEasySwapperDepositQuote(

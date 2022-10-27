@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Dhedge, ethers } from "..";
 import { Dapp, Network } from "../types";
-import { TEST_POOL, WETH, WSTETH } from "./constants";
+import { TEST_POOL, VEL, WETH, WSTETH } from "./constants";
 import { getTxOptions } from "./txOptions";
 
 import { wallet } from "./wallet";

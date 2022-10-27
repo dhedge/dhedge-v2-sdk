@@ -1,4 +1,4 @@
-import { Contract, ethers, Wallet } from "ethers";
+import { BigNumber, Contract, ethers, Wallet } from "ethers";
 import {
   Token,
   TokenAmount,
@@ -22,8 +22,18 @@ import {
   networkChainIdMap,
   stakingAddress
 } from "../config";
-import { Dapp, Network, Reserves } from "../types";
+import {
+  Dapp,
+  LyraOptionMarket,
+  LyraOptionType,
+  LyraTradeType,
+  Network,
+  Reserves
+} from "../types";
 import { Pool } from ".";
+import { getExpiries, getStrike, getStrikes } from "../services/lyra/markets";
+import { Quote, Strike } from "@lyrafinance/lyra-js";
+import { getQuote } from "../services/lyra/quote";
 
 export class Utils {
   network: Network;
@@ -327,5 +337,38 @@ export class Utils {
     ];
     const exitPoolTx = iBalancerV2Vault.encodeFunctionData("exitPool", txData);
     return exitPoolTx;
+  }
+
+  async getLyraOptionExpiries(market: LyraOptionMarket): Promise<number[]> {
+    return await getExpiries(this.network, market);
+  }
+
+  async getLyraOptionStrikes(
+    market: LyraOptionMarket,
+    expiry: number
+  ): Promise<Strike[]> {
+    return await getStrikes(this.network, market, expiry);
+  }
+
+  async getLyraOptionStrike(
+    market: LyraOptionMarket,
+    expiry: number,
+    strike: number
+  ): Promise<Strike> {
+    return await getStrike(this.network, market, expiry, strike);
+  }
+
+  async getLyraOptionQuote(
+    strike: Strike,
+    type: LyraOptionType,
+    tradeType: LyraTradeType,
+    amount: BigNumber | string
+  ): Promise<Quote> {
+    return await getQuote(
+      strike,
+      type,
+      tradeType,
+      ethers.BigNumber.from(amount)
+    );
   }
 }

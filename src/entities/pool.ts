@@ -29,7 +29,11 @@ import {
   Transaction,
   FundComposition,
   AssetEnabled,
-  Network
+  Network,
+  LyraOptionMarket,
+  LyraOptionType,
+  LyraTradeType,
+  LyraPosition
 } from "../types";
 
 import { Utils } from "./utils";
@@ -51,6 +55,8 @@ import {
   getVelodromeClaimTxData,
   getVelodromeStakeTxData
 } from "../services/velodrome/staking";
+import { getLyraOptionTxData } from "../services/lyra/trade";
+import { getOptionPositions } from "../services/lyra/positions";
 
 export class Pool {
   public readonly poolLogic: Contract;
@@ -1164,5 +1170,59 @@ export class Pool {
       options
     );
     return tx;
+  }
+
+  /**
+   * Trade options on lyra
+   * @param {LyraOptionMarket} market Underlying market e.g. eth
+   * @param {number} expiry Expiry timestamp
+   * @param { number} strike Strike price
+   * @param {LyraOptionType} optionType Call or put
+   * @param { LyraTradeType} tradeType By or sell
+   * @param {BigNumber | string } optionAmount Option amount
+   * @param {string } assetIn  Asset to invest
+   * @param {BigNumber | string } collateralChangeAmount Collateral amount to add when shorting options and to remove when covering shorts
+   * @param {boolean} isCoveredCall Selling covered call options
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async tradeLyraOption(
+    market: LyraOptionMarket,
+    expiry: number,
+    strike: number,
+    optionType: LyraOptionType,
+    tradeType: LyraTradeType,
+    optionAmount: BigNumber | string,
+    assetIn: string,
+    collateralChangeAmount: BigNumber | string = "0",
+    isCoveredCall = false,
+    options: any = null
+  ): Promise<any> {
+    const swapxData = await getLyraOptionTxData(
+      this,
+      market,
+      optionType,
+      expiry,
+      strike,
+      tradeType,
+      optionAmount,
+      assetIn,
+      BigNumber.from(collateralChangeAmount),
+      isCoveredCall
+    );
+    const tx = await this.poolLogic.execTransaction(
+      routerAddress[this.network][Dapp.LYRA],
+      swapxData,
+      options
+    );
+    return tx;
+  }
+
+  /**
+   * Gets Lyra option positions
+   * @returns {Promise<Position>} Transaction
+   */
+  async getLyraPositions(market: LyraOptionMarket): Promise<LyraPosition[]> {
+    return await getOptionPositions(this, market);
   }
 }

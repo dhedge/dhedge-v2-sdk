@@ -2,9 +2,11 @@ import {
   Dapp,
   AddressNetworkMap,
   Network,
-  AddressDappNetworkMap
+  AddressDappNetworkMap,
+  LyraNetworkMap
 } from "./types";
 import { NetworkChainIdMap } from ".";
+import { Deployment } from "@lyrafinance/lyra-js";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require("dotenv").config();
@@ -34,7 +36,8 @@ export const routerAddress: AddressDappNetworkMap = {
     [Dapp.AAVEV3]: "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
     [Dapp.ONEINCH]: "0x1111111254760F7ab3F16433eea9304126DCd199",
     [Dapp.TOROS]: "0xf8C62BD5f2fEf9E1a329c197F32E77AD6866B022",
-    [Dapp.VELODROME]: "0x9c12939390052919aF3155f41Bf4160Fd3666A6f"
+    [Dapp.VELODROME]: "0x9c12939390052919aF3155f41Bf4160Fd3666A6f",
+    [Dapp.LYRA]: "0xCCE7819d65f348c64B7Beb205BA367b3fE33763B"
   }
 };
 
@@ -53,9 +56,7 @@ export const stakingAddress: AddressDappNetworkMap = {
     [Dapp.AAVE]: "0x357D51124f59836DeD84c8a1730D72B749d8BC23",
     [Dapp.AAVEV3]: "0x929EC64c34a17401F460460D4B9390518E5B473e"
   },
-  [Network.OPTIMISM]: {
-    [Dapp.AAVEV3]: "0x929EC64c34a17401F460460D4B9390518E5B473e"
-  }
+  [Network.OPTIMISM]: {}
 };
 
 export const aaveAddressProvider: AddressDappNetworkMap = {
@@ -86,6 +87,10 @@ export const balancerSubgraph: AddressNetworkMap = {
 export const multiCallAddress: AddressNetworkMap = {
   [Network.POLYGON]: "0x275617327c958bD06b5D6b871E7f491D76113dd8",
   [Network.OPTIMISM]: ""
+};
+
+export const lyraNetworkMap: LyraNetworkMap = {
+  [Network.OPTIMISM]: Deployment.Mainnet
 };
 
 export const deadline = Math.floor(Date.now() / 1000) + 60 * 20;

@@ -1,3 +1,4 @@
+import { Deployment } from "@lyrafinance/lyra-js";
 import { BigNumber } from "ethers";
 
 export enum Network {
@@ -16,7 +17,8 @@ export enum Dapp {
   AAVEV3 = "aavev3",
   ARRAKIS = "arrakis",
   TOROS = "toros",
-  VELODROME = "velodrome"
+  VELODROME = "velodrome",
+  LYRA = "lyra"
 }
 
 export enum Transaction {
@@ -69,3 +71,20 @@ export type Reserves = {
 };
 
 export type NetworkChainIdMap = Readonly<Record<Network, number>>;
+
+export type LyraOptionMarket = "eth";
+export type AddressMarketMap = {
+  [key in LyraOptionMarket]: string;
+};
+
+export type LyraTradeType = "buy" | "sell";
+export type LyraOptionType = "call" | "put";
+export type LyraNetworkMap = { [key in Network]?: Deployment };
+export type LyraPosition = {
+  positionId: BigNumber;
+  strikeId: BigNumber;
+  optionType: number;
+  amount: BigNumber;
+  collateral: BigNumber;
+  state: number;
+};

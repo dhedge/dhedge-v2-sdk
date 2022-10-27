@@ -13,7 +13,7 @@ jest.setTimeout(100000);
 describe("pool", () => {
   beforeAll(async () => {
     dhedge = new Dhedge(wallet, Network.POLYGON);
-    options = await getTxOptions();
+    options = await getTxOptions(Network.POLYGON);
     //options = { gasLimit: "3000000" };
   });
 

@@ -6,3 +6,4 @@ dist
 secrets.ts
 *.tgz
 
+/coverage
