@@ -1,6 +1,6 @@
 {
   "name": "@dhedge/v2-sdk",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "license": "MIT",
   "description": "🛠 An SDK for building applications on top of dHEDGE V2",
   "main": "dist/index.js",
