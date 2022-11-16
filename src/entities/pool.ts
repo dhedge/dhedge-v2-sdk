@@ -57,6 +57,12 @@ import {
 } from "../services/velodrome/staking";
 import { getLyraOptionTxData } from "../services/lyra/trade";
 import { getOptionPositions } from "../services/lyra/positions";
+import {
+  getFuturesChangePositionTxData,
+  getFuturesClosePositionTxData,
+  getFuturesChangeMarginTxData
+} from "../services/futures";
+import { getSynthetixFuturesMargin } from "../services/futures/margin";
 
 export class Pool {
   public readonly poolLogic: Contract;
@@ -1224,5 +1230,72 @@ export class Pool {
    */
   async getLyraPositions(market: LyraOptionMarket): Promise<LyraPosition[]> {
     return await getOptionPositions(this, market);
+  }
+
+  /** Deposit or withdraws (negative amount) asset for Synthetix future margin trading
+   *
+   * @param {string} market Address of futures market
+   * @param {BigNumber | string } changeAmount Amount to increase/decrease margin
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async changeFuturesMargin(
+    market: string,
+    changeAmount: BigNumber | string,
+    options: any = null
+  ): Promise<any> {
+    const tx = await this.poolLogic.execTransaction(
+      market,
+      getFuturesChangeMarginTxData(changeAmount),
+      options
+    );
+    return tx;
+  }
+
+  /** Change position in Synthetix futures market (long/short)
+   *
+   * @param {string} market Address of futures market
+   * @param {BigNumber | string } changeAmount Negative for short, positive for long
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async changeFuturesPosition(
+    market: string,
+    changeAmount: BigNumber | string,
+    options: any = null
+  ): Promise<any> {
+    const tx = await this.poolLogic.execTransaction(
+      market,
+      getFuturesChangePositionTxData(changeAmount),
+      options
+    );
+    return tx;
+  }
+
+  /** Close position in Synthetix futures market
+   *
+   * @param {string} market Address of futures market
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async closeFuturesPosition(
+    market: string,
+    options: any = null
+  ): Promise<any> {
+    const tx = await this.poolLogic.execTransaction(
+      market,
+      getFuturesClosePositionTxData(),
+      options
+    );
+    return tx;
+  }
+
+  /**
+   * Gets Lyra option positions
+   * @param {string} market Address of futures market
+   * @returns {Promise<BigNumber>} Transaction
+   */
+  async getFuturesMargin(market: string): Promise<BigNumber> {
+    return await getSynthetixFuturesMargin(this, market);
   }
 }
