@@ -1,25 +1,25 @@
 import { ethers } from "../..";
-import ISynthetixFuturesMarket from "../../abi/ISynthetixFuturesMarket.json";
-
+import { PRICE_IMPACT_DELTA } from "./constants";
+import { iSynthetixFuturesMarket } from "./market";
 
 export function getFuturesChangePositionTxData(
-  amount: ethers.BigNumber | string
+  amount: ethers.BigNumber | string,
+  version: 1 | 2
 ): string {
-  const iSynthetixFuturesMarket = new ethers.utils.Interface(
-    ISynthetixFuturesMarket.abi
-  );
-  return iSynthetixFuturesMarket.encodeFunctionData(
+  const args = [amount, ethers.utils.formatBytes32String("tracking")];
+  if (version === 2) args.splice(1, 0, PRICE_IMPACT_DELTA);
+  return iSynthetixFuturesMarket(version).encodeFunctionData(
     "modifyPositionWithTracking",
-    [amount, ethers.utils.formatBytes32String("tracking")]
+    args
   );
 }
 
-export function getFuturesClosePositionTxData(): string {
-  const iSynthetixFuturesMarket = new ethers.utils.Interface(
-    ISynthetixFuturesMarket.abi
-  );
-  return iSynthetixFuturesMarket.encodeFunctionData(
+export function getFuturesClosePositionTxData(version: 1 | 2): string {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const args: any[] = [ethers.utils.formatBytes32String("tracking")];
+  if (version === 2) args.unshift(PRICE_IMPACT_DELTA);
+  return iSynthetixFuturesMarket(version).encodeFunctionData(
     "closePositionWithTracking",
-    [ethers.utils.formatBytes32String("tracking")]
+    args
   );
 }

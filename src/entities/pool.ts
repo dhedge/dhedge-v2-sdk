@@ -22,7 +22,7 @@ import {
   nonfungiblePositionManagerAddress,
   routerAddress,
   stakingAddress,
-  SYNTHETIX_TRACKING_CODE
+  SYNTHETIX_TRACKING_CODE,
 } from "../config";
 import {
   Dapp,
@@ -33,14 +33,14 @@ import {
   LyraOptionMarket,
   LyraOptionType,
   LyraTradeType,
-  LyraPosition
+  LyraPosition,
 } from "../types";
 
 import { Utils } from "./utils";
 import { ClaimService } from "../services/claim-balancer/claim.service";
 import {
   getUniswapV3Liquidity,
-  getUniswapV3MintParams
+  getUniswapV3MintParams,
 } from "../services/uniswap/V3Liquidity";
 import { FeeAmount } from "@uniswap/v3-sdk";
 import { getUniswapV3SwapTxData } from "../services/uniswap/V3Trade";
@@ -49,18 +49,18 @@ import { getOneInchProtocols } from "../services/oneInch/protocols";
 import { getAaveV3ClaimTxData } from "../services/aave/incentives";
 import {
   getVelodromeAddLiquidityTxData,
-  getVelodromeRemoveLiquidityTxData
+  getVelodromeRemoveLiquidityTxData,
 } from "../services/velodrome/liquidity";
 import {
   getVelodromeClaimTxData,
-  getVelodromeStakeTxData
+  getVelodromeStakeTxData,
 } from "../services/velodrome/staking";
 import { getLyraOptionTxData } from "../services/lyra/trade";
 import { getOptionPositions } from "../services/lyra/positions";
 import {
   getFuturesChangePositionTxData,
   getFuturesClosePositionTxData,
-  getFuturesChangeMarginTxData
+  getFuturesChangeMarginTxData,
 } from "../services/futures";
 import { getSynthetixFuturesMargin } from "../services/futures/margin";
 
@@ -104,7 +104,7 @@ export class Pool {
           asset: asset,
           isDeposit: isDeposit,
           balance: result[1][index],
-          rate: result[2][index]
+          rate: result[2][index],
         };
       }
     );
@@ -179,7 +179,7 @@ export class Pool {
     const iERC20 = new ethers.utils.Interface(IERC20.abi);
     const approveTxData = iERC20.encodeFunctionData("approve", [
       routerAddress[this.network][dapp],
-      amount
+      amount,
     ]);
     const tx = await this.poolLogic.execTransaction(
       asset,
@@ -206,7 +206,7 @@ export class Pool {
     const iERC20 = new ethers.utils.Interface(IERC20.abi);
     const approveTxData = iERC20.encodeFunctionData("approve", [
       stakingAddress[this.network][dapp],
-      amount
+      amount,
     ]);
     const tx = await this.poolLogic.execTransaction(
       asset,
@@ -232,7 +232,7 @@ export class Pool {
     const iERC20 = new ethers.utils.Interface(IERC20.abi);
     const approveTxData = iERC20.encodeFunctionData("approve", [
       nonfungiblePositionManagerAddress[this.network],
-      amount
+      amount,
     ]);
     const tx = await this.poolLogic.execTransaction(
       asset,
@@ -259,7 +259,7 @@ export class Pool {
     const iERC20 = new ethers.utils.Interface(IERC20.abi);
     const approveTxData = iERC20.encodeFunctionData("approve", [
       spender,
-      amount
+      amount,
     ]);
     const tx = await this.poolLogic.execTransaction(
       asset,
@@ -311,7 +311,7 @@ export class Pool {
         break;
       case Dapp.SYNTHETIX:
         const iSynthetix = new ethers.utils.Interface(ISynthetix.abi);
-        const assets = [assetFrom, assetTo].map(asset =>
+        const assets = [assetFrom, assetTo].map((asset) =>
           ethers.utils.formatBytes32String(asset)
         );
         const daoAddress = await this.factory.owner();
@@ -320,7 +320,7 @@ export class Pool {
           amountIn,
           assets[1],
           daoAddress,
-          SYNTHETIX_TRACKING_CODE
+          SYNTHETIX_TRACKING_CODE,
         ]);
         break;
       case Dapp.TOROS:
@@ -348,7 +348,7 @@ export class Pool {
           minAmountOut,
           [assetFrom, assetTo],
           this.address,
-          deadline
+          deadline,
         ]);
     }
     const tx = await this.poolLogic.execTransaction(
@@ -438,7 +438,7 @@ export class Pool {
     const stakeTxData = iMiniChefV2.encodeFunctionData(Transaction.DEPOSIT, [
       poolId,
       amount,
-      this.address
+      this.address,
     ]);
     const tx = await this.poolLogic.execTransaction(
       stakingAddress[this.network][dapp],
@@ -469,7 +469,7 @@ export class Pool {
           IBalancerRewardsGauge.abi
         );
         stakeTxData = rewardsGauge.encodeFunctionData("deposit(uint256)", [
-          amount
+          amount,
         ]);
         break;
       case Dapp.VELODROME:
@@ -505,7 +505,7 @@ export class Pool {
     const unStakeTxData = iMiniChefV2.encodeFunctionData(Transaction.WITHDRAW, [
       poolId,
       amount,
-      this.address
+      this.address,
     ]);
     const tx = await this.poolLogic.execTransaction(
       stakingAddress[this.network][dapp],
@@ -529,7 +529,7 @@ export class Pool {
   ): Promise<any> {
     const rewardsGauge = new ethers.utils.Interface(IBalancerRewardsGauge.abi);
     const unstakeTxData = rewardsGauge.encodeFunctionData("withdraw(uint256)", [
-      amount
+      amount,
     ]);
     const tx = await this.poolLogic.execTransaction(
       gauge,
@@ -560,7 +560,7 @@ export class Pool {
       asset,
       amount,
       this.address,
-      referralCode
+      referralCode,
     ]);
     const tx = await this.poolLogic.execTransaction(
       routerAddress[this.network][dapp],
@@ -619,7 +619,7 @@ export class Pool {
       amount,
       2,
       referralCode,
-      this.address
+      this.address,
     ]);
     const tx = await this.poolLogic.execTransaction(
       routerAddress[this.network][dapp],
@@ -648,7 +648,7 @@ export class Pool {
       asset,
       amount,
       2,
-      this.address
+      this.address,
     ]);
     const tx = await this.poolLogic.execTransaction(
       routerAddress[this.network][dapp],
@@ -674,7 +674,7 @@ export class Pool {
     const poolId = await this.utils.getLpPoolId(dapp, asset);
     const harvestTxData = iMiniChefV2.encodeFunctionData(Transaction.HARVEST, [
       poolId,
-      this.address
+      this.address,
     ]);
     const tx = await this.poolLogic.execTransaction(
       stakingAddress[this.network][dapp],
@@ -695,12 +695,12 @@ export class Pool {
     options: any = null
   ): Promise<any> {
     const currentAssetsEnabled = await this.getComposition();
-    const currentAssets = currentAssetsEnabled.map(e =>
+    const currentAssets = currentAssetsEnabled.map((e) =>
       e.asset.toLocaleLowerCase()
     );
-    const newAssets = assets.map(e => e.asset.toLocaleLowerCase());
-    const removedAssets = currentAssets.filter(e => !newAssets.includes(e));
-    const changedAssets = assets.map(e => [e.asset, e.isDeposit]);
+    const newAssets = assets.map((e) => e.asset.toLocaleLowerCase());
+    const removedAssets = currentAssets.filter((e) => !newAssets.includes(e));
+    const changedAssets = assets.map((e) => [e.asset, e.isDeposit]);
     const tx = await this.managerLogic.changeAssets(
       changedAssets,
       removedAssets,
@@ -791,7 +791,7 @@ export class Pool {
       this.address
     );
     const tokens = multiTokenPendingClaims.map(
-      tokenPendingClaims => tokenPendingClaims.tokenClaimInfo.token
+      (tokenPendingClaims) => tokenPendingClaims.tokenClaimInfo.token
     );
     const claims = await claimService.multiTokenClaimRewards(
       this.address,
@@ -956,7 +956,7 @@ export class Pool {
         [[tokenId, liquidity, 0, 0, deadline]]
       );
       const collectTxData = abi.encodeFunctionData(Transaction.COLLECT, [
-        [tokenId, this.address, MaxUint128, MaxUint128]
+        [tokenId, this.address, MaxUint128, MaxUint128],
       ]);
 
       const multicallParams = [decreaseLiquidityTxData, collectTxData];
@@ -966,7 +966,7 @@ export class Pool {
         multicallParams.push(burnTxData);
       }
       txData = abi.encodeFunctionData(Transaction.MULTI_CALL, [
-        multicallParams
+        multicallParams,
       ]);
     } else if (dapp === Dapp.ARRAKIS) {
       dappAddress = routerAddress[this.network][dapp];
@@ -979,7 +979,7 @@ export class Pool {
         liquidity,
         0,
         0,
-        this.address
+        this.address,
       ]);
     } else {
       throw new Error("dapp not supported");
@@ -1015,7 +1015,7 @@ export class Pool {
       dappAddress = nonfungiblePositionManagerAddress[this.network];
       const abi = new ethers.utils.Interface(INonfungiblePositionManager.abi);
       txData = abi.encodeFunctionData(Transaction.INCREASE_LIQUIDITY, [
-        [tokenId, amountA, amountB, 0, 0, deadline]
+        [tokenId, amountA, amountB, 0, 0, deadline],
       ]);
     } else if (dapp === Dapp.ARRAKIS) {
       dappAddress = routerAddress[this.network][dapp];
@@ -1026,7 +1026,7 @@ export class Pool {
         amountB,
         0,
         0,
-        this.address
+        this.address,
       ]);
     } else {
       throw new Error("dapp not supported");
@@ -1236,17 +1236,19 @@ export class Pool {
    *
    * @param {string} market Address of futures market
    * @param {BigNumber | string } changeAmount Amount to increase/decrease margin
+   * @param { 1 | 2 } version Version of futures market
    * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
   async changeFuturesMargin(
     market: string,
     changeAmount: BigNumber | string,
+    version: 1 | 2,
     options: any = null
   ): Promise<any> {
     const tx = await this.poolLogic.execTransaction(
       market,
-      getFuturesChangeMarginTxData(changeAmount),
+      getFuturesChangeMarginTxData(changeAmount, version),
       options
     );
     return tx;
@@ -1256,17 +1258,19 @@ export class Pool {
    *
    * @param {string} market Address of futures market
    * @param {BigNumber | string } changeAmount Negative for short, positive for long
+   * @param { 1 | 2 } version Version of futures market
    * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
   async changeFuturesPosition(
     market: string,
     changeAmount: BigNumber | string,
+    version: 1 | 2,
     options: any = null
   ): Promise<any> {
     const tx = await this.poolLogic.execTransaction(
       market,
-      getFuturesChangePositionTxData(changeAmount),
+      getFuturesChangePositionTxData(changeAmount, version),
       options
     );
     return tx;
@@ -1275,16 +1279,18 @@ export class Pool {
   /** Close position in Synthetix futures market
    *
    * @param {string} market Address of futures market
+   * @param { 1 | 2 } version Version of futures market
    * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
   async closeFuturesPosition(
     market: string,
+    version: 1 | 2,
     options: any = null
   ): Promise<any> {
     const tx = await this.poolLogic.execTransaction(
       market,
-      getFuturesClosePositionTxData(),
+      getFuturesClosePositionTxData(version),
       options
     );
     return tx;
