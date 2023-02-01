@@ -94,7 +94,7 @@ export const lyraNetworkMap: LyraNetworkMap = {
   [Network.OPTIMISM]: Deployment.Mainnet
 };
 
-export const deadline = Math.floor(Date.now() / 1000) + 60 * 20;
+export const deadline = Math.floor(Date.now() / 1000) + 60 * 60;
 export const MaxUint128 = "0xffffffffffffffffffffffffffffffff";
 export const UNISWAPV3_QUOTER_ADDRESS =
   "0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6";
