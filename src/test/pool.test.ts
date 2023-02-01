@@ -1,8 +1,9 @@
 import { Dhedge } from "..";
-import { Network } from "../types";
+import { FORK_IDS, Network } from "../types";
 import { TEST_POOL } from "./constants";
-
 import { wallet } from "./wallet";
+
+// import { getWallet } from "./wallet";
 
 let dhedge: Dhedge;
 
@@ -14,12 +15,14 @@ jest.setTimeout(100000);
 // };
 
 describe("pool", () => {
-  beforeAll(() => {
-    dhedge = new Dhedge(wallet, Network.OPTIMISM);
+  beforeAll(async () => {
+    // const wallet = await getWallet();
+    console.log("fork id", ((globalThis as unknown) as FORK_IDS).polygon);
+    dhedge = new Dhedge(wallet, Network.POLYGON);
   });
 
   it("checks fund composition", async () => {
-    const pool = await dhedge.loadPool(TEST_POOL);
+    const pool = await dhedge.loadPool(TEST_POOL[Network.POLYGON]);
     const result = await pool.getComposition();
     console.log(result);
     expect(result.length).toBeGreaterThan(0);

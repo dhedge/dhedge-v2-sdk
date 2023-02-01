@@ -88,3 +88,7 @@ export type LyraPosition = {
   collateral: BigNumber;
   state: number;
 };
+
+export type FORK_IDS = {
+  [key in Network]: string;
+};
