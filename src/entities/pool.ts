@@ -9,7 +9,6 @@ import ILendingPool from "../abi/ILendingPool.json";
 import ISynthetix from "../abi/ISynthetix.json";
 import IUniswapV2Router from "../abi/IUniswapV2Router.json";
 import INonfungiblePositionManager from "../abi/INonfungiblePositionManager.json";
-import IBalancerMerkleOrchard from "../abi/IBalancerMerkleOrchard.json";
 import IAaveIncentivesController from "../abi/IAaveIncentivesController.json";
 import IArrakisV1RouterStaking from "../abi/IArrakisV1RouterStaking.json";
 import ILiquidityGaugeV4 from "../abi/ILiquidityGaugeV4.json";
@@ -37,7 +36,6 @@ import {
 } from "../types";
 
 import { Utils } from "./utils";
-import { ClaimService } from "../services/claim-balancer/claim.service";
 import {
   getUniswapV3Liquidity,
   getUniswapV3MintParams
@@ -768,39 +766,6 @@ export class Pool {
     const tx = await this.poolLogic.execTransaction(
       routerAddress[this.network][Dapp.BALANCER],
       exitPoolTxData,
-      options
-    );
-    return tx;
-  }
-
-  /**
-   * Claim rewards from Balancer pools
-   * @param {string[]} assets Array of tokens being claimed
-   * @param {any} options Transaction options
-   * @returns {Promise<any>} Transaction
-   */
-  async harvestBalancerRewards(options: any = null): Promise<any> {
-    const claimService = new ClaimService(this.network, this.signer);
-    const multiTokenPendingClaims = await claimService.getMultiTokensPendingClaims(
-      this.address
-    );
-    const tokens = multiTokenPendingClaims.map(
-      tokenPendingClaims => tokenPendingClaims.tokenClaimInfo.token
-    );
-    const claims = await claimService.multiTokenClaimRewards(
-      this.address,
-      multiTokenPendingClaims
-    );
-    const iBalancerMerkleOrchard = new ethers.utils.Interface(
-      IBalancerMerkleOrchard.abi
-    );
-    const harvestTxData = iBalancerMerkleOrchard.encodeFunctionData(
-      Transaction.CLAIM_DISTRIBIUTIONS,
-      [this.address, claims, tokens]
-    );
-    const tx = await this.poolLogic.execTransaction(
-      stakingAddress[this.network][Dapp.BALANCER],
-      harvestTxData,
       options
     );
     return tx;

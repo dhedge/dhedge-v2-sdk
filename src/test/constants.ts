@@ -32,4 +32,4 @@ export const SUSD = "0x8c6f28f2f1a3c87f0f938b96d27520d9751ec8d9";
 export const ARRAKIS_USDC_WETH_GAUGE =
   "0xb8888ea29e2f70ad62a3b69b1a1342720612a00d";
 
-export const TEST_POOL = "0x3d45e539df0f9fa6015106a968d732a8f6c2a40b";
+export const TEST_POOL = "0x699fd4d6eadb216704c7e355cfa0a12f51813163";
