@@ -63,13 +63,7 @@ export async function getLyraOptionTxData(
       txFunction = "closePosition";
       setCollateral = currentCollateral.sub(collateralAmount);
       //cover short
-      if (
-        !isLong(filteredPosition[0].optionType) &&
-        !isCoveredCall &&
-        collateralAmount.gt(netPremiun)
-      ) {
-        inputAmount = netPremiun.sub(collateralAmount);
-      } else if (!isLong(filteredPosition[0].optionType) && isCoveredCall) {
+      if (!isLong(filteredPosition[0].optionType) && isCoveredCall) {
         inputAmount = netPremiun;
       } else {
         inputAmount = BigNumber.from(0);
