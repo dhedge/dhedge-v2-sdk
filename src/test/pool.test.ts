@@ -1,103 +1,60 @@
-import { Dhedge } from "..";
-import { Network } from "../types";
-import { TEST_POOL } from "./constants";
-
+import { Dhedge, ethers, Pool } from "..";
+import { AssetEnabled, Network } from "../types";
+import { CONTRACT_ADDRESS, TEST_POOL } from "./constants";
+import { allowanceDelta, balanceDelta } from "./utils/token";
 import { wallet } from "./wallet";
 
 let dhedge: Dhedge;
+let pool: Pool;
 
 jest.setTimeout(100000);
 
-// const options = {
-//   gasLimit: 5000000,
-//   gasPrice: ethers.utils.parseUnits("35", "gwei")
-// };
+const network = Network.POLYGON;
 
 describe("pool", () => {
-  beforeAll(() => {
-    dhedge = new Dhedge(wallet, Network.POLYGON);
+  beforeAll(async () => {
+    dhedge = new Dhedge(wallet, network);
+    pool = await dhedge.loadPool(TEST_POOL[network]);
   });
 
   it("checks fund composition", async () => {
-    const pool = await dhedge.loadPool(TEST_POOL);
     const result = await pool.getComposition();
-    console.log(result);
     expect(result.length).toBeGreaterThan(0);
   });
 
-  // it("withdraws 1.00002975 fund tokens", async () => {
-  //   const pool = await dhedge.loadPool(myPool);
-  //   const result = await pool.withdraw("1000029750000000000");
-  //   expect(result).toBeGreaterThan(0);
-  // });
+  it("approves USDC balance of User for Deposit", async () => {
+    await pool.approveDeposit(
+      CONTRACT_ADDRESS[network].USDC,
+      ethers.constants.MaxUint256
+    );
+    const UsdcAllowanceDelta = await allowanceDelta(
+      pool.signer.address,
+      CONTRACT_ADDRESS[network].USDC,
+      pool.address,
+      pool.signer
+    );
+    expect(UsdcAllowanceDelta.gt(0));
+  });
 
-  // it("approve USDC balance of User for Deposit", async () => {
-  //   let result;
-  //   const pool = await dhedge.loadPool(myPool);
-  //   try {
-  //     result = await pool.approveDeposit(usdt, ethers.constants.MaxUint256);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
+  it("deposits 1 USDC into Pool", async () => {
+    await pool.deposit(CONTRACT_ADDRESS[network].USDC, (1e6).toString());
+    const poolTokenDelta = await balanceDelta(
+      pool.signer.address,
+      pool.address,
+      pool.signer
+    );
+    expect(poolTokenDelta.gt(0));
+  });
 
-  // it("deposit 0.1 USDC into Pool", async () => {
-  //   let result;
-  //   const pool = await dhedge.loadPool(myPool);
-  //   try {
-  //     result = await pool.deposit(usdc, depositAmountUsdc);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
-
-  // it("adds LpUSDCWETH/SUSHI/WMATIC to enabled assets", async () => {
-  //   let result;
-  //   const pool = await dhedge.loadPool(myPool);
-  //   const newAssets: AssetEnabled[] = [
-  //     { asset: usdc, isDeposit: true },
-  //     { asset: weth, isDeposit: true },
-  //     { asset: usdt, isDeposit: true },
-  //     { asset: amusdc, isDeposit: false },
-  //     { asset: lpUsdcUsdt, isDeposit: false }
-  //   ];
-  //   try {
-  //     result = await pool.changeAssets(newAssets);
-  //     console.log(result);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
-
-  // it("removes all assets except USDC and USDT", async () => {
-  //   let result;
-  //   const pool = await dhedge.loadPool(myPool);
-  //   const newAssets: AssetEnabled[] = [
-  //     { asset: usdc, isDeposit: false },
-  //     { asset: weth, isDeposit: true }
-  //   ];
-  //   try {
-  //     result = await pool.changeAssets(newAssets);
-  //     console.log(result);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
-
-  // it("sets a trader account", async () => {
-  //   let result;
-  //   const newTrader = "0xC52D9a9D9b05a01887871216fF02bA4235e8503d";
-  //   const pool = await dhedge.loadPool(myPool);
-  //   try {
-  //     result = await pool.setTrader(newTrader);
-  //     console.log(result);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
+  it("adds WBTC to enabled assets", async () => {
+    const assetsBefore = await pool.getComposition();
+    const newAssets: AssetEnabled[] = [
+      { asset: CONTRACT_ADDRESS[network].USDC, isDeposit: true },
+      { asset: CONTRACT_ADDRESS[network].WETH, isDeposit: false },
+      { asset: CONTRACT_ADDRESS[network].WBTC, isDeposit: false }
+    ];
+    await pool.changeAssets(newAssets);
+    const assetsAfter = await pool.getComposition();
+    expect(assetsAfter.length).toBeGreaterThan(assetsBefore.length);
+  });
 });

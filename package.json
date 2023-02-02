@@ -19,7 +19,8 @@
     "lint": "tsdx lint",
     "prepare": "tsdx build",
     "size": "size-limit",
-    "analyze": "size-limit --why"
+    "analyze": "size-limit --why",
+    "fork:polygon": "hardhat node --fork $(grep POLYGON_URL .env | cut -d '=' -f2)"
   },
   "husky": {
     "hooks": {
