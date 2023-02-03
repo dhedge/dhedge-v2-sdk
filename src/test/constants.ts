@@ -19,6 +19,8 @@
 // export const ETHBULL3X = "0x460b60565cb73845d56564384ab84bf84c13e47d";
 // export const BTCBEAR2X = "0x3dbce2c8303609c17aa23b69ebe83c2f5c510ada";
 
+import { Network } from "../types";
+
 //Optimism
 export const WETH = "0x4200000000000000000000000000000000000006";
 export const USDC = "0x7F5c764cBc14f9669B88837ca1490cCa17c31607";
@@ -32,4 +34,14 @@ export const SUSD = "0x8c6f28f2f1a3c87f0f938b96d27520d9751ec8d9";
 export const ARRAKIS_USDC_WETH_GAUGE =
   "0xb8888ea29e2f70ad62a3b69b1a1342720612a00d";
 
-export const TEST_POOL = "0x3d45e539df0f9fa6015106a968d732a8f6c2a40b";
+export const TEST_POOL = {
+  [Network.POLYGON]: "0x699fd4d6eadb216704c7e355cfa0a12f51813163"
+};
+
+export const CONTRACT_ADDRESS = {
+  [Network.POLYGON]: {
+    USDC: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+    WETH: "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619",
+    WBTC: "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6"
+  }
+};
