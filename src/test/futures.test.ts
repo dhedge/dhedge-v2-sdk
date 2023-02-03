@@ -17,8 +17,8 @@ describe("pool", () => {
     pool = await dhedge.loadPool(TEST_POOL[network]);
   });
 
-  it("deposits 100 sUSD margin into ETH future market", async () => {
-    const depositAmount = (1e20).toString();
+  it("deposits 50 sUSD margin into ETH future market", async () => {
+    const depositAmount = (50 * 1e18).toString();
     await pool.changeFuturesMargin(perp, depositAmount, 1);
 
     const sUSDBalanceDelta = await balanceDelta(
@@ -30,8 +30,8 @@ describe("pool", () => {
   });
 
   it("goes short ETH-PERP about 1x leverage", async () => {
-    //size 100*1/1500 (margin * leverage  / price)
-    const size = (-0.065 * 1e18).toString();
+    //size 50*1/1600 (margin * leverage  / price)
+    const size = (-0.03 * 1e18).toString();
     const tx = await pool.changeFuturesPosition(perp, size, 1);
     expect(tx).not.toBe(null);
   });

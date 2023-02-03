@@ -18,7 +18,7 @@ describe("pool", () => {
   });
 
   it("deposits 100 sUSD margin into ETH future market", async () => {
-    const depositAmount = (5e19).toString();
+    const depositAmount = (50 * 1e18).toString();
     await pool.changeFuturesMargin(perp, depositAmount, 2);
 
     const sUSDBalanceDelta = await balanceDelta(
@@ -30,8 +30,8 @@ describe("pool", () => {
   });
 
   it("goes long ETH-PERP about 3x leverage", async () => {
-    //size 100*3/1700 (margin * leverage  / price)
-    const size = (0.17 * 1e18).toString();
+    //size 50*3/1600 (margin * leverage  / price)
+    const size = (0.09 * 1e18).toString();
     const tx = await pool.changeFuturesPosition(perp, size, 2);
     expect(tx).not.toBe(null);
   });

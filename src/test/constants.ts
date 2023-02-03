@@ -39,7 +39,7 @@ export const KWENTA_ETH_PERP_V2 = "0x2b3bb4c683bfc5239b029131eef3b1d214478d93";
 
 export const TEST_POOL = {
   [Network.POLYGON]: "0x699fd4d6eadb216704c7e355cfa0a12f51813163",
-  [Network.OPTIMISM]: "0x3d45e539df0f9fa6015106a968d732a8f6c2a40b"
+  [Network.OPTIMISM]: "0x12573bfdf764ab9d52aca20e2827497a66829716"
 };
 
 export const CONTRACT_ADDRESS = {
