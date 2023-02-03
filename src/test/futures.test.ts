@@ -1,69 +1,54 @@
-import { Dhedge } from "..";
+import { Dhedge, Pool } from "..";
 import { Network } from "../types";
-import { KWENTA_ETH_PERP, SUSD, TEST_POOL } from "./constants";
-import { getTxOptions } from "./txOptions";
+import { CONTRACT_ADDRESS, TEST_POOL } from "./constants";
+import { balanceDelta } from "./utils/token";
 import { wallet } from "./wallet";
 
 jest.setTimeout(100000);
 
+const network = Network.OPTIMISM;
+const perp = CONTRACT_ADDRESS[network].KWENTA_ETH_PERP;
+
 describe("pool", () => {
   let dhedge: Dhedge;
-  const options = getTxOptions(Network.OPTIMISM);
+  let pool: Pool;
   beforeAll(async () => {
-    dhedge = new Dhedge(wallet, Network.OPTIMISM);
+    dhedge = new Dhedge(wallet, network);
+    pool = await dhedge.loadPool(TEST_POOL[network]);
   });
 
   it("deposits 100 sUSD margin into ETH future market", async () => {
     const depositAmount = (1e20).toString();
-    const pool = await dhedge.loadPool(TEST_POOL);
-    const sUSDBalance = await pool.utils.getBalance(SUSD, pool.address);
-    const result = await pool.changeFuturesMargin(
-      KWENTA_ETH_PERP,
-      depositAmount,
-      1,
-      options
-    );
+    await pool.changeFuturesMargin(perp, depositAmount, 1);
 
-    await result.wait(2);
-    const sUSDBalanceAfter = await pool.utils.getBalance(SUSD, pool.address);
-    expect(sUSDBalance.sub(sUSDBalanceAfter).toString()).toBe(depositAmount);
+    const sUSDBalanceDelta = await balanceDelta(
+      pool.address,
+      CONTRACT_ADDRESS[network].SUSD,
+      pool.signer
+    );
+    expect(sUSDBalanceDelta.abs().toString()).toBe(depositAmount);
   });
 
   it("goes short ETH-PERP about 1x leverage", async () => {
     //size 100*1/1500 (margin * leverage  / price)
     const size = (-0.065 * 1e18).toString();
-    const pool = await dhedge.loadPool(TEST_POOL);
-    const result = await pool.changeFuturesPosition(
-      KWENTA_ETH_PERP,
-      size,
-      1,
-      options
-    );
-
-    expect(result).not.toBe(null);
+    const tx = await pool.changeFuturesPosition(perp, size, 1);
+    expect(tx).not.toBe(null);
   });
 
   it("it closes ETH-PERP position", async () => {
-    const pool = await dhedge.loadPool(TEST_POOL);
-    const result = await pool.closeFuturesPosition(KWENTA_ETH_PERP, 1, options);
-    expect(result).not.toBe(null);
+    const tx = await pool.closeFuturesPosition(perp, 1);
+    expect(tx).not.toBe(null);
   });
 
   it("removes entire margin from ETH future market", async () => {
-    const pool = await dhedge.loadPool(TEST_POOL);
-    const sUSDBalance = await pool.utils.getBalance(SUSD, pool.address);
-    const margin = await pool.getFuturesMargin(KWENTA_ETH_PERP);
-    const result = await pool.changeFuturesMargin(
-      KWENTA_ETH_PERP,
-      margin.mul(-1),
-      1,
-      options
+    const margin = await pool.getFuturesMargin(perp);
+    await pool.changeFuturesMargin(perp, margin.mul(-1), 1);
+    const sUSDBalanceDelta = await balanceDelta(
+      pool.address,
+      CONTRACT_ADDRESS[network].SUSD,
+      pool.signer
     );
-
-    await result.wait(2);
-    const sUSDBalanceAfter = await pool.utils.getBalance(SUSD, pool.address);
-    expect(sUSDBalanceAfter.sub(sUSDBalance).toString()).toBe(
-      margin.toString()
-    );
+    expect(sUSDBalanceDelta.eq(margin));
   });
 });
