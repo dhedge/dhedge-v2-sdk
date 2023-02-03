@@ -1,141 +1,114 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Dhedge, ethers } from "..";
+import { Dhedge, Pool } from "..";
+import { routerAddress } from "../config";
 import { Dapp, Network } from "../types";
-import { TEST_POOL, VEL, WETH, WSTETH } from "./constants";
-import { getTxOptions } from "./txOptions";
+import { CONTRACT_ADDRESS, MAX_AMOUNT, TEST_POOL } from "./constants";
+import { allowanceDelta, balanceDelta } from "./utils/token";
 
 import { wallet } from "./wallet";
 
-const wETHwstETHLp = "0xBf205335De602ac38244F112d712ab04CB59A498";
-const wETHwstETHGauge = "0x131Ae347E654248671Afc885F0767cB605C065d7";
+const USDC_SUSD_Lp = "0xd16232ad60188b68076a235c65d692090caba155";
+const USDC_SUSD_Gauge = "0xb03f52d2db3e758dd49982defd6aeefea9454e80";
+const network = Network.OPTIMISM;
+const SUSD = CONTRACT_ADDRESS[network].SUSD;
+const USDC = CONTRACT_ADDRESS[network].USDC;
 
 let dhedge: Dhedge;
-let options: any;
+let pool: Pool;
 jest.setTimeout(100000);
 
 describe("pool", () => {
   beforeAll(async () => {
-    dhedge = new Dhedge(wallet, Network.OPTIMISM);
-    options = await getTxOptions(Network.OPTIMISM);
+    dhedge = new Dhedge(wallet, network);
+    pool = await dhedge.loadPool(TEST_POOL[network]);
   });
 
-  it("approves unlimited WETH on for Velodrome", async () => {
-    let result;
-    const pool = await dhedge.loadPool(TEST_POOL);
-    try {
-      result = await pool.approve(
-        Dapp.VELODROME,
-        WSTETH,
-        ethers.constants.MaxInt256,
-        options
-      );
-      console.log(result);
-    } catch (e) {
-      console.log(e);
-    }
-    expect(result).not.toBe(null);
+  it("approves unlimited sUSD and USDC on for Velodrome", async () => {
+    await pool.approve(Dapp.VELODROME, SUSD, MAX_AMOUNT);
+    await pool.approve(Dapp.VELODROME, USDC, MAX_AMOUNT);
+    const UsdcAllowanceDelta = await allowanceDelta(
+      pool.address,
+      USDC,
+      routerAddress[network].velodrome!,
+      pool.signer
+    );
+    await expect(UsdcAllowanceDelta.gt(0));
   });
 
-  it("adds WETH and wstETH to a Velodrome stable pool", async () => {
-    const pool = await dhedge.loadPool(TEST_POOL);
-    const wethBalance = await dhedge.utils.getBalance(WETH, pool.address);
-    const stwethBalance = await dhedge.utils.getBalance(WSTETH, pool.address);
-
-    const result = await pool.addLiquidityVelodrome(
-      WETH,
-      WSTETH,
-      wethBalance,
-      stwethBalance,
-      true,
-      options
+  it("adds USDC and SUSD to a Velodrome stable pool", async () => {
+    await pool.addLiquidityVelodrome(
+      USDC,
+      SUSD,
+      (10 * 1e6).toString(),
+      (20 * 1e18).toString(),
+      true
     );
 
-    result.wait(1);
-    const lpBalance = await dhedge.utils.getBalance(wETHwstETHLp, pool.address);
-    expect(lpBalance.gt(0));
+    const lpTokenDelta = await balanceDelta(
+      pool.address,
+      USDC_SUSD_Lp,
+      pool.signer
+    );
+    expect(lpTokenDelta.gt(0));
   });
 
-  it("should stake wETH/wStETH LP in a gauge", async () => {
-    const pool = await dhedge.loadPool(TEST_POOL);
-    const balance = await dhedge.utils.getBalance(wETHwstETHLp, pool.address);
-    const result = await pool.stakeInGauge(
-      Dapp.VELODROME,
-      wETHwstETHGauge,
-      balance,
-      options
-    );
-    result.wait(1);
-    const gaugeBalance = await dhedge.utils.getBalance(
-      wETHwstETHGauge,
-      pool.address
+  it("should stake USDC-sUSD LP in a gauge", async () => {
+    const balance = await dhedge.utils.getBalance(USDC_SUSD_Lp, pool.address);
+    await pool.approveSpender(USDC_SUSD_Gauge, USDC_SUSD_Lp, MAX_AMOUNT);
+    await pool.stakeInGauge(Dapp.VELODROME, USDC_SUSD_Gauge, balance);
+    const gaugeBalance = await balanceDelta(
+      pool.address,
+      USDC_SUSD_Lp,
+      pool.signer
     );
     expect(gaugeBalance.gt(0));
   });
 
   it("should claim rewards from Gauge", async () => {
-    const pool = await dhedge.loadPool(TEST_POOL);
-    const result = await pool.claimFees(
-      Dapp.VELODROME,
-      wETHwstETHGauge,
-      options
-    );
-    result.wait(1);
-    const velBalance = await dhedge.utils.getBalance(VEL, pool.address);
-    expect(velBalance.gt(0));
+    const tx = await pool.claimFees(Dapp.VELODROME, USDC_SUSD_Gauge);
+    expect(tx).not.toBe(null);
   });
 
-  it("should unStake wETH/wStETH LP from a gauge", async () => {
-    const pool = await dhedge.loadPool(TEST_POOL);
+  it("should unStake USDC-sUSD LP from a gauge", async () => {
     const gaugeBalance = await dhedge.utils.getBalance(
-      wETHwstETHGauge,
+      USDC_SUSD_Gauge,
       pool.address
     );
-    const result = await pool.unstakeFromGauge(
-      wETHwstETHGauge,
-      gaugeBalance,
-      options
+    await pool.unstakeFromGauge(USDC_SUSD_Gauge, gaugeBalance);
+    const lpTokenDelta = await balanceDelta(
+      pool.address,
+      USDC_SUSD_Lp,
+      pool.signer
     );
-    result.wait(1);
-    const lpBalance = await dhedge.utils.getBalance(wETHwstETHLp, pool.address);
-    expect(lpBalance.gt(0));
-    const gaugeBalanceAfter = await dhedge.utils.getBalance(
-      wETHwstETHGauge,
-      pool.address
-    );
-    expect(gaugeBalanceAfter.eq(0));
+    expect(lpTokenDelta.gt(0));
   });
 
   it("approves unlimited wETH/stwETH LP for Velodrome", async () => {
-    let result;
-    const pool = await dhedge.loadPool(TEST_POOL);
-    try {
-      result = await pool.approve(
-        Dapp.VELODROME,
-        wETHwstETHLp,
-        ethers.constants.MaxInt256,
-        options
-      );
-      console.log(result);
-    } catch (e) {
-      console.log(e);
-    }
-    expect(result).not.toBe(null);
+    await pool.approve(Dapp.VELODROME, USDC_SUSD_Lp, MAX_AMOUNT);
+    const lpAllowanceDelta = await allowanceDelta(
+      pool.address,
+      USDC_SUSD_Lp,
+      routerAddress[network].velodrome!,
+      pool.signer
+    );
+    expect(lpAllowanceDelta.gt(0));
   });
 
   it("should remove all liquidity from an existing pool ", async () => {
-    const pool = await dhedge.loadPool(TEST_POOL);
-    const balance = await dhedge.utils.getBalance(wETHwstETHLp, pool.address);
-    const result = await pool.removeLiquidityVelodrome(
-      WETH,
-      WSTETH,
-      balance,
-      options
+    const balance = await dhedge.utils.getBalance(USDC_SUSD_Lp, pool.address);
+    await pool.removeLiquidityVelodrome(USDC, SUSD, balance, true);
+    const usdcBalanceDelta = await balanceDelta(
+      pool.address,
+      USDC,
+      pool.signer
     );
-    result.wait(1);
-    const balanceAfter = await dhedge.utils.getBalance(
-      wETHwstETHLp,
-      pool.address
+    const susdBalanceDelta = await balanceDelta(
+      pool.address,
+      SUSD,
+      pool.signer
     );
-    expect(balanceAfter.eq(0));
+    expect(usdcBalanceDelta.gt(0));
+    expect(susdBalanceDelta.gt(0));
   });
 });
