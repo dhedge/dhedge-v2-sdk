@@ -16,6 +16,7 @@ import {
 } from "../../config";
 import { UniswapV3MintParams } from "./types";
 import INonfungiblePositionManager from "../../abi/INonfungiblePositionManager.json";
+import { getDeadline } from "../../utils/deadline";
 
 export function tryParsePrice(
   baseToken: Token,
@@ -103,8 +104,6 @@ export async function getUniswapV3MintParams(
     ? [amountB, amountA]
     : [amountA, amountB];
 
-  const deadline = Math.floor(Date.now() / 1000) + 60 * 20;
-
   return [
     token0.address,
     token1.address,
@@ -116,7 +115,7 @@ export async function getUniswapV3MintParams(
     "0",
     "0",
     pool.address,
-    deadline
+    await getDeadline(pool)
   ];
 }
 
