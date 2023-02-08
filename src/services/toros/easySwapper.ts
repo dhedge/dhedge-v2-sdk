@@ -46,7 +46,8 @@ export async function getEasySwapperDepositQuote(
     torosAsset,
     investAsset,
     amountIn,
-    depositAsset
+    depositAsset,
+    true
   );
 }
 
@@ -109,7 +110,7 @@ export async function getEasySwapperTxData(
       depositAsset,
       amountIn
     );
-    return iDhedgeEasySwapper.encodeFunctionData("deposit", [
+    return iDhedgeEasySwapper.encodeFunctionData("depositWithCustomCooldown", [
       torosAsset,
       investAsset,
       amountIn,
