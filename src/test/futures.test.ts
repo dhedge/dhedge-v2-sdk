@@ -7,7 +7,7 @@ import { wallet } from "./wallet";
 jest.setTimeout(100000);
 
 const network = Network.OPTIMISM;
-const perp = CONTRACT_ADDRESS[network].KWENTA_ETH_PERP;
+const perp = CONTRACT_ADDRESS[network].KWENTA_ETH_PERP_V2;
 
 describe("pool", () => {
   let dhedge: Dhedge;
@@ -19,7 +19,7 @@ describe("pool", () => {
 
   it("deposits 50 sUSD margin into ETH future market", async () => {
     const depositAmount = (50 * 1e18).toString();
-    await pool.changeFuturesMargin(perp, depositAmount, 1);
+    await pool.changeFuturesMargin(perp, depositAmount);
 
     const sUSDBalanceDelta = await balanceDelta(
       pool.address,
@@ -29,26 +29,25 @@ describe("pool", () => {
     expect(sUSDBalanceDelta.abs().toString()).toBe(depositAmount);
   });
 
-  it("goes short ETH-PERP about 1x leverage", async () => {
-    //size 50*1/1600 (margin * leverage  / price)
-    const size = (-0.03 * 1e18).toString();
-    const tx = await pool.changeFuturesPosition(perp, size, 1);
+  it("goes long ETH-PERP about 3x leverage", async () => {
+    //size 50*3/1600 (margin * leverage  / price)
+    const size = (0.09 * 1e18).toString();
+    const tx = await pool.changeFuturesPosition(perp, size);
     expect(tx).not.toBe(null);
   });
 
   it("it closes ETH-PERP position", async () => {
-    const tx = await pool.closeFuturesPosition(perp, 1);
+    const tx = await pool.closeFuturesPosition(perp);
     expect(tx).not.toBe(null);
   });
 
-  it("removes entire margin from ETH future market", async () => {
-    const margin = await pool.getFuturesMargin(perp);
-    await pool.changeFuturesMargin(perp, margin.mul(-1), 1);
+  it("removes 40 sUSD margin from ETH future market", async () => {
+    await pool.changeFuturesMargin(perp, (-40 * 1e18).toString());
     const sUSDBalanceDelta = await balanceDelta(
       pool.address,
       CONTRACT_ADDRESS[network].SUSD,
       pool.signer
     );
-    expect(sUSDBalanceDelta.eq(margin));
+    expect(sUSDBalanceDelta.gt(0));
   });
 });

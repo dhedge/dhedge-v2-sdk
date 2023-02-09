@@ -60,7 +60,6 @@ import {
   getFuturesClosePositionTxData,
   getFuturesChangeMarginTxData
 } from "../services/futures";
-import { getSynthetixFuturesMargin } from "../services/futures/margin";
 
 export class Pool {
   public readonly poolLogic: Contract;
@@ -1201,19 +1200,17 @@ export class Pool {
    *
    * @param {string} market Address of futures market
    * @param {BigNumber | string } changeAmount Amount to increase/decrease margin
-   * @param { 1 | 2 } version Version of futures market
    * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
   async changeFuturesMargin(
     market: string,
     changeAmount: BigNumber | string,
-    version: 1 | 2,
     options: any = null
   ): Promise<any> {
     const tx = await this.poolLogic.execTransaction(
       market,
-      getFuturesChangeMarginTxData(changeAmount, version),
+      getFuturesChangeMarginTxData(changeAmount),
       options
     );
     return tx;
@@ -1223,19 +1220,17 @@ export class Pool {
    *
    * @param {string} market Address of futures market
    * @param {BigNumber | string } changeAmount Negative for short, positive for long
-   * @param { 1 | 2 } version Version of futures market
    * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
   async changeFuturesPosition(
     market: string,
     changeAmount: BigNumber | string,
-    version: 1 | 2,
     options: any = null
   ): Promise<any> {
     const tx = await this.poolLogic.execTransaction(
       market,
-      getFuturesChangePositionTxData(changeAmount, version),
+      getFuturesChangePositionTxData(changeAmount),
       options
     );
     return tx;
@@ -1244,29 +1239,18 @@ export class Pool {
   /** Close position in Synthetix futures market
    *
    * @param {string} market Address of futures market
-   * @param { 1 | 2 } version Version of futures market
    * @param {any} options Transaction options
    * @returns {Promise<any>} Transaction
    */
   async closeFuturesPosition(
     market: string,
-    version: 1 | 2,
     options: any = null
   ): Promise<any> {
     const tx = await this.poolLogic.execTransaction(
       market,
-      getFuturesClosePositionTxData(version),
+      getFuturesClosePositionTxData(),
       options
     );
     return tx;
-  }
-
-  /**
-   * Gets Lyra option positions
-   * @param {string} market Address of futures market
-   * @returns {Promise<BigNumber>} Transaction
-   */
-  async getFuturesMargin(market: string): Promise<BigNumber> {
-    return await getSynthetixFuturesMargin(this, market);
   }
 }

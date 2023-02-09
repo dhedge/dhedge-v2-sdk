@@ -1,24 +1,10 @@
-import { BigNumber } from "ethers";
-import { ethers, Pool } from "../..";
-import { iSynthetixFuturesMarket } from "./market";
+import { ethers } from "../..";
+import ISynthetixFuturesMarketV2 from "../../abi/ISynthetixFuturesMarketV2.json";
 
 export function getFuturesChangeMarginTxData(
-  amount: ethers.BigNumber | string,
-  version: 1 | 2
+  amount: ethers.BigNumber | string
 ): string {
-  return iSynthetixFuturesMarket(version).encodeFunctionData("transferMargin", [
-    amount
-  ]);
-}
-
-export async function getSynthetixFuturesMargin(
-  pool: Pool,
-  market: string
-): Promise<BigNumber> {
-  const iFuturesMarket = new ethers.Contract(
-    market,
-    iSynthetixFuturesMarket(1),
-    pool.signer
-  );
-  return (await iFuturesMarket.accessibleMargin(pool.address)).marginAccessible;
+  return new ethers.utils.Interface(
+    ISynthetixFuturesMarketV2.abi
+  ).encodeFunctionData("transferMargin", [amount]);
 }
