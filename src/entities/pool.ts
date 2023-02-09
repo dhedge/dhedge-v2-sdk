@@ -15,7 +15,6 @@ import ILiquidityGaugeV4 from "../abi/ILiquidityGaugeV4.json";
 import IBalancerRewardsGauge from "../abi/IBalancerRewardsGauge.json";
 
 import {
-  deadline,
   MaxUint128,
   networkChainIdMap,
   nonfungiblePositionManagerAddress,
@@ -55,6 +54,7 @@ import {
 } from "../services/velodrome/staking";
 import { getLyraOptionTxData } from "../services/lyra/trade";
 import { getOptionPositions } from "../services/lyra/positions";
+import { getDeadline } from "../utils/deadline";
 import {
   getFuturesChangePositionTxData,
   getFuturesClosePositionTxData,
@@ -345,7 +345,7 @@ export class Pool {
           minAmountOut,
           [assetFrom, assetTo],
           this.address,
-          deadline
+          await getDeadline(this)
         ]);
     }
     const tx = await this.poolLogic.execTransaction(
@@ -377,7 +377,16 @@ export class Pool {
     const iUniswapV2Router = new ethers.utils.Interface(IUniswapV2Router.abi);
     const addLiquidityTxData = iUniswapV2Router.encodeFunctionData(
       Transaction.ADD_LIQUIDITY,
-      [assetA, assetB, amountA, amountB, 0, 0, this.address, deadline]
+      [
+        assetA,
+        assetB,
+        amountA,
+        amountB,
+        0,
+        0,
+        this.address,
+        await getDeadline(this)
+      ]
     );
     const tx = await this.poolLogic.execTransaction(
       routerAddress[this.network][dapp],
@@ -406,7 +415,7 @@ export class Pool {
     const iUniswapV2Router = new ethers.utils.Interface(IUniswapV2Router.abi);
     const removeLiquidityTxData = iUniswapV2Router.encodeFunctionData(
       Transaction.REMOVE_LIQUIDITY,
-      [assetA, assetB, amount, 0, 0, this.address, deadline]
+      [assetA, assetB, amount, 0, 0, this.address, await getDeadline(this)]
     );
     const tx = await this.poolLogic.execTransaction(
       routerAddress[this.network][dapp],
@@ -917,7 +926,7 @@ export class Pool {
         .div(1e6);
       const decreaseLiquidityTxData = abi.encodeFunctionData(
         Transaction.DECREASE_LIQUIDITY,
-        [[tokenId, liquidity, 0, 0, deadline]]
+        [[tokenId, liquidity, 0, 0, await getDeadline(this)]]
       );
       const collectTxData = abi.encodeFunctionData(Transaction.COLLECT, [
         [tokenId, this.address, MaxUint128, MaxUint128]
@@ -979,7 +988,7 @@ export class Pool {
       dappAddress = nonfungiblePositionManagerAddress[this.network];
       const abi = new ethers.utils.Interface(INonfungiblePositionManager.abi);
       txData = abi.encodeFunctionData(Transaction.INCREASE_LIQUIDITY, [
-        [tokenId, amountA, amountB, 0, 0, deadline]
+        [tokenId, amountA, amountB, 0, 0, await getDeadline(this)]
       ]);
     } else if (dapp === Dapp.ARRAKIS) {
       dappAddress = routerAddress[this.network][dapp];
@@ -1105,7 +1114,7 @@ export class Pool {
   ): Promise<any> {
     const tx = await this.poolLogic.execTransaction(
       routerAddress[this.network][Dapp.VELODROME],
-      getVelodromeAddLiquidityTxData(
+      await getVelodromeAddLiquidityTxData(
         this,
         assetA,
         assetB,
@@ -1136,7 +1145,13 @@ export class Pool {
   ): Promise<any> {
     const tx = await this.poolLogic.execTransaction(
       routerAddress[this.network][Dapp.VELODROME],
-      getVelodromeRemoveLiquidityTxData(this, assetA, assetB, amount, isStable),
+      await getVelodromeRemoveLiquidityTxData(
+        this,
+        assetA,
+        assetB,
+        amount,
+        isStable
+      ),
       options
     );
     return tx;
