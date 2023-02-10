@@ -1,18 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BigNumber, ethers } from "ethers";
 import IVelodromeRouter from "../../abi/IVeldodromeRouter.json";
-import { deadline } from "../../config";
 import { Pool } from "../../entities";
 import { Transaction } from "../../types";
+import { getDeadline } from "../../utils/deadline";
 
-export function getVelodromeAddLiquidityTxData(
+export async function getVelodromeAddLiquidityTxData(
   pool: Pool,
   assetA: string,
   assetB: string,
   amountA: BigNumber | string,
   amountB: BigNumber | string,
   isStable: boolean
-): any {
+): Promise<any> {
   const iVelodromeRouter = new ethers.utils.Interface(IVelodromeRouter.abi);
   return iVelodromeRouter.encodeFunctionData(Transaction.ADD_LIQUIDITY, [
     assetA,
@@ -23,17 +23,17 @@ export function getVelodromeAddLiquidityTxData(
     "0",
     "0",
     pool.address,
-    deadline
+    await getDeadline(pool)
   ]);
 }
 
-export function getVelodromeRemoveLiquidityTxData(
+export async function getVelodromeRemoveLiquidityTxData(
   pool: Pool,
   assetA: string,
   assetB: string,
   amount: BigNumber | string,
   isStable: boolean
-): any {
+): Promise<any> {
   const iVelodromeRouter = new ethers.utils.Interface(IVelodromeRouter.abi);
   return iVelodromeRouter.encodeFunctionData(Transaction.REMOVE_LIQUIDITY, [
     assetA,
@@ -43,6 +43,6 @@ export function getVelodromeRemoveLiquidityTxData(
     "0",
     "0",
     pool.address,
-    deadline
+    await getDeadline(pool)
   ]);
 }
