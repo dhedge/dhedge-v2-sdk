@@ -1,5 +1,2 @@
 export { getFuturesChangeMarginTxData } from "./margin";
-export {
-  getFuturesChangePositionTxData,
-  getFuturesClosePositionTxData
-} from "./trade";
+export { getFuturesChangePositionTxData } from "./trade";

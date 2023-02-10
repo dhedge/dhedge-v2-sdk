@@ -37,7 +37,8 @@ describe("pool", () => {
   });
 
   it("it closes ETH-PERP position", async () => {
-    const tx = await pool.closeFuturesPosition(perp);
+    const size = (-0.09 * 1e18).toString();
+    const tx = await pool.changeFuturesPosition(perp, size);
     expect(tx).not.toBe(null);
   });
 

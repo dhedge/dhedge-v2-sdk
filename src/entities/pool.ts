@@ -57,7 +57,6 @@ import { getOptionPositions } from "../services/lyra/positions";
 import { getDeadline } from "../utils/deadline";
 import {
   getFuturesChangePositionTxData,
-  getFuturesClosePositionTxData,
   getFuturesChangeMarginTxData
 } from "../services/futures";
 
@@ -1246,24 +1245,6 @@ export class Pool {
     const tx = await this.poolLogic.execTransaction(
       market,
       getFuturesChangePositionTxData(changeAmount),
-      options
-    );
-    return tx;
-  }
-
-  /** Close position in Synthetix futures market
-   *
-   * @param {string} market Address of futures market
-   * @param {any} options Transaction options
-   * @returns {Promise<any>} Transaction
-   */
-  async closeFuturesPosition(
-    market: string,
-    options: any = null
-  ): Promise<any> {
-    const tx = await this.poolLogic.execTransaction(
-      market,
-      getFuturesClosePositionTxData(),
       options
     );
     return tx;

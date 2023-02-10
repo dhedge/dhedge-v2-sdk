@@ -7,17 +7,8 @@ export function getFuturesChangePositionTxData(
 ): string {
   return new ethers.utils.Interface(
     ISynthetixFuturesMarketV2.abi
-  ).encodeFunctionData("modifyPositionWithTracking", [
+  ).encodeFunctionData("submitOffchainDelayedOrderWithTracking", [
     amount,
-    PRICE_IMPACT_DELTA,
-    ethers.utils.formatBytes32String(FUTURES_TRACKING)
-  ]);
-}
-
-export function getFuturesClosePositionTxData(): string {
-  return new ethers.utils.Interface(
-    ISynthetixFuturesMarketV2.abi
-  ).encodeFunctionData("closePositionWithTracking", [
     PRICE_IMPACT_DELTA,
     ethers.utils.formatBytes32String(FUTURES_TRACKING)
   ]);
