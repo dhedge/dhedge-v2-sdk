@@ -284,7 +284,7 @@ export class Pool {
       case Dapp.ONEINCH:
         const chainId = networkChainIdMap[this.network];
         const protocols = await getOneInchProtocols(chainId);
-        const apiUrl = `https://api.1inch.exchange/v4.0/${chainId}/swap?fromTokenAddress=${assetFrom}&toTokenAddress=${assetTo}&amount=${amountIn.toString()}&fromAddress=${
+        const apiUrl = `https://api.1inch.exchange/v5.0/${chainId}/swap?fromTokenAddress=${assetFrom}&toTokenAddress=${assetTo}&amount=${amountIn.toString()}&fromAddress=${
           this.address
         }&destReceiver=${
           this.address
