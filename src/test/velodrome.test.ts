@@ -40,8 +40,8 @@ describe("pool", () => {
     await pool.addLiquidityVelodrome(
       USDC,
       SUSD,
-      (10 * 1e6).toString(),
-      (20 * 1e18).toString(),
+      (5 * 1e6).toString(),
+      (5 * 1e18).toString(),
       true
     );
 
