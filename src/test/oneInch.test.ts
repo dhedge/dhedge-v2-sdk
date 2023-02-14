@@ -1,49 +1,45 @@
-import { Dhedge } from "..";
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+import { Dhedge, Pool } from "..";
+import { routerAddress } from "../config";
 import { Dapp, Network } from "../types";
-import { DAI, TEST_POOL, USDC } from "./constants";
+import { CONTRACT_ADDRESS, MAX_AMOUNT, TEST_POOL } from "./constants";
+import { allowanceDelta, balanceDelta } from "./utils/token";
 
 import { wallet } from "./wallet";
 
-let dhedge: Dhedge;
+// const network = Network.OPTIMISM;
+const network = Network.POLYGON;
+const USDC = CONTRACT_ADDRESS[network].USDC;
+const WETH = CONTRACT_ADDRESS[network].WETH;
 
+let dhedge: Dhedge;
+let pool: Pool;
 jest.setTimeout(100000);
 
-// const options = {
-//   gasLimit: 5000000,
-//   gasPrice: ethers.utils.parseUnits("35", "gwei")
-// };
-
 describe("pool", () => {
-  beforeAll(() => {
-    dhedge = new Dhedge(wallet, Network.OPTIMISM);
+  beforeAll(async () => {
+    dhedge = new Dhedge(wallet, network);
+    pool = await dhedge.loadPool(TEST_POOL[network]);
   });
 
-  // it("approves unlimited DAI on 1Inch", async () => {
-  //   let result;
-  //   const pool = await dhedge.loadPool(TEST_POOL);
-  //   try {
-  //     result = await pool.approve(
-  //       Dapp.ONEINCH,
-  //       DAI,
-  //       ethers.constants.MaxInt256
-  //     );
-  //     console.log(result);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
+  it("approves unlimited USDC on 1Inch", async () => {
+    await pool.approve(Dapp.ONEINCH, USDC, MAX_AMOUNT);
+    const usdcAllowanceDelta = await allowanceDelta(
+      pool.address,
+      USDC,
+      routerAddress[network]["1inch"]!,
+      pool.signer
+    );
+    await expect(usdcAllowanceDelta.gt(0));
+  });
 
-  it("trades 1 entire DAI balance into USDC on 1Inch", async () => {
-    let result;
-    const pool = await dhedge.loadPool(TEST_POOL);
-    try {
-      const balance = await dhedge.utils.getBalance(DAI, pool.address);
-      result = await pool.trade(Dapp.ONEINCH, DAI, USDC, balance, 0.5);
-      console.log("1inch trade", result);
-    } catch (e) {
-      console.log(e);
-    }
-    expect(result).not.toBe(null);
+  it("trades 5 USDC into WETH on 1Inch", async () => {
+    await pool.trade(Dapp.ONEINCH, USDC, WETH, "5000000", 0.5);
+    const wethBalanceDelta = await balanceDelta(
+      pool.address,
+      WETH,
+      pool.signer
+    );
+    expect(wethBalanceDelta.gt(0));
   });
 });
