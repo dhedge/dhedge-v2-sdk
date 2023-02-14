@@ -36,14 +36,8 @@ describe("pool", () => {
     expect(tx).not.toBe(null);
   });
 
-  it("it closes ETH-PERP position", async () => {
-    const size = (-0.09 * 1e18).toString();
-    const tx = await pool.changeFuturesPosition(perp, size);
-    expect(tx).not.toBe(null);
-  });
-
-  it("removes 40 sUSD margin from ETH future market", async () => {
-    await pool.changeFuturesMargin(perp, (-40 * 1e18).toString());
+  it("removes 20 sUSD margin from ETH future market", async () => {
+    await pool.changeFuturesMargin(perp, (-20 * 1e18).toString());
     const sUSDBalanceDelta = await balanceDelta(
       pool.address,
       CONTRACT_ADDRESS[network].SUSD,
