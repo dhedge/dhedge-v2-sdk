@@ -1,7 +1,5 @@
 import axios from "axios";
 
-const excludedProtocols = ["OPTIMISM_PMM6"]; //Clipper
-
 export async function getOneInchProtocols(chainId: number): Promise<string> {
   try {
     const response = await axios.get(
@@ -9,8 +7,9 @@ export async function getOneInchProtocols(chainId: number): Promise<string> {
     );
     const protocols = response.data.protocols.map((e: { id: string }) => e.id);
     const filteredProtocols = protocols.filter(
-      (e: string) => !excludedProtocols.includes(e)
+      (e: string) => !e.includes("PMM")
     );
+
     return `&protocols=${filteredProtocols.join(",")}`;
   } catch {
     return "";
