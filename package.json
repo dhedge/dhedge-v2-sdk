@@ -21,7 +21,8 @@
     "size": "size-limit",
     "analyze": "size-limit --why",
     "fork:polygon": "hardhat node --fork $(grep POLYGON_URL .env | cut -d '=' -f2)",
-    "fork:optimism": "hardhat node --fork $(grep OPTIMISM_URL .env | cut -d '=' -f2)"
+    "fork:optimism": "hardhat node --fork $(grep OPTIMISM_URL .env | cut -d '=' -f2)",
+    "fork:arbitrum": "hardhat node --fork $(grep ARBITRUM_URL .env | cut -d '=' -f2)"
   },
   "husky": {
     "hooks": {
