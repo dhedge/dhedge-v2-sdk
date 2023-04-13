@@ -52,7 +52,7 @@ describe("pool", () => {
       USDC,
       pool.signer
     );
-    expect(usdcBalanceDelta.eq('"5000000"'));
+    expect(usdcBalanceDelta.eq("-5000000"));
   });
 
   it("it borrows 0.001 WETH from Aave lending pool", async () => {
@@ -62,7 +62,7 @@ describe("pool", () => {
       WETH,
       pool.signer
     );
-    expect(wethBalanceDelta.gt("1000000000000000"));
+    expect(wethBalanceDelta.eq("1000000000000000"));
   });
 
   it("it repays 0.001 WETH to Aave lending pool", async () => {
@@ -72,7 +72,7 @@ describe("pool", () => {
       WETH,
       pool.signer
     );
-    expect(wethBalanceDelta.lt("1000000000000000"));
+    expect(wethBalanceDelta.eq("-1000000000000000"));
   });
 
   it("it withdraws 4 USDC from Aave lending pool", async () => {
