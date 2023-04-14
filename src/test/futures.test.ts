@@ -29,9 +29,9 @@ describe("pool", () => {
     expect(sUSDBalanceDelta.abs().toString()).toBe(depositAmount);
   });
 
-  it("goes long ETH-PERP about 3x leverage", async () => {
-    //size 50*3/1600 (margin * leverage  / price)
-    const size = (0.09 * 1e18).toString();
+  it("goes long ETH-PERP about 2x leverage", async () => {
+    //size 50*2/2000 (margin * leverage  / price)
+    const size = (0.05 * 1e18).toString();
     const tx = await pool.changeFuturesPosition(perp, size);
     expect(tx).not.toBe(null);
   });
