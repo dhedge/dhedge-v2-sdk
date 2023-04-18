@@ -1242,11 +1242,12 @@ export class Pool {
     changeAmount: BigNumber | string,
     options: any = null
   ): Promise<any> {
-    const tx = await this.poolLogic.execTransaction(
+    const txData = await getFuturesChangePositionTxData(
+      changeAmount,
       market,
-      getFuturesChangePositionTxData(changeAmount),
-      options
+      this
     );
+    const tx = await this.poolLogic.execTransaction(market, txData, options);
     return tx;
   }
 }
