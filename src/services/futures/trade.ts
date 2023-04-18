@@ -13,13 +13,14 @@ export async function getFuturesChangePositionTxData(
     pool.signer
   );
   const fillPrice = await futuresMarket.fillPrice(amount);
+  //Allows for +-0.5% price movements on the desired fill price
   const adjustmentFactor = ethers.BigNumber.from(amount).lt(0) ? 995 : 1005;
-
+  const desiredFillPrice = fillPrice.price.mul(adjustmentFactor).div(1000);
   return new ethers.utils.Interface(
     ISynthetixFuturesMarketV2.abi
   ).encodeFunctionData("submitOffchainDelayedOrderWithTracking", [
     amount,
-    fillPrice.price.mul(adjustmentFactor).div(1000),
+    desiredFillPrice,
     ethers.utils.formatBytes32String(FUTURES_TRACKING)
   ]);
 }
