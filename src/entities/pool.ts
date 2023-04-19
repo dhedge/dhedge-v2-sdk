@@ -998,6 +998,7 @@ export class Pool {
         amountB,
         0,
         0,
+        0,
         this.address
       ]);
     } else {
