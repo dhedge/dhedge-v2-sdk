@@ -1,8 +1,10 @@
-import { Dhedge, Pool } from "..";
+import { Dhedge, Pool, ethers } from "..";
+import { getDelayedOrders } from "../services/futures/trade";
 import { Network } from "../types";
 import { CONTRACT_ADDRESS, TEST_POOL } from "./constants";
 import { balanceDelta } from "./utils/token";
 import { wallet } from "./wallet";
+import { mine } from "@nomicfoundation/hardhat-network-helpers";
 
 jest.setTimeout(100000);
 
@@ -37,6 +39,7 @@ describe("pool", () => {
   });
 
   it("removes 20 sUSD margin from ETH future market", async () => {
+    await getDelayedOrders(perp, pool);
     await pool.changeFuturesMargin(perp, (-20 * 1e18).toString());
     const sUSDBalanceDelta = await balanceDelta(
       pool.address,
@@ -44,5 +47,14 @@ describe("pool", () => {
       pool.signer
     );
     expect(sUSDBalanceDelta.gt(0));
+  });
+
+  it("cancels an open Order", async () => {
+    console.log(await pool.signer.provider.getBlockNumber());
+    await mine(1000, { interval: 15 });
+    console.log(await pool.signer.provider.getBlockNumber());
+    const tx = await pool.cancelFuturesOrder(perp);
+    await getDelayedOrders(perp, pool);
+    expect(tx.not.toBe(null));
   });
 });
