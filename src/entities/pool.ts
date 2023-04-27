@@ -288,7 +288,11 @@ export class Pool {
       case Dapp.ONEINCH:
         const chainId = networkChainIdMap[this.network];
         const protocols = await getOneInchProtocols(chainId);
-        const apiUrl = `https://api.1inch.exchange/v5.0/${chainId}/swap?fromTokenAddress=${assetFrom}&toTokenAddress=${assetTo}&amount=${amountIn.toString()}&fromAddress=${
+        if (!process.env.ONEINCH_API_URL)
+          throw new Error("ONEINCH_API_URL not configured in .env file");
+        const apiUrl = `${
+          process.env.ONEINCH_API_URL
+        }/${chainId}/swap?fromTokenAddress=${assetFrom}&toTokenAddress=${assetTo}&amount=${amountIn.toString()}&fromAddress=${
           this.address
         }&destReceiver=${
           this.address
@@ -998,6 +1002,7 @@ export class Pool {
         amountB,
         0,
         0,
+        0,
         this.address
       ]);
     } else {
@@ -1242,11 +1247,12 @@ export class Pool {
     changeAmount: BigNumber | string,
     options: any = null
   ): Promise<any> {
-    const tx = await this.poolLogic.execTransaction(
+    const txData = await getFuturesChangePositionTxData(
+      changeAmount,
       market,
-      getFuturesChangePositionTxData(changeAmount),
-      options
+      this
     );
+    const tx = await this.poolLogic.execTransaction(market, txData, options);
     return tx;
   }
 }

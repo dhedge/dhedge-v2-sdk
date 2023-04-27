@@ -1,102 +1,95 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Dhedge, ethers } from "..";
+import { Dhedge, Pool } from "..";
+import { routerAddress } from "../config";
 import { Dapp, Network } from "../types";
-import { ARRAKIS_USDC_WETH_GAUGE, TEST_POOL, USDC, WETH } from "./constants";
-import { getTxOptions } from "./txOptions";
+import { CONTRACT_ADDRESS, MAX_AMOUNT, TEST_POOL } from "./constants";
+import { allowanceDelta, balanceDelta } from "./utils/token";
 
 import { wallet } from "./wallet";
 
+//const network = Network.OPTIMISM;
+const network = Network.POLYGON;
+const USDC = CONTRACT_ADDRESS[network].USDC;
+const WETH = CONTRACT_ADDRESS[network].WETH;
+
 let dhedge: Dhedge;
-let options: any;
+let pool: Pool;
 jest.setTimeout(100000);
 
 describe("pool", () => {
   beforeAll(async () => {
-    dhedge = new Dhedge(wallet, Network.OPTIMISM);
-    options = await getTxOptions(Network.OPTIMISM);
+    dhedge = new Dhedge(wallet, network);
+    pool = await dhedge.loadPool(TEST_POOL[network]);
+    await pool.approve(Dapp.ONEINCH, USDC, MAX_AMOUNT);
+    await pool.trade(Dapp.ONEINCH, USDC, WETH, "1000000", 0.5);
   });
 
   it("approves unlimited USDC on Arrakis", async () => {
-    const pool = await dhedge.loadPool(TEST_POOL);
-    const result = await pool.approve(
-      Dapp.ARRAKIS,
+    await pool.approve(Dapp.ARRAKIS, USDC, MAX_AMOUNT);
+    const usdcAllowanceDelta = await allowanceDelta(
+      pool.address,
       USDC,
-      ethers.constants.MaxInt256,
-      options
+      routerAddress[network].arrakis!,
+      pool.signer
     );
-    expect(result).not.toBe(null);
+    await expect(usdcAllowanceDelta.gt(0));
   });
 
   it("approves unlimited WETH on Arrakis", async () => {
-    const pool = await dhedge.loadPool(TEST_POOL);
-    const result = await pool.approve(
-      Dapp.ARRAKIS,
-      WETH,
-      ethers.constants.MaxInt256,
-      options
+    await pool.approve(Dapp.ARRAKIS, WETH, MAX_AMOUNT);
+    const wethAllowanceDelta = await allowanceDelta(
+      pool.address,
+      USDC,
+      routerAddress[network].arrakis!,
+      pool.signer
     );
-    console.log(result);
-    expect(result).not.toBe(null);
+    await expect(wethAllowanceDelta.gt(0));
   });
 
   it("should add liquidity and stake in an WETH/USDC Arrakis pool", async () => {
-    const pool = await dhedge.loadPool(TEST_POOL);
+    const usdcBalance = await pool.utils.getBalance(USDC, pool.address);
     const wethBalance = await pool.utils.getBalance(WETH, pool.address);
-    const uasdBalance = await pool.utils.getBalance(USDC, pool.address);
-    const lpBalance = await pool.utils.getBalance(
-      ARRAKIS_USDC_WETH_GAUGE,
-      pool.address
-    );
-    const result = await pool.increaseLiquidity(
+    await pool.increaseLiquidity(
       Dapp.ARRAKIS,
-      ARRAKIS_USDC_WETH_GAUGE,
-      uasdBalance,
-      wethBalance,
-      options
+      CONTRACT_ADDRESS[network].ARRAKIS_USDC_WETH_GAUGE,
+      usdcBalance,
+      wethBalance
     );
-    result.wait(1);
-    const lpBalanceAfter = await pool.utils.getBalance(
-      ARRAKIS_USDC_WETH_GAUGE,
-      pool.address
+    const lpBalanceDelta = await balanceDelta(
+      pool.address,
+      CONTRACT_ADDRESS[network].ARRAKIS_USDC_WETH_LP,
+      pool.signer
     );
-    expect(lpBalanceAfter.gt(lpBalance));
+    expect(lpBalanceDelta.gt(0));
   });
 
-  it("approves unlimited LP staking Token before on  Arrakis", async () => {
-    const pool = await dhedge.loadPool(TEST_POOL);
-    const result = await pool.approve(
+  it("approves unlimited LP staking Token before on Arrakis", async () => {
+    await pool.approve(
       Dapp.ARRAKIS,
-      ARRAKIS_USDC_WETH_GAUGE,
-      ethers.constants.MaxInt256,
-      options
+      CONTRACT_ADDRESS[network].ARRAKIS_USDC_WETH_GAUGE,
+      MAX_AMOUNT
     );
-    expect(result).not.toBe(null);
+    const gaugeAllowanceDelta = await allowanceDelta(
+      pool.address,
+      CONTRACT_ADDRESS[network].ARRAKIS_USDC_WETH_GAUGE,
+      routerAddress[network].arrakis!,
+      pool.signer
+    );
+    await expect(gaugeAllowanceDelta.gt(0));
   });
 
   it("should remove liquidity from an existing pool ", async () => {
-    const pool = await dhedge.loadPool(TEST_POOL);
-    const result = await pool.decreaseLiquidity(
+    await pool.decreaseLiquidity(
       Dapp.ARRAKIS,
-      ARRAKIS_USDC_WETH_GAUGE,
-      100,
-      options
+      CONTRACT_ADDRESS[network].ARRAKIS_USDC_WETH_GAUGE,
+      100
     );
-    result.wait(1);
-    const lpBalanceAfter = await pool.utils.getBalance(
-      ARRAKIS_USDC_WETH_GAUGE,
-      pool.address
+    const wethBalanceDelta = await balanceDelta(
+      pool.address,
+      CONTRACT_ADDRESS[network].WETH,
+      pool.signer
     );
-    expect(lpBalanceAfter.eq(0));
+    expect(wethBalanceDelta.gt(0));
   });
-
-  // it("should claim fees an existing pool", async () => {
-  //   const pool = await dhedge.loadPool(TEST_POOL);
-  //   const result = await pool.claimFees(
-  //     Dapp.ARRAKIS,
-  //     ARRAKIS_USDC_WETH_GAUGE,
-  //     options
-  //   );
-  //   console.log("result", result);
-  //   expect(result).not.toBe(null);
-  // });
 });
