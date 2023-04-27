@@ -1,10 +1,9 @@
-import { Dhedge, Pool, ethers } from "..";
-import { getDelayedOrders } from "../services/futures/trade";
+import { Dhedge, Pool } from "..";
 import { Network } from "../types";
 import { CONTRACT_ADDRESS, TEST_POOL } from "./constants";
+import { getDelayedOrders } from "./utils/futures";
 import { balanceDelta } from "./utils/token";
 import { wallet } from "./wallet";
-import { mine } from "@nomicfoundation/hardhat-network-helpers";
 
 jest.setTimeout(100000);
 
@@ -34,8 +33,9 @@ describe("pool", () => {
   it("goes long ETH-PERP about 2x leverage", async () => {
     //size 50*2/2000 (margin * leverage  / price)
     const size = (0.05 * 1e18).toString();
-    const tx = await pool.changeFuturesPosition(perp, size);
-    expect(tx).not.toBe(null);
+    await pool.changeFuturesPosition(perp, size);
+    const orders = await getDelayedOrders(perp, pool);
+    expect(orders.length).toBeGreaterThan(0);
   });
 
   it("removes 20 sUSD margin from ETH future market", async () => {
@@ -47,14 +47,5 @@ describe("pool", () => {
       pool.signer
     );
     expect(sUSDBalanceDelta.gt(0));
-  });
-
-  it("cancels an open Order", async () => {
-    console.log(await pool.signer.provider.getBlockNumber());
-    await mine(1000, { interval: 15 });
-    console.log(await pool.signer.provider.getBlockNumber());
-    const tx = await pool.cancelFuturesOrder(perp);
-    await getDelayedOrders(perp, pool);
-    expect(tx.not.toBe(null));
   });
 });

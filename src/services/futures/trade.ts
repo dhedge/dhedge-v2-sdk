@@ -30,16 +30,3 @@ export async function getFuturesCancelOrderTxData(pool: Pool): Promise<string> {
     ISynthetixFuturesMarketV2.abi
   ).encodeFunctionData("cancelOffchainDelayedOrder", [pool.address]);
 }
-
-export async function getDelayedOrders(
-  market: string,
-  pool: Pool
-): Promise<void> {
-  const futuresMarket = new ethers.Contract(
-    market,
-    ISynthetixFuturesMarketV2.abi,
-    pool.signer
-  );
-  const orders = await futuresMarket.delayedOrders(pool.address);
-  console.log(orders);
-}

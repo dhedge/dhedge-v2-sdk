@@ -29,7 +29,6 @@
     }
   },
   "devDependencies": {
-    "@nomicfoundation/hardhat-network-helpers": "^1.0.8",
     "@size-limit/preset-small-lib": "^5.0.1",
     "@types/jest": "^28.1.7",
     "@types/lodash": "^4.14.178",
