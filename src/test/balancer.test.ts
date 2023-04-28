@@ -1,218 +1,126 @@
-import { Dhedge } from "..";
-import { Network } from "../types";
-import { TEST_POOL, WMATIC } from "./constants";
-import { getTxOptions } from "./txOptions";
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Dhedge, Pool } from "..";
+import { routerAddress } from "../config";
+import { Dapp, Network } from "../types";
+import { CONTRACT_ADDRESS, MAX_AMOUNT, TEST_POOL } from "./constants";
+import { allowanceDelta, balanceDelta } from "./utils/token";
 
 import { wallet } from "./wallet";
 
-let dhedge: Dhedge;
-let options: any;
+const network = Network.ARBITRUM;
+const USDC = CONTRACT_ADDRESS[network].USDC;
+const WETH = CONTRACT_ADDRESS[network].WETH;
+const WSTETH = CONTRACT_ADDRESS[network].WSTETH;
+const BALANCER_POOL = CONTRACT_ADDRESS[network].BALANCER_WSTETH_WETH_POOL;
+const BLANCER_GAUGE = CONTRACT_ADDRESS[network].BALANCER_WSTETH_WETH_GAUGE;
 
+let dhedge: Dhedge;
+let pool: Pool;
 jest.setTimeout(100000);
 
 describe("pool", () => {
   beforeAll(async () => {
-    dhedge = new Dhedge(wallet, Network.POLYGON);
-    options = await getTxOptions(Network.POLYGON);
+    dhedge = new Dhedge(wallet, network);
+    pool = await dhedge.loadPool(TEST_POOL[network]);
+    await pool.approve(Dapp.ONEINCH, USDC, MAX_AMOUNT);
+    await pool.trade(Dapp.ONEINCH, USDC, WETH, "1000000", 0.5);
+    await pool.trade(Dapp.ONEINCH, USDC, WSTETH, "1000000", 0.5);
   });
 
-  // it("approves unlimited USDC on Balancer", async () => {
-  //   let result;
-  //   const pool = await dhedge.loadPool(TEST_POOL);
-  //   try {
-  //     result = await pool.approve(
-  //       Dapp.BALANCER,
-  //       USDC,
-  //       ethers.constants.MaxInt256,
-  //       options
-  //     );
-  //     console.log(result);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
-
-  // it("trades 2 USDC into SUSHI on Balancer", async () => {
-  //   let result;
-  //   const pool = await dhedge.loadPool(myPool);
-  //   try {
-  //     result = await pool.trade(
-  //       Dapp.BALANCER,
-  //       usdc,
-  //       sushi,
-  //       "2000000",
-  //       0.5,
-  //       options
-  //     );
-  //     console.log(result);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
-
-  // it("adds 1 USDC to a USDC/TUSD/DAI/USDT balancer pool", async () => {
-  //   let result;
-  //   const pool = await dhedge.loadPool(TEST_POOL);
-  //   const assets = [USDC, TUSD, DAI, USDT];
-  //   const amounts = ["1000000", "0", "0", "0"];
-  //   try {
-  //     result = await pool.joinBalancerPool(
-  //       "0x0d34e5dd4d8f043557145598e4e2dc286b35fd4f000000000000000000000068",
-  //       assets,
-  //       amounts,
-  //       options
-  //     );
-  //     console.log("result", result);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
-
-  // it("exits entire balance of WBTC/USDC/WETH balancer pool", async () => {
-  //   let result;
-  //   const pool = await dhedge.loadPool(myPool);
-  //   const assets = [wbtc, usdc, weth];
-  //   const amount = await dhedge.utils.getBalance(
-  //     "0x03cd191f589d12b0582a99808cf19851e468e6b5",
-  //     pool.address
-  //   );
-  //   try {
-  //     result = await pool.exitBalancerPool(
-  //       "0x03cd191f589d12b0582a99808cf19851e468e6b500010000000000000000000a",
-  //       assets,
-  //       amount,
-  //       options
-  //     );
-  //     console.log("result", result);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
-
-  // it("claims balancer rewards", async () => {
-  //   let result;
-  //   const pool = await dhedge.loadPool(TEST_POOL);
-  //   try {
-  //     result = await pool.harvestBalancerRewards(options);
-  //     console.log("result", result);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
-
-  it("adds 5 WMATIC to a WMATIC/stMATIC balancer pool", async () => {
-    let result;
-    const pool = await dhedge.loadPool(TEST_POOL);
-    const assets = [
-      WMATIC,
-      "0xb20fC01D21A50d2C734C4a1262B4404d41fA7BF0",
-      "0xfa68FB4628DFF1028CFEc22b4162FCcd0d45efb6"
-    ];
-    const amounts = ["29500317230801455961187", "0", "0"];
-    try {
-      result = await pool.joinBalancerPool(
-        "0xb20fc01d21a50d2c734c4a1262b4404d41fa7bf000000000000000000000075c",
-        assets,
-        amounts,
-        options
-      );
-      console.log("result", result);
-    } catch (e) {
-      console.log(e);
-    }
-    expect(result).not.toBe(null);
+  it("approves unlimited stWETH on Balancer", async () => {
+    await pool.approve(Dapp.BALANCER, WSTETH, MAX_AMOUNT);
+    const stWETHAllowanceDelta = await allowanceDelta(
+      pool.address,
+      WSTETH,
+      routerAddress[network].balancer!,
+      pool.signer
+    );
+    await expect(stWETHAllowanceDelta.gt(0));
   });
 
-  // it("allows unlimited WMATIC-stMATIC LP on gauge", async () => {
-  //   let result;
-  //   const pool = await dhedge.loadPool(TEST_POOL);
-  //   try {
-  //     result = await pool.approveSpender(
-  //       "0x9928340f9E1aaAd7dF1D95E27bd9A5c715202a56",
-  //       WMATIC_STMATIC_LP,
-  //       ethers.constants.MaxUint256,
-  //       options
-  //     );
-  //     console.log("result", result);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
+  it("approves unlimited WETH on Balancer", async () => {
+    await pool.approve(Dapp.BALANCER, WETH, MAX_AMOUNT);
+    const wethAllowanceDelta = await allowanceDelta(
+      pool.address,
+      WETH,
+      routerAddress[network].balancer!,
+      pool.signer
+    );
+    await expect(wethAllowanceDelta.gt(0));
+  });
 
-  // it("stakes WMATIC-stMATIC LP in gauge", async () => {
-  //   let result;
-  //   const pool = await dhedge.loadPool(TEST_POOL);
-  //   try {
-  //     result = await pool.stakeInGauge(
-  //       "0x9928340f9E1aaAd7dF1D95E27bd9A5c715202a56",
-  //       "4978534455005333156",
-  //       options
-  //     );
-  //     console.log("result", result);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
+  it("should add liquidity in a Balancer pool", async () => {
+    const wstETHBalance = await pool.utils.getBalance(WSTETH, pool.address);
+    const wethBalance = await pool.utils.getBalance(WETH, pool.address);
+    await pool.joinBalancerPool(
+      "0x36bf227d6bac96e2ab1ebb5492ecec69c691943f000200000000000000000316", //wstETH-WETH on Arbitrum
+      [WSTETH, WETH],
+      [wstETHBalance.toString(), wethBalance.toString()]
+    );
+    const lpBalanceDelta = await balanceDelta(
+      pool.address,
+      BALANCER_POOL,
+      pool.signer
+    );
+    expect(lpBalanceDelta.gt(0));
+  });
 
-  // it("claim fess pf staked WMATIC-stMATIC LP in gauge", async () => {
-  //   let result;
-  //   const pool = await dhedge.loadPool(TEST_POOL);
-  //   try {
-  //     result = await pool.claimFees(
-  //       Dapp.BALANCER,
-  //       "0x9928340f9E1aaAd7dF1D95E27bd9A5c715202a56",
-  //       options
-  //     );
-  //     console.log("result", result);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
+  it("approves unlimited LP Token on Balancer Vault", async () => {
+    await pool.approveSpender(BLANCER_GAUGE, BALANCER_POOL, MAX_AMOUNT);
+    const gaugeAllowanceDelta = await allowanceDelta(
+      pool.address,
+      BALANCER_POOL,
+      BLANCER_GAUGE,
+      pool.signer
+    );
+    await expect(gaugeAllowanceDelta.gt(0));
+  });
 
-  // it("unstakes WMATIC-stMATIC LP from gauge", async () => {
-  //   let result;
-  //   const pool = await dhedge.loadPool(TEST_POOL);
-  //   try {
-  //     result = await pool.unstakeFromGauge(
-  //       "0x9928340f9E1aaAd7dF1D95E27bd9A5c715202a56",
-  //       "4978534455005333156",
-  //       options
-  //     );
-  //     console.log("result", result);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
+  it("stakes LP tokens in Balancer vault", async () => {
+    const lpTokenBalance = await pool.utils.getBalance(
+      BALANCER_POOL,
+      pool.address
+    );
+    await pool.stakeInGauge(Dapp.BALANCER, BLANCER_GAUGE, lpTokenBalance);
+    const lpBalanceDelta = await balanceDelta(
+      pool.address,
+      BALANCER_POOL,
+      pool.signer
+    );
+    expect(lpBalanceDelta.lt(0));
+  });
 
-  // it("exits from WMATIC-stMATIC LP into WMATIC", async () => {
-  //   let result;
-  //   const pool = await dhedge.loadPool(TEST_POOL);
-  //   const assets = [WMATIC, STMATIC];
-  //   const amount = await dhedge.utils.getBalance(
-  //     "0xaF5E0B5425dE1F5a630A8cB5AA9D97B8141C908D",
-  //     pool.address
-  //   );
-  //   try {
-  //     result = await pool.exitBalancerPool(
-  //       "0xaf5e0b5425de1f5a630a8cb5aa9d97b8141c908d000200000000000000000366",
-  //       assets,
-  //       amount,
-  //       1,
-  //       options
-  //     );
-  //     console.log("result", result);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  //   expect(result).not.toBe(null);
-  // });
+  it("unstakes LP tokens from Balancer vault", async () => {
+    const vaultTokenBalance = await pool.utils.getBalance(
+      BLANCER_GAUGE,
+      pool.address
+    );
+    await pool.unstakeFromGauge(BLANCER_GAUGE, vaultTokenBalance);
+    const lpBalanceDelta = await balanceDelta(
+      pool.address,
+      BALANCER_POOL,
+      pool.signer
+    );
+    expect(lpBalanceDelta.gt(0));
+  });
+
+  it("should remove liquidity from an Balancer pool ", async () => {
+    const lpTokenBalance = await pool.utils.getBalance(
+      BALANCER_POOL,
+      pool.address
+    );
+    await pool.approve(Dapp.BALANCER, BALANCER_POOL, MAX_AMOUNT);
+    await pool.exitBalancerPool(
+      "0x36bf227d6bac96e2ab1ebb5492ecec69c691943f000200000000000000000316",
+      [WSTETH, WETH],
+      lpTokenBalance
+    );
+    const wethBalanceDelta = await balanceDelta(
+      pool.address,
+      CONTRACT_ADDRESS[network].WETH,
+      pool.signer
+    );
+    expect(wethBalanceDelta.gt(0));
+  });
 });
