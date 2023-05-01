@@ -33,8 +33,8 @@ describe("pool", () => {
     await expect(usdcAllowanceDelta.gt(0));
   });
 
-  it("trades 5 USDC into WETH on 1Inch", async () => {
-    await pool.trade(Dapp.ONEINCH, USDC, WETH, "5000000", 0.5);
+  it("trades 2 USDC into WETH on 1Inch", async () => {
+    await pool.trade(Dapp.ONEINCH, USDC, WETH, "2000000", 0.5);
     const wethBalanceDelta = await balanceDelta(
       pool.address,
       WETH,
