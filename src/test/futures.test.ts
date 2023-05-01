@@ -1,6 +1,7 @@
 import { Dhedge, Pool } from "..";
 import { Network } from "../types";
 import { CONTRACT_ADDRESS, TEST_POOL } from "./constants";
+import { getDelayedOrders } from "./utils/futures";
 import { balanceDelta } from "./utils/token";
 import { wallet } from "./wallet";
 
@@ -32,11 +33,13 @@ describe("pool", () => {
   it("goes long ETH-PERP about 2x leverage", async () => {
     //size 50*2/2000 (margin * leverage  / price)
     const size = (0.05 * 1e18).toString();
-    const tx = await pool.changeFuturesPosition(perp, size);
-    expect(tx).not.toBe(null);
+    await pool.changeFuturesPosition(perp, size);
+    const orders = await getDelayedOrders(perp, pool);
+    expect(orders.length).toBeGreaterThan(0);
   });
 
   it("removes 20 sUSD margin from ETH future market", async () => {
+    await getDelayedOrders(perp, pool);
     await pool.changeFuturesMargin(perp, (-20 * 1e18).toString());
     const sUSDBalanceDelta = await balanceDelta(
       pool.address,
