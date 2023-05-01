@@ -59,6 +59,7 @@ import {
   getFuturesChangePositionTxData,
   getFuturesChangeMarginTxData
 } from "../services/futures";
+import { getFuturesCancelOrderTxData } from "../services/futures/trade";
 
 export class Pool {
   public readonly poolLogic: Contract;
@@ -1252,6 +1253,18 @@ export class Pool {
       market,
       this
     );
+    const tx = await this.poolLogic.execTransaction(market, txData, options);
+    return tx;
+  }
+
+  /** Cancels an open oder on Synthetix futures market
+   *
+   * @param {string} market Address of futures market
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async cancelFuturesOrder(market: string, options: any = null): Promise<any> {
+    const txData = await getFuturesCancelOrderTxData(this);
     const tx = await this.poolLogic.execTransaction(market, txData, options);
     return tx;
   }

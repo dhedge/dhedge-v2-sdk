@@ -24,3 +24,9 @@ export async function getFuturesChangePositionTxData(
     ethers.utils.formatBytes32String(FUTURES_TRACKING)
   ]);
 }
+
+export async function getFuturesCancelOrderTxData(pool: Pool): Promise<string> {
+  return new ethers.utils.Interface(
+    ISynthetixFuturesMarketV2.abi
+  ).encodeFunctionData("cancelOffchainDelayedOrder", [pool.address]);
+}
