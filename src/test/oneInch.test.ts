@@ -8,7 +8,8 @@ import { allowanceDelta, balanceDelta } from "./utils/token";
 import { wallet } from "./wallet";
 
 // const network = Network.OPTIMISM;
-const network = Network.POLYGON;
+// const network = Network.POLYGON;
+const network = Network.ARBITRUM;
 const USDC = CONTRACT_ADDRESS[network].USDC;
 const WETH = CONTRACT_ADDRESS[network].WETH;
 

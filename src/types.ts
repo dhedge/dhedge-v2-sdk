@@ -3,7 +3,8 @@ import { BigNumber } from "ethers";
 
 export enum Network {
   POLYGON = "polygon",
-  OPTIMISM = "optimism"
+  OPTIMISM = "optimism",
+  ARBITRUM = "arbitrum"
 }
 
 export enum Dapp {
