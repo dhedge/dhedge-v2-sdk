@@ -44,6 +44,12 @@ export const TEST_POOL = {
   [Network.ARBITRUM]: "0x2dc2f936c8b6619facc69355d65dd93d2f4cc2bd"
 };
 
+export const TEST_POOL_FOR_0X = {
+  [Network.POLYGON]: "0xbceaf8cea80fee6839a9cc09be09d3f3daf08c17",
+  [Network.OPTIMISM]: "0x36a5914bde5bbf07c79684cf3eec063234182037",
+  [Network.ARBITRUM]: ""
+};
+
 export const CONTRACT_ADDRESS = {
   [Network.POLYGON]: {
     USDC: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",

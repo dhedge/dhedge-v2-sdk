@@ -3,7 +3,8 @@ import {
   AddressNetworkMap,
   Network,
   AddressDappNetworkMap,
-  LyraNetworkMap
+  LyraNetworkMap,
+  ZeroExBaseUrlMap
 } from "./types";
 import { NetworkChainIdMap } from ".";
 import { Deployment } from "@lyrafinance/lyra-js";
@@ -39,7 +40,8 @@ export const routerAddress: AddressDappNetworkMap = {
     [Dapp.TOROS]: "0x3988513793bCE39f0167064A9F7fC3617FaF35AB",
     [Dapp.VELODROME]: "0x9c12939390052919aF3155f41Bf4160Fd3666A6f",
     [Dapp.LYRA]: "0xCCE7819d65f348c64B7Beb205BA367b3fE33763B",
-    [Dapp.ARRAKIS]: "0x9ce88a56d120300061593eF7AD074A1B710094d5"
+    [Dapp.ARRAKIS]: "0x9ce88a56d120300061593eF7AD074A1B710094d5",
+    [Dapp.ZEROEX]: "0xdef1abe32c034e558cdd535791643c58a13acc10"
   },
   [Network.ARBITRUM]: {
     [Dapp.ONEINCH]: "0x1111111254EEB25477B68fb85Ed929f73A960582",
@@ -91,6 +93,12 @@ export const networkChainIdMap: NetworkChainIdMap = {
   [Network.POLYGON]: 137,
   [Network.OPTIMISM]: 10,
   [Network.ARBITRUM]: 42161
+};
+
+export const zeroExBaseUrlMap: ZeroExBaseUrlMap = {
+  [Network.POLYGON]: "https://polygon.api.0x.org",
+  [Network.OPTIMISM]: "https://optimism.api.0x.org",
+  [Network.ARBITRUM]: "https://arbitrum.api.0x.org"
 };
 
 export const balancerSubgraph: AddressNetworkMap = {

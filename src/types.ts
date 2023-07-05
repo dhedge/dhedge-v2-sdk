@@ -19,7 +19,8 @@ export enum Dapp {
   ARRAKIS = "arrakis",
   TOROS = "toros",
   VELODROME = "velodrome",
-  LYRA = "lyra"
+  LYRA = "lyra",
+  ZEROEX = "0x"
 }
 
 export enum Transaction {
@@ -72,6 +73,8 @@ export type Reserves = {
 };
 
 export type NetworkChainIdMap = Readonly<Record<Network, number>>;
+
+export type ZeroExBaseUrlMap = Readonly<Record<Network, string>>;
 
 export type LyraOptionMarket = "eth";
 export type AddressMarketMap = {
