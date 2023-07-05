@@ -47,6 +47,6 @@ export const getZeroExTradeTxData = async (
 
     return response.data.data;
   } catch (e) {
-    return "";
+    throw new Error("Swap api request of 0x failed");
   }
 };

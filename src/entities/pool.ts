@@ -309,8 +309,13 @@ export class Pool {
         }&destReceiver=${
           this.address
         }&slippage=${slippage.toString()}&disableEstimate=true${protocols}`;
-        const response = await axios.get(apiUrl);
-        swapTxData = response.data.tx.data;
+        try {
+          const response = await axios.get(apiUrl);
+          swapTxData = response.data.tx.data;
+        } catch (e) {
+          throw new Error("Swap api request of 1inch failed");
+        }
+
         break;
       case Dapp.BALANCER:
         swapTxData = await this.utils.getBalancerSwapTx(
