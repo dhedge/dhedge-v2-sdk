@@ -61,6 +61,7 @@ import {
 } from "../services/futures";
 import { getFuturesCancelOrderTxData } from "../services/futures/trade";
 import { getZeroExTradeTxData } from "../services/zeroEx/zeroExTrade";
+import { ApiError } from "../errors";
 
 export class Pool {
   public readonly poolLogic: Contract;
@@ -313,7 +314,7 @@ export class Pool {
           const response = await axios.get(apiUrl);
           swapTxData = response.data.tx.data;
         } catch (e) {
-          throw new Error("Swap api request of 1inch failed");
+          throw new ApiError("Swap api request of 1inch failed");
         }
 
         break;

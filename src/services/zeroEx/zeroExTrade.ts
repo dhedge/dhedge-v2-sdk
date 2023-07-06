@@ -2,6 +2,7 @@ import axios from "axios";
 import { BigNumber } from "ethers";
 import { Network } from "../../types";
 import { zeroExBaseUrlMap } from "../../config";
+import { ApiError } from "../../errors";
 
 // slippage of 0x is different from that of 1Inch
 // in 0x, e.g. 0.03 for 3% slippage allowed
@@ -47,6 +48,6 @@ export const getZeroExTradeTxData = async (
 
     return response.data.data;
   } catch (e) {
-    throw new Error("Swap api request of 0x failed");
+    throw new ApiError("Swap api request of 0x failed");
   }
 };
