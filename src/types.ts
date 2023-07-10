@@ -74,8 +74,6 @@ export type Reserves = {
 
 export type NetworkChainIdMap = Readonly<Record<Network, number>>;
 
-export type ZeroExBaseUrlMap = Readonly<Record<Network, string>>;
-
 export type LyraOptionMarket = "eth";
 export type AddressMarketMap = {
   [key in LyraOptionMarket]: string;

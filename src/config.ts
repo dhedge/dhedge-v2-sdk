@@ -3,8 +3,7 @@ import {
   AddressNetworkMap,
   Network,
   AddressDappNetworkMap,
-  LyraNetworkMap,
-  ZeroExBaseUrlMap
+  LyraNetworkMap
 } from "./types";
 import { NetworkChainIdMap } from ".";
 import { Deployment } from "@lyrafinance/lyra-js";
