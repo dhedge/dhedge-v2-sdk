@@ -96,12 +96,6 @@ export const networkChainIdMap: NetworkChainIdMap = {
   [Network.ARBITRUM]: 42161
 };
 
-export const zeroExBaseUrlMap: ZeroExBaseUrlMap = {
-  [Network.POLYGON]: "https://polygon.api.0x.org",
-  [Network.OPTIMISM]: "https://optimism.api.0x.org",
-  [Network.ARBITRUM]: "https://arbitrum.api.0x.org"
-};
-
 export const balancerSubgraph: AddressNetworkMap = {
   [Network.POLYGON]:
     "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-polygon-v2",

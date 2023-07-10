@@ -1,7 +1,6 @@
 import axios from "axios";
 import { BigNumber } from "ethers";
 import { Network } from "../../types";
-import { zeroExBaseUrlMap } from "../../config";
 import { ApiError } from "../../errors";
 
 // slippage of 0x is different from that of 1Inch
@@ -37,7 +36,7 @@ export const getZeroExTradeTxData = async (
       // excludedSourcesParam
     };
     const response = await axios.get(
-      `${zeroExBaseUrlMap[network]}/swap/v1/quote`,
+      `https://${network}.api.0x.org/swap/v1/quote`,
       {
         params,
         headers: {
