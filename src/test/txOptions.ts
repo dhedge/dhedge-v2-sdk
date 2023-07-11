@@ -5,7 +5,7 @@ import { Network } from "../types";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const getTxOptions = async (network: Network): Promise<any> => {
   if (network === Network.POLYGON) {
-    const result = await axios("https://gasstation-mainnet.matic.network/v2");
+    const result = await axios("https://gasstation.polygon.technology/v2");
     return {
       gasLimit: "3000000",
       maxPriorityFeePerGas: new BigNumber(result.data.fast.maxPriorityFee)
