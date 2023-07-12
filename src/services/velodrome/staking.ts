@@ -1,31 +1,44 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BigNumber, ethers } from "ethers";
-import IVelodromeGauge from "../../abi/IVelodromeGauge.json";
+import IVelodromeGaugeV1 from "../../abi/IVelodromeGauge.json";
+import IVelodromeGaugeV2 from "../../abi/IVelodromeGaugeV2.json";
 import { Pool } from "../../entities";
-import { Transaction } from "../../types";
 import { call } from "../../utils/contract";
-const iVelodromeGauge = new ethers.utils.Interface(IVelodromeGauge.abi);
+const iVelodromeGaugeV1 = new ethers.utils.Interface(IVelodromeGaugeV1.abi);
+const iVelodromeGaugeV2 = new ethers.utils.Interface(IVelodromeGaugeV2.abi);
 
-export function getVelodromeStakeTxData(amount: BigNumber | string): any {
-  return iVelodromeGauge.encodeFunctionData(Transaction.DEPOSIT, [amount, "0"]);
+export function getVelodromeStakeTxData(
+  amount: BigNumber | string,
+  v2: boolean
+): any {
+  const depositParams: [string, unknown[]] = v2
+    ? ["deposit(uint256)", [amount]]
+    : ["deposit", [amount, 0]];
+  const iVelodromeGauge = v2 ? iVelodromeGaugeV2 : iVelodromeGaugeV1;
+  return iVelodromeGauge.encodeFunctionData(...depositParams);
 }
 
 export async function getVelodromeClaimTxData(
   pool: Pool,
-  gauge: string
+  gauge: string,
+  v2: boolean
 ): Promise<any> {
-  const rewardAssetCount = await call(pool.signer, IVelodromeGauge.abi, [
-    gauge,
-    "rewardsListLength",
-    []
-  ]);
-  const rewardAssets = await Promise.all(
-    Array.from(Array(rewardAssetCount.toNumber()).keys()).map(e =>
-      call(pool.signer, IVelodromeGauge.abi, [gauge, "rewards", [e]])
-    )
-  );
-  return iVelodromeGauge.encodeFunctionData("getReward", [
-    pool.address,
-    rewardAssets
-  ]);
+  if (v2) {
+    return iVelodromeGaugeV2.encodeFunctionData("getReward", [pool.address]);
+  } else {
+    const rewardAssetCount = await call(pool.signer, IVelodromeGaugeV1.abi, [
+      gauge,
+      "rewardsListLength",
+      []
+    ]);
+    const rewardAssets = await Promise.all(
+      Array.from(Array(rewardAssetCount.toNumber()).keys()).map(e =>
+        call(pool.signer, IVelodromeGaugeV1.abi, [gauge, "rewards", [e]])
+      )
+    );
+    return iVelodromeGaugeV1.encodeFunctionData("getReward", [
+      pool.address,
+      rewardAssets
+    ]);
+  }
 }
