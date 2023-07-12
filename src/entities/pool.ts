@@ -546,7 +546,7 @@ export class Pool {
   }
 
   /**
-   * Unstake liquidity pool tokens from gauge contract
+   * Unstake liquidity pool tokens from Velodrome or Balancer gauge
    * @param {string} gauge Gauge contract address
    * @param {BigNumber | string} amount Amount of liquidity pool tokens
    * @param {any} options Transaction options
