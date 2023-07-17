@@ -1,5 +1,4 @@
 import { ethers } from "ethers";
-
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require("dotenv").config();
 
@@ -25,3 +24,25 @@ export const wallet = new ethers.Wallet(
   process.env.PRIVATE_KEY as string,
   provider
 );
+
+const polygonProvider = new ethers.providers.JsonRpcProvider(
+  "http://127.0.0.1:8542/"
+);
+
+const optimismProvider = new ethers.providers.JsonRpcProvider(
+  "http://127.0.0.1:8544/"
+);
+
+const arbitrumProvider = new ethers.providers.JsonRpcProvider(
+  "http://127.0.0.1:8540/"
+);
+
+const [polygonWallet, optimismWallet, arbitrumWallet] = [
+  polygonProvider,
+  optimismProvider,
+  arbitrumProvider
+].map(
+  provider => new ethers.Wallet(process.env.PRIVATE_KEY as string, provider)
+);
+
+export { polygonWallet, optimismWallet, arbitrumWallet };
