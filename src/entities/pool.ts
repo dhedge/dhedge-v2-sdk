@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import axios from "axios";
 import { Contract, ethers, Wallet, BigNumber } from "ethers";
 
 import IERC20 from "../abi/IERC20.json";
@@ -16,7 +15,6 @@ import IBalancerRewardsGauge from "../abi/IBalancerRewardsGauge.json";
 
 import {
   MaxUint128,
-  networkChainIdMap,
   nonfungiblePositionManagerAddress,
   routerAddress,
   stakingAddress,
@@ -42,7 +40,6 @@ import {
 import { FeeAmount } from "@uniswap/v3-sdk";
 import { getUniswapV3SwapTxData } from "../services/uniswap/V3Trade";
 import { getEasySwapperTxData } from "../services/toros/easySwapper";
-import { getOneInchProtocols } from "../services/oneInch/protocols";
 import { getAaveV3ClaimTxData } from "../services/aave/incentives";
 import {
   getVelodromeAddLiquidityTxData,
@@ -61,7 +58,7 @@ import {
 } from "../services/futures";
 import { getFuturesCancelOrderTxData } from "../services/futures/trade";
 import { getZeroExTradeTxData } from "../services/zeroEx/zeroExTrade";
-import { ApiError } from "../errors";
+import { getOneInchSwapTxData } from "../services/oneInch";
 
 export class Pool {
   public readonly poolLogic: Contract;
@@ -299,24 +296,13 @@ export class Pool {
         );
         break;
       case Dapp.ONEINCH:
-        const chainId = networkChainIdMap[this.network];
-        const protocols = await getOneInchProtocols(chainId);
-        if (!process.env.ONEINCH_API_URL)
-          throw new Error("ONEINCH_API_URL not configured in .env file");
-        const apiUrl = `${
-          process.env.ONEINCH_API_URL
-        }/${chainId}/swap?fromTokenAddress=${assetFrom}&toTokenAddress=${assetTo}&amount=${amountIn.toString()}&fromAddress=${
-          this.address
-        }&destReceiver=${
-          this.address
-        }&slippage=${slippage.toString()}&disableEstimate=true${protocols}`;
-        try {
-          const response = await axios.get(apiUrl);
-          swapTxData = response.data.tx.data;
-        } catch (e) {
-          throw new ApiError("Swap api request of 1inch failed");
-        }
-
+        swapTxData = await getOneInchSwapTxData(
+          this,
+          assetFrom,
+          assetTo,
+          amountIn,
+          slippage
+        );
         break;
       case Dapp.BALANCER:
         swapTxData = await this.utils.getBalancerSwapTx(

@@ -6,12 +6,6 @@ import { CONTRACT_ADDRESS, MAX_AMOUNT, TEST_POOL } from "./constants";
 import { TestingRunParams, testingHelper } from "./utils/testingHelper";
 import { allowanceDelta, balanceDelta } from "./utils/token";
 
-import { polygonWallet, optimismWallet } from "./wallet";
-
-//const network = Network.OPTIMISM;
-// const network = Network.POLYGON;
-// const network = Network.ARBITRUM;
-
 const testZeroEx = ({ wallet, network }: TestingRunParams) => {
   const USDC = CONTRACT_ADDRESS[network].USDC;
   const WETH = CONTRACT_ADDRESS[network].WETH;
@@ -51,12 +45,10 @@ const testZeroEx = ({ wallet, network }: TestingRunParams) => {
 
 testingHelper({
   network: Network.OPTIMISM,
-  wallet: optimismWallet,
   testingRun: testZeroEx
 });
 
 testingHelper({
   network: Network.POLYGON,
-  wallet: polygonWallet,
   testingRun: testZeroEx
 });

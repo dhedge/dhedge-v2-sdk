@@ -1,5 +1,6 @@
 import { ethers } from "ethers";
 import { Network } from "../../types";
+import { getWallet } from "../wallet";
 
 export type TestingRunParams = {
   network: Network;
@@ -8,12 +9,12 @@ export type TestingRunParams = {
 
 type TestHelperParams = {
   testingRun: (testingRunParams: TestingRunParams) => void;
-} & TestingRunParams;
+} & { network: Network };
 
 export const testingHelper = ({
   network,
-  wallet,
   testingRun
 }: TestHelperParams): void => {
+  const wallet = getWallet(network);
   testingRun({ network, wallet });
 };
