@@ -28,11 +28,11 @@ yarn add @dhedge/v2-sdk
 
 ### Initial setup
 
-If you want to use 1Inch to trade pool assets you need to apply for an enterprise endpoint at [1Inch](https://docs.1inch.io/docs/aggregation-protocol/introduction).
+If you want to use 1Inch to trade pool assets you need to apply for an API key at [1Inch Dev Portal](https://docs.1inch.io/docs/aggregation-protocol/introduction).
 Then you need to copy .env.example file to .env and set your url there.
 
 ```
-ONEINCH_API_URL=https://my-personal-url.1inch.io/v5.0
+ONEINCH_API_KEY=YOUR_API_KEY_FROM_1INCH
 ```
 
 Initialize the sdk with an [ethers wallet](https://docs.ethers.io/v5/api/signer/#Wallet) and the network.
