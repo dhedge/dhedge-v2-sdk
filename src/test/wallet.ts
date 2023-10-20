@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-
+import { Network } from "../types";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require("dotenv").config();
 
@@ -25,3 +25,16 @@ export const wallet = new ethers.Wallet(
   process.env.PRIVATE_KEY as string,
   provider
 );
+
+export const networkPortMap = {
+  [Network.POLYGON]: 8542,
+  [Network.OPTIMISM]: 8544,
+  [Network.ARBITRUM]: 8540
+};
+
+export const getWallet = (network: Network): ethers.Wallet => {
+  const provider = new ethers.providers.JsonRpcProvider(
+    `http://127.0.0.1:${networkPortMap[network]}/`
+  );
+  return new ethers.Wallet(process.env.PRIVATE_KEY as string, provider);
+};
