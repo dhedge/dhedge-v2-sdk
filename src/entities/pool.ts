@@ -1341,4 +1341,23 @@ export class Pool {
     const tx = await this.poolLogic.execTransaction(market, txData, options);
     return tx;
   }
+
+  /**
+   * mintManagerFee
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async mintManagerFee(options: any = null): Promise<any> {
+    const tx = await this.poolLogic.mintManagerFee(options);
+    return tx;
+  }
+
+  /**
+   * getAvailableManagerFee
+   * @returns {Promise<BigNumber>} fee
+   */
+  async getAvailableManagerFee(): Promise<BigNumber> {
+    const fee = await this.poolLogic.availableManagerFee();
+    return BigNumber.from(fee);
+  }
 }
