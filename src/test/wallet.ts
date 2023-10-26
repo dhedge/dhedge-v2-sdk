@@ -32,9 +32,17 @@ export const networkPortMap = {
   [Network.ARBITRUM]: 8540
 };
 
-export const getWallet = (network: Network): ethers.Wallet => {
+export const getWalletData = (
+  network: Network
+): {
+  wallet: ethers.Wallet;
+  provider: ethers.providers.JsonRpcProvider;
+} => {
   const provider = new ethers.providers.JsonRpcProvider(
     `http://127.0.0.1:${networkPortMap[network]}/`
   );
-  return new ethers.Wallet(process.env.PRIVATE_KEY as string, provider);
+  return {
+    wallet: new ethers.Wallet(process.env.PRIVATE_KEY as string, provider),
+    provider
+  };
 };
