@@ -4,7 +4,7 @@ import { BigNumber } from "ethers";
 export enum Network {
   POLYGON = "polygon",
   OPTIMISM = "optimism",
-  ARBITRUM = "arbitrum"
+  ARBITRUM = "arbitrum",
 }
 
 export enum Dapp {
@@ -21,7 +21,8 @@ export enum Dapp {
   VELODROME = "velodrome",
   VELODROMEV2 = "velodromeV2",
   LYRA = "lyra",
-  ZEROEX = "0x"
+  ZEROEX = "0x",
+  RAMSES = "ramses",
 }
 
 export enum Transaction {
@@ -43,7 +44,7 @@ export enum Transaction {
   BURN = "burn",
   SWAP_SYNTHS = "exchangeWithTracking",
   ADD_LIQUIDITY_STAKE = "addLiquidityAndStake",
-  REMOVE_LIQUIDITY_UNSTAKE = "removeLiquidityAndUnstake"
+  REMOVE_LIQUIDITY_UNSTAKE = "removeLiquidityAndUnstake",
 }
 
 export type AddressNetworkMap = Readonly<Record<Network, string>>;

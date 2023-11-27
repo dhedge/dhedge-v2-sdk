@@ -486,6 +486,7 @@ export class Pool {
         ]);
         break;
       case Dapp.VELODROME:
+      case Dapp.RAMSES:
         stakeTxData = getVelodromeStakeTxData(amount, false);
         break;
       case Dapp.VELODROMEV2:
@@ -1060,6 +1061,7 @@ export class Pool {
         txData = getVelodromeClaimTxData(this, tokenId, false);
         break;
       case Dapp.VELODROMEV2:
+      case Dapp.RAMSES:
         contractAddress = tokenId;
         txData = getVelodromeClaimTxData(this, tokenId, true);
         break;
@@ -1223,6 +1225,73 @@ export class Pool {
   ): Promise<any> {
     const tx = await this.poolLogic.execTransaction(
       routerAddress[this.network][Dapp.VELODROMEV2],
+      await getVelodromeRemoveLiquidityTxData(
+        this,
+        assetA,
+        assetB,
+        amount,
+        isStable
+      ),
+      options
+    );
+    return tx;
+  }
+
+  /**
+   * Add liquidity to Velodrome V2 or Ramses pool
+   * @param {Dapp} dapp VelodromeV2 or Ramses
+   * @param {string} assetA First asset
+   * @param {string} assetB Second asset
+   * @param {BigNumber | string} amountA Amount first asset
+   * @param {BigNumber | string} amountB Amount second asset
+   * @param { boolean } isStable Is stable pool
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async addLiquidityV2(
+    dapp: Dapp.VELODROMEV2 | Dapp.RAMSES,
+    assetA: string,
+    assetB: string,
+    amountA: BigNumber | string,
+    amountB: BigNumber | string,
+    isStable: boolean,
+    options: any = null
+  ): Promise<any> {
+    const tx = await this.poolLogic.execTransaction(
+      routerAddress[this.network][dapp],
+      await getVelodromeAddLiquidityTxData(
+        this,
+        assetA,
+        assetB,
+        amountA,
+        amountB,
+        isStable
+      ),
+      options
+    );
+    return tx;
+  }
+
+  /**
+   * Remove liquidity from Velodrome V2 or Ramses pool
+   * @param {Dapp} dapp VelodromeV2 or Ramses
+   * @param {string} assetA First asset
+   * @param {string} assetB Second asset
+   * @param {BigNumber | string} amount Amount of LP tokens
+   * @param { boolean } isStable Is stable pool
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async removeLiquidityV2(
+    dapp: Dapp.VELODROMEV2 | Dapp.RAMSES,
+    assetA: string,
+    assetB: string,
+    amount: BigNumber | string,
+    isStable: boolean,
+    options: any = null
+  ): Promise<any> {
+    const tx = await this.poolLogic.execTransaction(
+      routerAddress[this.network][dapp],
       await getVelodromeRemoveLiquidityTxData(
         this,
         assetA,
