@@ -59,6 +59,10 @@ import {
 import { getFuturesCancelOrderTxData } from "../services/futures/trade";
 import { getZeroExTradeTxData } from "../services/zeroEx/zeroExTrade";
 import { getOneInchSwapTxData } from "../services/oneInch";
+import {
+  getCreateVestTxData,
+  getExitVestTxData
+} from "../services/ramses/vesting";
 
 export class Pool {
   public readonly poolLogic: Contract;
@@ -1428,5 +1432,47 @@ export class Pool {
   async getAvailableManagerFee(): Promise<BigNumber> {
     const fee = await this.poolLogic.availableManagerFee();
     return BigNumber.from(fee);
+  }
+
+  /** Vest tokens (e.g. Ramses xoRAM)
+   *
+   * @param {string} tokenAddress Address of the token to vest
+   * @param {BigNumber | string } changeAmount Negative for short, positive for long
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async vestTokens(
+    tokenAddress: string,
+    amount: BigNumber | string,
+    options: any = null
+  ): Promise<any> {
+    const txData = await getCreateVestTxData(amount);
+    const tx = await this.poolLogic.execTransaction(
+      tokenAddress,
+      txData,
+      options
+    );
+    return tx;
+  }
+
+  /** Exit position of vested tokens (e.g. Ramses xoRAM)
+   *
+   * @param {string} tokenAddress Address of the token to vest
+   * @param {number } id position Id of the vested tokens
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async exitVestedToken(
+    tokenAddress: string,
+    id: number,
+    options: any = null
+  ): Promise<any> {
+    const txData = await getExitVestTxData(id);
+    const tx = await this.poolLogic.execTransaction(
+      tokenAddress,
+      txData,
+      options
+    );
+    return tx;
   }
 }
