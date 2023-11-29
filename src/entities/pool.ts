@@ -1061,11 +1061,11 @@ export class Pool {
         txData = abi.encodeFunctionData("claim_rewards()", []);
         break;
       case Dapp.VELODROME:
+      case Dapp.RAMSES:
         contractAddress = tokenId;
         txData = getVelodromeClaimTxData(this, tokenId, false);
         break;
       case Dapp.VELODROMEV2:
-      case Dapp.RAMSES:
         contractAddress = tokenId;
         txData = getVelodromeClaimTxData(this, tokenId, true);
         break;
