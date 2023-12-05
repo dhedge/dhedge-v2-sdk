@@ -59,6 +59,10 @@ import {
 import { getFuturesCancelOrderTxData } from "../services/futures/trade";
 import { getZeroExTradeTxData } from "../services/zeroEx/zeroExTrade";
 import { getOneInchSwapTxData } from "../services/oneInch";
+import {
+  getCreateVestTxData,
+  getExitVestTxData
+} from "../services/ramses/vesting";
 
 export class Pool {
   public readonly poolLogic: Contract;
@@ -486,6 +490,7 @@ export class Pool {
         ]);
         break;
       case Dapp.VELODROME:
+      case Dapp.RAMSES:
         stakeTxData = getVelodromeStakeTxData(amount, false);
         break;
       case Dapp.VELODROMEV2:
@@ -1056,6 +1061,7 @@ export class Pool {
         txData = abi.encodeFunctionData("claim_rewards()", []);
         break;
       case Dapp.VELODROME:
+      case Dapp.RAMSES:
         contractAddress = tokenId;
         txData = getVelodromeClaimTxData(this, tokenId, false);
         break;
@@ -1236,6 +1242,73 @@ export class Pool {
   }
 
   /**
+   * Add liquidity to Velodrome V2 or Ramses pool
+   * @param {Dapp} dapp VelodromeV2 or Ramses
+   * @param {string} assetA First asset
+   * @param {string} assetB Second asset
+   * @param {BigNumber | string} amountA Amount first asset
+   * @param {BigNumber | string} amountB Amount second asset
+   * @param { boolean } isStable Is stable pool
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async addLiquidityV2(
+    dapp: Dapp.VELODROMEV2 | Dapp.RAMSES,
+    assetA: string,
+    assetB: string,
+    amountA: BigNumber | string,
+    amountB: BigNumber | string,
+    isStable: boolean,
+    options: any = null
+  ): Promise<any> {
+    const tx = await this.poolLogic.execTransaction(
+      routerAddress[this.network][dapp],
+      await getVelodromeAddLiquidityTxData(
+        this,
+        assetA,
+        assetB,
+        amountA,
+        amountB,
+        isStable
+      ),
+      options
+    );
+    return tx;
+  }
+
+  /**
+   * Remove liquidity from Velodrome V2 or Ramses pool
+   * @param {Dapp} dapp VelodromeV2 or Ramses
+   * @param {string} assetA First asset
+   * @param {string} assetB Second asset
+   * @param {BigNumber | string} amount Amount of LP tokens
+   * @param { boolean } isStable Is stable pool
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async removeLiquidityV2(
+    dapp: Dapp.VELODROMEV2 | Dapp.RAMSES,
+    assetA: string,
+    assetB: string,
+    amount: BigNumber | string,
+    isStable: boolean,
+    options: any = null
+  ): Promise<any> {
+    const tx = await this.poolLogic.execTransaction(
+      routerAddress[this.network][dapp],
+      await getVelodromeRemoveLiquidityTxData(
+        this,
+        assetA,
+        assetB,
+        amount,
+        isStable
+      ),
+      options
+    );
+    return tx;
+  }
+
+  /**
    * Trade options on lyra
    * @param {LyraOptionMarket} market Underlying market e.g. eth
    * @param {number} expiry Expiry timestamp
@@ -1359,5 +1432,47 @@ export class Pool {
   async getAvailableManagerFee(): Promise<BigNumber> {
     const fee = await this.poolLogic.availableManagerFee();
     return BigNumber.from(fee);
+  }
+
+  /** Vest tokens (e.g. Ramses xoRAM)
+   *
+   * @param {string} tokenAddress Address of the token to vest
+   * @param {BigNumber | string } changeAmount Negative for short, positive for long
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async vestTokens(
+    tokenAddress: string,
+    amount: BigNumber | string,
+    options: any = null
+  ): Promise<any> {
+    const txData = await getCreateVestTxData(amount);
+    const tx = await this.poolLogic.execTransaction(
+      tokenAddress,
+      txData,
+      options
+    );
+    return tx;
+  }
+
+  /** Exit position of vested tokens (e.g. Ramses xoRAM)
+   *
+   * @param {string} tokenAddress Address of the token to vest
+   * @param {number } id position Id of the vested tokens
+   * @param {any} options Transaction options
+   * @returns {Promise<any>} Transaction
+   */
+  async exitVestedToken(
+    tokenAddress: string,
+    id: number,
+    options: any = null
+  ): Promise<any> {
+    const txData = await getExitVestTxData(id);
+    const tx = await this.poolLogic.execTransaction(
+      tokenAddress,
+      txData,
+      options
+    );
+    return tx;
   }
 }
