@@ -29,7 +29,8 @@ export const wallet = new ethers.Wallet(
 export const networkPortMap = {
   [Network.POLYGON]: 8542,
   [Network.OPTIMISM]: 8544,
-  [Network.ARBITRUM]: 8540
+  [Network.ARBITRUM]: 8540,
+  [Network.BASE]: 8546
 };
 
 export const getWalletData = (

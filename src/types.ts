@@ -5,6 +5,7 @@ export enum Network {
   POLYGON = "polygon",
   OPTIMISM = "optimism",
   ARBITRUM = "arbitrum",
+  BASE = "base"
 }
 
 export enum Dapp {
@@ -22,7 +23,7 @@ export enum Dapp {
   VELODROMEV2 = "velodromeV2",
   LYRA = "lyra",
   ZEROEX = "0x",
-  RAMSES = "ramses",
+  RAMSES = "ramses"
 }
 
 export enum Transaction {
@@ -44,7 +45,7 @@ export enum Transaction {
   BURN = "burn",
   SWAP_SYNTHS = "exchangeWithTracking",
   ADD_LIQUIDITY_STAKE = "addLiquidityAndStake",
-  REMOVE_LIQUIDITY_UNSTAKE = "removeLiquidityAndUnstake",
+  REMOVE_LIQUIDITY_UNSTAKE = "removeLiquidityAndUnstake"
 }
 
 export type AddressNetworkMap = Readonly<Record<Network, string>>;

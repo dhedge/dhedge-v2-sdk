@@ -16,7 +16,8 @@ export const factoryAddress: AddressNetworkMap = {
     ? "0xDd87eCdB10cFF7004276AAbAbd30e7a08F69bb53"
     : "0xfdc7b8bFe0DD3513Cc669bB8d601Cb83e2F69cB0",
   [Network.OPTIMISM]: "0x5e61a079A178f0E5784107a4963baAe0c5a680c6",
-  [Network.ARBITRUM]: "0xfffb5fb14606eb3a548c113026355020ddf27535"
+  [Network.ARBITRUM]: "0xfffb5fb14606eb3a548c113026355020ddf27535",
+  [Network.BASE]: "0x49Afe3abCf66CF09Fab86cb1139D8811C8afe56F"
 };
 
 export const routerAddress: AddressDappNetworkMap = {
@@ -50,6 +51,11 @@ export const routerAddress: AddressDappNetworkMap = {
     [Dapp.AAVEV3]: "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
     [Dapp.BALANCER]: "0xBA12222222228d8Ba445958a75a0704d566BF2C8",
     [Dapp.RAMSES]: "0xaaa87963efeb6f7e0a2711f397663105acb1805e"
+  },
+  [Network.BASE]: {
+    [Dapp.ONEINCH]: "0x1111111254EEB25477B68fb85Ed929f73A960582",
+    [Dapp.ZEROEX]: "0xdef1c0ded9bec7f1a1670819833240f027b25eff",
+    [Dapp.UNISWAPV3]: "0x2626664c2603336E57B271c5C0b26F421741e481"
   }
 };
 
@@ -59,7 +65,8 @@ export const dappFactoryAddress: AddressDappNetworkMap = {
     [Dapp.QUICKSWAP]: "0x5757371414417b8C6CAad45bAeF941aBc7d3Ab32"
   },
   [Network.OPTIMISM]: {},
-  [Network.ARBITRUM]: {}
+  [Network.ARBITRUM]: {},
+  [Network.BASE]: {}
 };
 
 export const stakingAddress: AddressDappNetworkMap = {
@@ -70,7 +77,8 @@ export const stakingAddress: AddressDappNetworkMap = {
     [Dapp.AAVEV3]: "0x929EC64c34a17401F460460D4B9390518E5B473e"
   },
   [Network.OPTIMISM]: {},
-  [Network.ARBITRUM]: {}
+  [Network.ARBITRUM]: {},
+  [Network.BASE]: {}
 };
 
 export const aaveAddressProvider: AddressDappNetworkMap = {
@@ -83,31 +91,40 @@ export const aaveAddressProvider: AddressDappNetworkMap = {
   },
   [Network.ARBITRUM]: {
     [Dapp.AAVEV3]: "0xa97684ead0e402dc232d5a977953df7ecbab3cdb"
+  },
+  [Network.BASE]: {
+    // https://docs.aave.com/developers/deployed-contracts/v3-mainnet/base
+    [Dapp.AAVEV3]: "0xe20fCBdBfFC4Dd138cE8b2E6FBb6CB49777ad64D"
   }
 };
 export const nonfungiblePositionManagerAddress: AddressNetworkMap = {
   [Network.POLYGON]: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
   [Network.OPTIMISM]: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
-  [Network.ARBITRUM]: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88"
+  [Network.ARBITRUM]: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
+  // https://docs.uniswap.org/contracts/v3/reference/deployments
+  [Network.BASE]: "0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1"
 };
 
 export const networkChainIdMap: NetworkChainIdMap = {
   [Network.POLYGON]: 137,
   [Network.OPTIMISM]: 10,
-  [Network.ARBITRUM]: 42161
+  [Network.ARBITRUM]: 42161,
+  [Network.BASE]: 8453
 };
 
 export const balancerSubgraph: AddressNetworkMap = {
   [Network.POLYGON]:
     "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-polygon-v2",
   [Network.OPTIMISM]: "",
-  [Network.ARBITRUM]: ""
+  [Network.ARBITRUM]: "",
+  [Network.BASE]: ""
 };
 
 export const multiCallAddress: AddressNetworkMap = {
   [Network.POLYGON]: "0x275617327c958bD06b5D6b871E7f491D76113dd8",
   [Network.OPTIMISM]: "",
-  [Network.ARBITRUM]: ""
+  [Network.ARBITRUM]: "",
+  [Network.BASE]: ""
 };
 
 export const lyraNetworkMap: LyraNetworkMap = {

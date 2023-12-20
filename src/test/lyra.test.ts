@@ -6,6 +6,7 @@ import { getTxOptions } from "./txOptions";
 import { wallet } from "./wallet";
 
 jest.setTimeout(100000);
+const TEST_POOL_OP = TEST_POOL.optimism;
 
 describe("pool", () => {
   let dhedge: Dhedge;
@@ -16,7 +17,7 @@ describe("pool", () => {
 
   it("buys 0.1 1400 calls with expiry October 28th", async () => {
     let result;
-    const pool = await dhedge.loadPool(TEST_POOL);
+    const pool = await dhedge.loadPool(TEST_POOL_OP);
     try {
       result = await pool.tradeLyraOption(
         "eth",
@@ -37,7 +38,7 @@ describe("pool", () => {
 
   it("adds 0.05 1400 calls with expiry October 28th", async () => {
     let result;
-    const pool = await dhedge.loadPool(TEST_POOL);
+    const pool = await dhedge.loadPool(TEST_POOL_OP);
     try {
       result = await pool.tradeLyraOption(
         "eth",
@@ -61,7 +62,7 @@ describe("pool", () => {
 
   it("sells 0.1 1300 Covered Call with expiry October 28th", async () => {
     let result;
-    const pool = await dhedge.loadPool(TEST_POOL);
+    const pool = await dhedge.loadPool(TEST_POOL_OP);
     try {
       result = await pool.tradeLyraOption(
         "eth",
@@ -86,7 +87,7 @@ describe("pool", () => {
 
   it("adds 0.05 1300 Covered Call with expiry October 28th", async () => {
     let result;
-    const pool = await dhedge.loadPool(TEST_POOL);
+    const pool = await dhedge.loadPool(TEST_POOL_OP);
     try {
       result = await pool.tradeLyraOption(
         "eth",
@@ -113,7 +114,7 @@ describe("pool", () => {
 
   it("closes all 0.15 1300 Covered Call with expiry October 28th", async () => {
     let result;
-    const pool = await dhedge.loadPool(TEST_POOL);
+    const pool = await dhedge.loadPool(TEST_POOL_OP);
     try {
       result = await pool.tradeLyraOption(
         "eth",
@@ -138,7 +139,7 @@ describe("pool", () => {
 
   it("closes all 0.15 1400 Calls with expiry October 28th", async () => {
     let result;
-    const pool = await dhedge.loadPool(TEST_POOL);
+    const pool = await dhedge.loadPool(TEST_POOL_OP);
     try {
       result = await pool.tradeLyraOption(
         "eth",

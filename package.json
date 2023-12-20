@@ -22,7 +22,8 @@
     "analyze": "size-limit --why",
     "fork:polygon": "hardhat node --port 8542 --fork $(grep POLYGON_URL .env | cut -d '=' -f2)",
     "fork:optimism": "hardhat node --port 8544 --fork $(grep OPTIMISM_URL .env | cut -d '=' -f2)",
-    "fork:arbitrum": "hardhat node --port 8540 --fork $(grep ARBITRUM_URL .env | cut -d '=' -f2)"
+    "fork:arbitrum": "hardhat node --port 8540 --fork $(grep ARBITRUM_URL .env | cut -d '=' -f2)",
+    "fork:base": "hardhat node --port 8546 --fork $(grep BASE_URL .env | cut -d '=' -f2)"
   },
   "husky": {
     "hooks": {
