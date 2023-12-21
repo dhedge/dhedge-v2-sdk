@@ -6,6 +6,8 @@ import { TEST_POOL } from "./constants";
 
 import { wallet } from "./wallet";
 
+const TEST_POOL_OP = TEST_POOL.optimism;
+
 let dhedge: Dhedge;
 let options: any;
 jest.setTimeout(100000);
@@ -18,7 +20,7 @@ describe("pool", () => {
   });
 
   it("should swap sETH into sUSD on Synthetix", async () => {
-    const pool = await dhedge.loadPool(TEST_POOL);
+    const pool = await dhedge.loadPool(TEST_POOL_OP);
     const result = await pool.trade(
       Dapp.SYNTHETIX,
       "sETH",

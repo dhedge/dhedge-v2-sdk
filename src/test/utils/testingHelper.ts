@@ -1,6 +1,7 @@
-import { ethers } from "ethers";
+import { BigNumber, ethers } from "ethers";
 import { Network } from "../../types";
 import { getWalletData } from "../wallet";
+import { CONTRACT_ADDRESS, USDC_BALANCEOF_SLOT } from "../constants";
 
 export type TestingRunParams = {
   network: Network;
@@ -38,5 +39,54 @@ export const beforeAfterReset = ({
   afterAll(async () => {
     await provider.send("evm_revert", [snapshot]);
     await provider.send("evm_mine", []);
+  });
+};
+
+export const setTokenAmount = async ({
+  amount,
+  userAddress,
+  tokenAddress,
+  slot,
+  provider
+}: {
+  amount: string;
+  userAddress: string;
+  tokenAddress: string;
+  slot: number;
+  provider: ethers.providers.JsonRpcProvider;
+}): Promise<void> => {
+  const toBytes32 = (bn: string) => {
+    return ethers.utils.hexlify(
+      ethers.utils.zeroPad(BigNumber.from(bn).toHexString(), 32)
+    );
+  };
+  const index = ethers.utils.solidityKeccak256(
+    ["uint256", "uint256"],
+    [userAddress, slot] // key, slot
+  );
+  await provider.send("hardhat_setStorageAt", [
+    tokenAddress,
+    index,
+    toBytes32(amount).toString()
+  ]);
+  await provider.send("evm_mine", []);
+};
+export const setUSDCAmount = async ({
+  provider,
+  userAddress,
+  amount,
+  network
+}: {
+  amount: string;
+  userAddress: string;
+  provider: ethers.providers.JsonRpcProvider;
+  network: Network;
+}): Promise<void> => {
+  await setTokenAmount({
+    amount,
+    userAddress,
+    provider,
+    tokenAddress: CONTRACT_ADDRESS[network].USDC,
+    slot: USDC_BALANCEOF_SLOT[network]
   });
 };

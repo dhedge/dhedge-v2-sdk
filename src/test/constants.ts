@@ -41,7 +41,8 @@ export const KWENTA_ETH_PERP_V2 = "0x2b3bb4c683bfc5239b029131eef3b1d214478d93";
 export const TEST_POOL = {
   [Network.POLYGON]: "0x699fd4d6eadb216704c7e355cfa0a12f51813163",
   [Network.OPTIMISM]: "0x12573bfdf764ab9d52aca20e2827497a66829716",
-  [Network.ARBITRUM]: "0x2dc2f936c8b6619facc69355d65dd93d2f4cc2bd"
+  [Network.ARBITRUM]: "0x2dc2f936c8b6619facc69355d65dd93d2f4cc2bd",
+  [Network.BASE]: "0x4842b42F68524383F609aa46eAfc18c1459cE3cD"
 };
 
 export const CONTRACT_ADDRESS = {
@@ -69,7 +70,20 @@ export const CONTRACT_ADDRESS = {
     WSTETH: "0x5979d7b546e38e414f7e9822514be443a4800529",
     BALANCER_WSTETH_WETH_POOL: "0x36bf227d6bac96e2ab1ebb5492ecec69c691943f",
     BALANCER_WSTETH_WETH_GAUGE: "0x251e51b25afa40f2b6b9f05aaf1bc7eaa0551771"
+  },
+  [Network.BASE]: {
+    USDC: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    WETH: "0x4200000000000000000000000000000000000006",
+    WBTC: "",
+    SWETH: ""
   }
 };
 
 export const MAX_AMOUNT = ethers.constants.MaxUint256;
+
+export const USDC_BALANCEOF_SLOT = {
+  [Network.OPTIMISM]: 0,
+  [Network.ARBITRUM]: 9,
+  [Network.POLYGON]: 0,
+  [Network.BASE]: 9
+};
