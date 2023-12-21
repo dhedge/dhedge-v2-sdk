@@ -42,8 +42,7 @@ export const TEST_POOL = {
   [Network.POLYGON]: "0x699fd4d6eadb216704c7e355cfa0a12f51813163",
   [Network.OPTIMISM]: "0x12573bfdf764ab9d52aca20e2827497a66829716",
   [Network.ARBITRUM]: "0x2dc2f936c8b6619facc69355d65dd93d2f4cc2bd",
-  // TODO
-  [Network.BASE]: ""
+  [Network.BASE]: "0x4842b42F68524383F609aa46eAfc18c1459cE3cD"
 };
 
 export const CONTRACT_ADDRESS = {
@@ -81,4 +80,10 @@ export const CONTRACT_ADDRESS = {
 };
 
 export const MAX_AMOUNT = ethers.constants.MaxUint256;
-export const NATIVE_ETH_1INCH = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
+
+export const USDC_BALANCEOF_SLOT = {
+  [Network.OPTIMISM]: 0,
+  [Network.ARBITRUM]: 9,
+  [Network.POLYGON]: 0,
+  [Network.BASE]: 9
+};

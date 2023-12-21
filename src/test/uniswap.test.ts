@@ -3,34 +3,37 @@ import { FeeAmount } from "@uniswap/v3-sdk";
 import { Dhedge, ethers, Pool } from "..";
 import { routerAddress } from "../config";
 import { Dapp, Network } from "../types";
-import { CONTRACT_ADDRESS, NATIVE_ETH_1INCH, TEST_POOL } from "./constants";
+import { CONTRACT_ADDRESS, TEST_POOL } from "./constants";
 import { allowanceDelta, balanceDelta } from "./utils/token";
-import { testingHelper, TestingRunParams } from "./utils/testingHelper";
+import {
+  setUSDCAmount,
+  testingHelper,
+  TestingRunParams
+} from "./utils/testingHelper";
 import BigNumber from "bignumber.js";
 
 const testUniswapV3 = ({ wallet, network, provider }: TestingRunParams) => {
   let dhedge: Dhedge;
   let pool: Pool;
-  const USDC = CONTRACT_ADDRESS[network].USDC;
+
   jest.setTimeout(100000);
-  describe("pool", () => {
+  describe(`testUniswapV3 on ${network}`, () => {
     beforeAll(async () => {
       dhedge = new Dhedge(wallet, network);
       pool = await dhedge.loadPool(TEST_POOL[network]);
 
-      // top up ETH (gas)
+      // top up gas
       await provider.send("hardhat_setBalance", [
         wallet.address,
-        "0x100000000000000"
+        "0x10000000000000000"
       ]);
-      // get USDC via 1inch
-      await pool.trade(
-        Dapp.ONEINCH,
-        NATIVE_ETH_1INCH,
-        USDC,
-        new BigNumber(1).times(1e18).toFixed(0),
-        0.5
-      );
+      await provider.send("evm_mine", []);
+      await setUSDCAmount({
+        amount: new BigNumber(100).times(1e18).toFixed(0),
+        userAddress: pool.address,
+        network,
+        provider
+      });
     });
 
     it("approves unlimited USDC on for trading on UniswapV3", async () => {
