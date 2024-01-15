@@ -282,7 +282,7 @@
             },
             {
               "internalType": "bool",
-              "name": "withdrawProcessed",
+              "name": "externalWithdrawProcessed",
               "type": "bool"
             }
           ],
@@ -355,7 +355,7 @@
       "outputs": [
         {
           "internalType": "uint256",
-          "name": "",
+          "name": "fee",
           "type": "uint256"
         }
       ],
@@ -379,6 +379,69 @@
         }
       ],
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "fundValue",
+          "type": "uint256"
+        }
+      ],
+      "name": "calculateAvailableManagerFee",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "fee",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "currentBalance",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "liquidityMinted",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "newCooldown",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "lastCooldown",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "lastDepositTime",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "blockTimestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "calculateCooldown",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "cooldown",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "pure",
       "type": "function"
     },
     {
@@ -461,7 +524,70 @@
       "outputs": [
         {
           "internalType": "uint256",
-          "name": "",
+          "name": "liquidityMinted",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_recipient",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_asset",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "depositFor",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "liquidityMinted",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_recipient",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_asset",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_cooldown",
+          "type": "uint256"
+        }
+      ],
+      "name": "depositForWithCustomCooldown",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "liquidityMinted",
           "type": "uint256"
         }
       ],
@@ -482,6 +608,37 @@
         }
       ],
       "name": "execTransaction",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "success",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "to",
+              "type": "address"
+            },
+            {
+              "internalType": "bytes",
+              "name": "data",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct PoolLogic.TxToExecute[]",
+          "name": "txs",
+          "type": "tuple[]"
+        }
+      ],
+      "name": "execTransactions",
       "outputs": [
         {
           "internalType": "bool",
@@ -524,7 +681,7 @@
       "outputs": [
         {
           "internalType": "bool",
-          "name": "",
+          "name": "success",
           "type": "bool"
         }
       ],
@@ -545,19 +702,6 @@
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "getExitCooldown",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
       "inputs": [
         {
           "internalType": "address",
@@ -569,7 +713,7 @@
       "outputs": [
         {
           "internalType": "uint256",
-          "name": "",
+          "name": "remaining",
           "type": "uint256"
         }
       ],
@@ -581,49 +725,76 @@
       "name": "getFundSummary",
       "outputs": [
         {
-          "internalType": "string",
+          "components": [
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalSupply",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalFundValue",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "manager",
+              "type": "address"
+            },
+            {
+              "internalType": "string",
+              "name": "managerName",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "creationTime",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "privatePool",
+              "type": "bool"
+            },
+            {
+              "internalType": "uint256",
+              "name": "performanceFeeNumerator",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "managerFeeNumerator",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "managerFeeDenominator",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "exitFeeNumerator",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "exitFeeDenominator",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "entryFeeNumerator",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct PoolLogic.FundSummary",
           "name": "",
-          "type": "string"
-        },
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        },
-        {
-          "internalType": "string",
-          "name": "",
-          "type": "string"
-        },
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        },
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        },
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
+          "type": "tuple"
         }
       ],
       "stateMutability": "view",
@@ -720,12 +891,63 @@
       "type": "function"
     },
     {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "lastExitCooldown",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "lastFeeMintTime",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "lastWhitelistTransfer",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [],
       "name": "managerName",
       "outputs": [
         {
           "internalType": "string",
-          "name": "",
+          "name": "_managerName",
           "type": "string"
         }
       ],
@@ -750,6 +972,40 @@
         }
       ],
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "operator",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "from",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "data",
+          "type": "bytes"
+        }
+      ],
+      "name": "onERC721Received",
+      "outputs": [
+        {
+          "internalType": "bytes4",
+          "name": "magicSelector",
+          "type": "bytes4"
+        }
+      ],
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -829,7 +1085,7 @@
       "outputs": [
         {
           "internalType": "uint256",
-          "name": "",
+          "name": "price",
           "type": "uint256"
         }
       ],
@@ -843,6 +1099,19 @@
         {
           "internalType": "uint256",
           "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "tokenPriceWithoutManagerFee",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "price",
           "type": "uint256"
         }
       ],
@@ -927,7 +1196,24 @@
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_recipient",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_fundTokenAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "withdrawTo",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
     }
   ]
-  
 }
