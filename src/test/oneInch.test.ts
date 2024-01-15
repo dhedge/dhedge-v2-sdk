@@ -7,7 +7,8 @@ import { CONTRACT_ADDRESS, MAX_AMOUNT, TEST_POOL } from "./constants";
 import {
   TestingRunParams,
   setUSDCAmount,
-  testingHelper
+  testingHelper,
+  wait
 } from "./utils/testingHelper";
 import { allowanceDelta, balanceDelta } from "./utils/token";
 import { getTxOptions } from "./txOptions";
@@ -32,7 +33,7 @@ const testOneInch = ({ wallet, network, provider }: TestingRunParams) => {
       await provider.send("evm_mine", []);
       // top up USDC
       await setUSDCAmount({
-        amount: new BigNumber(100).times(1e18).toFixed(0),
+        amount: new BigNumber(2).times(1e6).toFixed(0),
         userAddress: pool.address,
         network,
         provider
@@ -50,7 +51,38 @@ const testOneInch = ({ wallet, network, provider }: TestingRunParams) => {
       await expect(usdcAllowanceDelta.gt(0));
     });
 
+    it("gets gas estimation for 2 USDC into WETH on 1Inch", async () => {
+      const gasEstimate = await pool.trade(
+        Dapp.ONEINCH,
+        USDC,
+        WETH,
+        "2000000",
+        0.5,
+        await getTxOptions(network),
+        true
+      );
+      expect(gasEstimate.gt(0));
+    });
+
+    it("gets error on gas estimation for 200 USDC into WETH on 1Inch", async () => {
+      await wait(1);
+      let gasEstimate = null;
+      try {
+        gasEstimate = await pool.trade(
+          Dapp.ONEINCH,
+          USDC,
+          WETH,
+          "200000000",
+          0.5,
+          await getTxOptions(network),
+          true
+        );
+      } catch (err) {}
+      expect(gasEstimate).toBeNull();
+    });
+
     it("trades 2 USDC into WETH on 1Inch", async () => {
+      await wait(1);
       await pool.trade(
         Dapp.ONEINCH,
         USDC,

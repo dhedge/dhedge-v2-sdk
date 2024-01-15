@@ -3,7 +3,7 @@
 import set from "lodash/set";
 import { Interface } from "@ethersproject/abi";
 import { multiCallAddress } from "../config";
-import { ethers, Network } from "..";
+import { ethers, Network, Pool } from "..";
 
 export async function call(
   provider: ethers.Signer,
@@ -93,3 +93,19 @@ export class Multicaller {
     return obj;
   }
 }
+
+export const getPoolTxOrGasEstimate = async (
+  pool: Pool,
+  args: any[],
+  estimateGas: boolean
+): Promise<any> => {
+  if (estimateGas) {
+    return await pool.poolLogic.estimateGas.execTransaction(
+      args[0],
+      args[1],
+      args[2]
+    );
+  } else {
+    return await pool.poolLogic.execTransaction(args[0], args[1], args[2]);
+  }
+};
