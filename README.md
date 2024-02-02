@@ -9,6 +9,7 @@
 - Easy-to-use functions to trade assets, provide liquidity or stake assets
 - Useful for creating automated trading bots
 - Use in your Javascript or Typescript project with full Typescript source
+- All protocols and networks of [dHEDGE App](https://dhedge.org/management/create) are supported
 
 ## Installation
 
@@ -149,7 +150,7 @@ const tx = await pool.approve(
 
 ### Trade pool assets
 
-Trade 1 USDC into DAI on Sushiswap (other options: QUICKSWAP, BALANCER, or ONEINCH)
+Trade 1 USDC into DAI on Sushiswap (other options: TOROS, QUICKSWAP, BALANCER, or ONEINCH)
 
 ```
 const amountIn = "1000000"
@@ -282,11 +283,32 @@ Repay 0.0001 WETH to Aave lending pool
 const tx = await pool.repay(Dapp.AAVE, WETH_TOKEN_ADDRESS, "100000000000000");
 ```
 
-Harvest rewards from Aave
+Add liquidity of 100 USDC and 0.00043 WETH to a UniswapV3 pool (here price range is used)
 
 ```
-const tx = await pool.harvestAaveRewards([
-    AAVE_USDC_ADDRESS,
-    AAVE_WETH_DEBT_ADDRESS
-  ]);
+const tx = await pool.addLiquidityUniswapV3(
+  USDC_ADDRESS,
+  WETH_ADDRESS,
+  '10000000',
+  '430000000000000',
+  0.0004,
+  0.0005,
+  null,
+  null,
+  FeeAmount.MEDIUM,
+)
+```
+
+Add liquidity of 100 USDC and 0.00043 WETH to USDC/WETH Ramses pool
+(for Velodrome just use Dapp.VELODROMEV2)
+
+```
+const tx = await pool.addLiquidityV2(
+  Dapp.RAMSES,
+  USDC_ADDRESS,
+  WETH_ADDRESS,
+  '10000000',
+  '430000000000000',
+  false
+)
 ```
