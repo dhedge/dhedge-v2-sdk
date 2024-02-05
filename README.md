@@ -33,10 +33,8 @@ yarn add @dhedge/v2-sdk
     <li>
       <a href="#initial-setup">Initial setup</a>
     </li>
-    <li>
-      <summary>
+      <li>
         <a href="#general-pool-management">General Pool Management</a>
-      </summary>
         <ul>
           <li><a href="#1-create-pool">Create pool</a></li>
           <li><a href="#2-load-pool">Load pool</a></li>
@@ -51,7 +49,7 @@ yarn add @dhedge/v2-sdk
         </ul>
     </li>
     <li>
-        <summary> <a href="#liquidity">Liquidity</a> </summary>
+       <a href="#liquidity">Liquidity</a>
         <ul>
             <li>
               <a href="#uniswap-v2-style">Uniswap-v2 style protocols </a>
