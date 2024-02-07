@@ -319,20 +319,59 @@ const tx = await pool.harvestBalancerRewards()
 
 #### Uniswap-v3 style
 
+For Uniswap v3, we use `approveUniswapV3Liquidity`, `addLiquidityUniswapV3`, `decreaseLiquidity`, `increaseLiquidity`, and `claimFees`
+
 Add liquidity of 100 USDC and 0.00043 WETH to a UniswapV3 pool (here price range is used)
 
 ```ts
-const tx = await pool.addLiquidityUniswapV3(
+
+await pool.approveUniswapV3Liquidity(
   USDC_ADDRESS,
+  ethers.constants.MaxInt256
+);
+await pool.approveUniswapV3Liquidity(
   WETH_ADDRESS,
-  '10000000',
-  '430000000000000',
-  0.0004,
-  0.0005,
+  ethers.constants.MaxInt256
+);
+const tx = await pool.addLiquidityUniswapV3(
+  WETH_ADDRESS
+  USDC_ADDRESS,
+  '430000000000000', // wethBalance
+  '100000000',     // usdcBalance
+  2000,
+  3000,
   null,
   null,
   FeeAmount.MEDIUM,
 )
+```
+
+Remove 50% liquidity from the existing pool
+
+```ts
+tokenId = await nonfungiblePositionManager.tokenOfOwnerByIndex(pool.address,0).toString();
+const tx = await pool.decreaseLiquidity(
+  Dapp.UNISWAPV3,
+  tokenId,
+  50 // precent
+);
+```
+
+Increase liquidity in the existing WETH/USDC pool
+
+```ts
+const result = await pool.increaseLiquidity(
+  Dapp.UNISWAPV3,
+  tokenId,
+  new BigNumber(3000).times(1e6).toFixed(0), // usdc
+  new BigNumber(1).times(1e18).toFixed(0) // eth
+);
+```
+
+Claim fees
+
+```ts
+const tx = await pool.claimFees(Dapp.UNISWAPV3, tokenId);
 ```
 
 #### VelodromeV2 / Ramses
