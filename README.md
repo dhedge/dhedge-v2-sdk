@@ -319,9 +319,13 @@ const tx = await pool.harvestBalancerRewards()
 
 #### Uniswap-v3 style
 
-For Uniswap v3, we use `approveUniswapV3Liquidity`, `addLiquidityUniswapV3`, `decreaseLiquidity`, `increaseLiquidity`, and `claimFees`
+For Arrakis, we use `increaseLiquidity` to stake or increase lp, and `decreaseLiquidity`, and `claimFees`. see example in the [arrakis test](https://github.com/dhedge/dhedge-v2-sdk/blob/master/src/test/arrakis.test.ts)
 
-Add liquidity of 100 USDC and 0.00043 WETH to a UniswapV3 pool (here price range is used)
+---
+
+For Uniswap v3, we use `approveUniswapV3Liquidity`, `addLiquidityUniswapV3`, `decreaseLiquidity`, `increaseLiquidity`, and `claimFees`.
+
+1. Add liquidity of 100 USDC and 0.00043 WETH to a UniswapV3 pool (here price range is used)
 
 ```ts
 
@@ -346,7 +350,7 @@ const tx = await pool.addLiquidityUniswapV3(
 )
 ```
 
-Remove 50% liquidity from the existing pool
+2. Remove 50% liquidity from the existing pool
 
 ```ts
 tokenId = await nonfungiblePositionManager.tokenOfOwnerByIndex(pool.address,0).toString();
@@ -357,7 +361,7 @@ const tx = await pool.decreaseLiquidity(
 );
 ```
 
-Increase liquidity in the existing WETH/USDC pool
+3. Increase liquidity in the existing WETH/USDC pool
 
 ```ts
 const result = await pool.increaseLiquidity(
@@ -368,7 +372,7 @@ const result = await pool.increaseLiquidity(
 );
 ```
 
-Claim fees
+4. Claim fees
 
 ```ts
 const tx = await pool.claimFees(Dapp.UNISWAPV3, tokenId);
@@ -376,8 +380,10 @@ const tx = await pool.claimFees(Dapp.UNISWAPV3, tokenId);
 
 #### VelodromeV2 / Ramses
 
+For VelodromeV2 / Ramses, we use `addLiquidityV2`, `stakeInGauge`, `unstakeFromGauge`, `removeLiquidityV2`, and `claimFees`.
+
 Add liquidity of 100 USDC and 0.00043 WETH to USDC/WETH Ramses pool
-(for Velodrome just use Dapp.VELODROMEV2)
+(for Velodrome just use Dapp.VELODROMEV2). see example in the [arrakis test](https://github.com/dhedge/dhedge-v2-sdk/blob/master/src/test/ramses.test.ts) and [velodromeV2 test](https://github.com/dhedge/dhedge-v2-sdk/blob/master/src/test/velodromeV2.test.ts)
 
 ```ts
 const tx = await pool.addLiquidityV2(

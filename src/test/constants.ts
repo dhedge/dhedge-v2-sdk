@@ -53,6 +53,7 @@ export const CONTRACT_ADDRESS = {
     WBTC: "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6",
     ARRAKIS_USDC_WETH_GAUGE: "0x33d1ad9Cd88A509397CD924C2d7613C285602C20",
     ARRAKIS_USDC_WETH_LP: "0xa173340f1e942c2845bcbce8ebd411022e18eb13",
+    WMATIC: "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270",
     uniswapV3: {
       nonfungiblePositionManager: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88"
     }
@@ -67,7 +68,11 @@ export const CONTRACT_ADDRESS = {
     KWENTA_ETH_PERP_V2: "0x2b3bb4c683bfc5239b029131eef3b1d214478d93",
     uniswapV3: {
       nonfungiblePositionManager: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88"
-    }
+    },
+    WMATIC: "",
+    //
+    ARRAKIS_USDC_WETH_GAUGE: "",
+    ARRAKIS_USDC_WETH_LP: ""
   },
   [Network.ARBITRUM]: {
     USDC: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
@@ -77,9 +82,15 @@ export const CONTRACT_ADDRESS = {
     WSTETH: "0x5979d7b546e38e414f7e9822514be443a4800529",
     BALANCER_WSTETH_WETH_POOL: "0x36bf227d6bac96e2ab1ebb5492ecec69c691943f",
     BALANCER_WSTETH_WETH_GAUGE: "0x251e51b25afa40f2b6b9f05aaf1bc7eaa0551771",
+
     uniswapV3: {
       nonfungiblePositionManager: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88"
-    }
+    },
+
+    //
+    ARRAKIS_USDC_WETH_GAUGE: "",
+    ARRAKIS_USDC_WETH_LP: "",
+    WMATIC: ""
   },
   [Network.BASE]: {
     USDC: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
@@ -88,7 +99,11 @@ export const CONTRACT_ADDRESS = {
     SWETH: "",
     uniswapV3: {
       nonfungiblePositionManager: ""
-    }
+    },
+    //
+    ARRAKIS_USDC_WETH_GAUGE: "",
+    ARRAKIS_USDC_WETH_LP: "",
+    WMATIC: ""
   }
 };
 

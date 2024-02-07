@@ -37,26 +37,22 @@ const testUniswapV3 = ({ wallet, network, provider }: TestingRunParams) => {
         network,
         provider
       });
-      try {
-        const newAssets: AssetEnabled[] = [
-          { asset: CONTRACT_ADDRESS[network].USDC, isDeposit: true },
-          { asset: CONTRACT_ADDRESS[network].WETH, isDeposit: true },
-          {
-            asset:
-              CONTRACT_ADDRESS[network].uniswapV3.nonfungiblePositionManager,
-            isDeposit: false
-          }
-        ];
-        await pool.changeAssets(newAssets);
 
-        nonfungiblePositionManager = new ethers.Contract(
-          CONTRACT_ADDRESS[network].uniswapV3.nonfungiblePositionManager,
-          INonfungiblePositionManager.abi,
-          pool.signer
-        );
-      } catch (e) {
-        console.log("e", e);
-      }
+      const newAssets: AssetEnabled[] = [
+        { asset: CONTRACT_ADDRESS[network].USDC, isDeposit: true },
+        { asset: CONTRACT_ADDRESS[network].WETH, isDeposit: true },
+        {
+          asset: CONTRACT_ADDRESS[network].uniswapV3.nonfungiblePositionManager,
+          isDeposit: false
+        }
+      ];
+      await pool.changeAssets(newAssets);
+
+      nonfungiblePositionManager = new ethers.Contract(
+        CONTRACT_ADDRESS[network].uniswapV3.nonfungiblePositionManager,
+        INonfungiblePositionManager.abi,
+        pool.signer
+      );
     });
 
     it("approves unlimited USDC on for trading on UniswapV3", async () => {
