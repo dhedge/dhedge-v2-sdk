@@ -78,7 +78,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "leverageModifyFillPrice",
+        "name": "currentPrice",
         "type": "uint256"
       }
     ],
@@ -94,7 +94,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "leverageModifyFillPrice",
+        "name": "currentPrice",
         "type": "uint256"
       }
     ],
@@ -102,14 +102,8 @@
     "type": "error"
   },
   {
-    "inputs": [
-      {
-        "internalType": "enum IDelayedOrder.OrderType",
-        "name": "orderType",
-        "type": "uint8"
-      }
-    ],
-    "name": "NoPendingOrderAllowed",
+    "inputs": [],
+    "name": "ModuleKeyEmpty",
     "type": "error"
   },
   {
@@ -195,6 +189,38 @@
       }
     ],
     "name": "Paused",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "PositionCreatesBadDebt",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "variableName",
+        "type": "string"
+      }
+    ],
+    "name": "ValueNotPositive",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "withdrawAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "keeperFee",
+        "type": "uint256"
+      }
+    ],
+    "name": "WithdrawalTooSmall",
     "type": "error"
   },
   {
@@ -432,7 +458,7 @@
       {
         "components": [
           {
-            "internalType": "enum IDelayedOrder.OrderType",
+            "internalType": "enum FlatcoinStructs.OrderType",
             "name": "orderType",
             "type": "uint8"
           },
@@ -455,19 +481,6 @@
         "internalType": "struct FlatcoinStructs.Order",
         "name": "order",
         "type": "tuple"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getKeeperFee",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "keeperFee",
-        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -498,121 +511,9 @@
         "internalType": "contract IFlatcoinVault",
         "name": "_vault",
         "type": "address"
-      },
-      {
-        "internalType": "uint32",
-        "name": "_minExecutabilityAge",
-        "type": "uint32"
-      },
-      {
-        "internalType": "uint32",
-        "name": "_maxExecutabilityAge",
-        "type": "uint32"
-      },
-      {
-        "internalType": "contract IKeeperFee",
-        "name": "_keeperFeeContract",
-        "type": "address"
       }
     ],
     "name": "initialize",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "keeperFeeContract",
-    "outputs": [
-      {
-        "internalType": "contract IKeeperFee",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "int256",
-        "name": "netSize",
-        "type": "int256"
-      }
-    ],
-    "name": "leverageModifyFillPrice",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "fillPrice",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "maxExecutabilityAge",
-    "outputs": [
-      {
-        "internalType": "uint64",
-        "name": "",
-        "type": "uint64"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "minExecutabilityAge",
-    "outputs": [
-      {
-        "internalType": "uint64",
-        "name": "",
-        "type": "uint64"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "contract IKeeperFee",
-        "name": "_keeperFeeContract",
-        "type": "address"
-      }
-    ],
-    "name": "setKeeperFeeContract",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint32",
-        "name": "_maxExecutabilityAge",
-        "type": "uint32"
-      }
-    ],
-    "name": "setMaxExecutabilityAge",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint32",
-        "name": "_minExecutabilityAge",
-        "type": "uint32"
-      }
-    ],
-    "name": "setMinExecutabilityAge",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

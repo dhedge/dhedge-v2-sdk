@@ -1,0 +1,71 @@
+[
+  {
+    "inputs": [],
+    "name": "getConfig",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "profitMarginUSD",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "profitMarginPercent",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minKeeperFeeUpperBound",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minKeeperFeeLowerBound",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "gasUnitsL1",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "gasUnitsL2",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getKeeperFee",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "keeperFee",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "keeperFeeUpperBound",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "keeperFeeLowerBound",
+        "type": "uint256"
+      }
+    ],
+    "name": "setParameters",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

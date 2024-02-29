@@ -64,6 +64,10 @@ import {
   getExitVestTxData
 } from "../services/ramses/vesting";
 import { getPoolTxOrGasEstimate } from "../utils/contract";
+import {
+  mintUnitViaFlatMoney,
+  redeemUnitViaFlatMoney
+} from "../services/flatmoney/stableLp";
 
 export class Pool {
   public readonly poolLogic: Contract;
@@ -1583,6 +1587,54 @@ export class Pool {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [tokenAddress, txData, options],
+      estimateGas
+    );
+    return tx;
+  }
+
+  /** deposit rETH to mint UNIT via the Flat Money protocol
+   *
+   * @param { BigNumber | string } depositAmount Amount of rETH to deposit
+   * @param { BigNumber | string } minAmountOut Minimum amount of UNIT expected to receive
+   * @param {any} options Transaction options
+   * @param {boolean} estimateGas Simulate/estimate gas
+   * @returns {Promise<any>} Transaction
+   */
+  async mintUnitViaFlatMoney(
+    depositAmount: ethers.BigNumber | string,
+    minAmountOut: ethers.BigNumber | string,
+    options: any = null,
+    estimateGas = false
+  ): Promise<any> {
+    const tx = await mintUnitViaFlatMoney(
+      this,
+      depositAmount,
+      minAmountOut,
+      options,
+      estimateGas
+    );
+    return tx;
+  }
+
+  /** redeem UNIT via the Flat Money protocol
+   *
+   * @param { BigNumber | string } depositAmount Amount of UNIT to withdraw
+   * @param { BigNumber | string } minAmountOut Minimum amount of rETH expected to receive
+   * @param {any} options Transaction options
+   * @param {boolean} estimateGas Simulate/estimate gas
+   * @returns {Promise<any>} Transaction
+   */
+  async redeemUnitViaFlatMoney(
+    withdrawAmount: ethers.BigNumber | string,
+    minAmountOut: ethers.BigNumber | string,
+    options: any = null,
+    estimateGas = false
+  ): Promise<any> {
+    const tx = await redeemUnitViaFlatMoney(
+      this,
+      withdrawAmount,
+      minAmountOut,
+      options,
       estimateGas
     );
     return tx;
