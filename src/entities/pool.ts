@@ -65,6 +65,7 @@ import {
 } from "../services/ramses/vesting";
 import { getPoolTxOrGasEstimate } from "../utils/contract";
 import {
+  cancelOrderViaFlatMoney,
   mintUnitViaFlatMoney,
   redeemUnitViaFlatMoney
 } from "../services/flatmoney/stableLp";
@@ -1637,6 +1638,14 @@ export class Pool {
       options,
       estimateGas
     );
+    return tx;
+  }
+
+  async cancelOrderViaFlatMoney(
+    options: any = null,
+    estimateGas = false
+  ): Promise<any> {
+    const tx = await cancelOrderViaFlatMoney(this, options, estimateGas);
     return tx;
   }
 }

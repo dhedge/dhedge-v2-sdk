@@ -63,7 +63,7 @@ export async function mintUnitViaFlatMoney(
 ): Promise<any> {
   const flatMoneyContracts = flatMoneyContractAddresses[pool.network];
   if (!flatMoneyContracts) {
-    throw new Error("mintUnitFlatmoney: network not supported");
+    throw new Error("mintUnitViaFlatMoney: network not supported");
   }
 
   const keeperfee = await getKeeperFee(pool, flatMoneyContracts.KeeperFee);
@@ -91,7 +91,7 @@ export async function redeemUnitViaFlatMoney(
 ): Promise<any> {
   const flatMoneyContracts = flatMoneyContractAddresses[pool.network];
   if (!flatMoneyContracts) {
-    throw new Error("mintUnitFlatmoney: network not supported");
+    throw new Error("redeemUnitViaFlatMoney: network not supported");
   }
   const keeperfee = await getKeeperFee(pool, flatMoneyContracts.KeeperFee);
 
@@ -103,6 +103,24 @@ export async function redeemUnitViaFlatMoney(
   const tx = await getPoolTxOrGasEstimate(
     pool,
     [flatMoneyContracts.DelayedOrder, redeemUnitTxData, options],
+    estimateGas
+  );
+  return tx;
+}
+
+export async function cancelOrderViaFlatMoney(
+  pool: Pool,
+  options: any = null,
+  estimateGas = false
+): Promise<any> {
+  const flatMoneyContracts = flatMoneyContractAddresses[pool.network];
+  if (!flatMoneyContracts) {
+    throw new Error("cancelOrderViaFlatMoney: network not supported");
+  }
+  const cancelOrderTxData = await getCancelExistingOrderTxData(pool.address);
+  const tx = await getPoolTxOrGasEstimate(
+    pool,
+    [flatMoneyContracts.DelayedOrder, cancelOrderTxData, options],
     estimateGas
   );
   return tx;
