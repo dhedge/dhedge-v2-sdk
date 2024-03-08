@@ -66,7 +66,7 @@ const testFlatMoney = ({ wallet, network, provider }: TestingRunParams) => {
       const depositAmountStr = new BigNumber(1).times(1e18).toString();
       const tx = await pool.mintUnitViaFlatMoney(
         depositAmountStr,
-        "0",
+        0.5,
         null,
         false
       );
@@ -81,7 +81,7 @@ const testFlatMoney = ({ wallet, network, provider }: TestingRunParams) => {
       const withdrawAmountStr = new BigNumber(0.5).times(1e18).toString();
       const tx = await pool.redeemUnitViaFlatMoney(
         withdrawAmountStr,
-        "0",
+        0.5,
         null,
         false
       );
@@ -94,7 +94,7 @@ const testFlatMoney = ({ wallet, network, provider }: TestingRunParams) => {
 
     it("cancel order", async () => {
       const withdrawAmountStr = new BigNumber(0.1).times(1e18).toString();
-      await pool.redeemUnitViaFlatMoney(withdrawAmountStr, "0", null, false);
+      await pool.redeemUnitViaFlatMoney(withdrawAmountStr, 0.5, null, false);
 
       await pool.cancelOrderViaFlatMoney();
       const existingOrder = await delayOrderContract.getAnnouncedOrder(

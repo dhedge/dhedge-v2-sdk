@@ -1596,21 +1596,21 @@ export class Pool {
   /** deposit rETH to mint UNIT via the Flat Money protocol
    *
    * @param { BigNumber | string } depositAmount Amount of rETH to deposit
-   * @param { BigNumber | string } minAmountOut Minimum amount of UNIT expected to receive
+   * @param { number } minAmountOut slippage, 0.5 represents 0.5%
    * @param {any} options Transaction options
    * @param {boolean} estimateGas Simulate/estimate gas
    * @returns {Promise<any>} Transaction
    */
   async mintUnitViaFlatMoney(
     depositAmount: ethers.BigNumber | string,
-    minAmountOut: ethers.BigNumber | string,
+    slippage = 0.5,
     options: any = null,
     estimateGas = false
   ): Promise<any> {
     const tx = await mintUnitViaFlatMoney(
       this,
       depositAmount,
-      minAmountOut,
+      slippage,
       options,
       estimateGas
     );
@@ -1620,21 +1620,21 @@ export class Pool {
   /** redeem UNIT via the Flat Money protocol
    *
    * @param { BigNumber | string } depositAmount Amount of UNIT to withdraw
-   * @param { BigNumber | string } minAmountOut Minimum amount of rETH expected to receive
+   * @param { number } minAmountOut slippage, 0.5 represents 0.5%
    * @param {any} options Transaction options
    * @param {boolean} estimateGas Simulate/estimate gas
    * @returns {Promise<any>} Transaction
    */
   async redeemUnitViaFlatMoney(
     withdrawAmount: ethers.BigNumber | string,
-    minAmountOut: ethers.BigNumber | string,
+    slippage = 0.5,
     options: any = null,
     estimateGas = false
   ): Promise<any> {
     const tx = await redeemUnitViaFlatMoney(
       this,
       withdrawAmount,
-      minAmountOut,
+      slippage,
       options,
       estimateGas
     );

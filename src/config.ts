@@ -144,12 +144,14 @@ export const flatMoneyContractAddresses: Readonly<Partial<
       DelayedOrder: string;
       FlatcoinVault: string;
       KeeperFee: string;
+      StableModule: string;
     }
   >
 >> = {
   [Network.BASE]: {
     DelayedOrder: "",
     FlatcoinVault: "",
-    KeeperFee: ""
+    KeeperFee: "",
+    StableModule: ""
   }
 };
