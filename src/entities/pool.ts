@@ -531,6 +531,7 @@ export class Pool {
         stakeTxData = getVelodromeStakeTxData(amount, false);
         break;
       case Dapp.VELODROMEV2:
+      case Dapp.AERODROME:
         stakeTxData = getVelodromeStakeTxData(amount, true);
         break;
       default:
@@ -1153,6 +1154,7 @@ export class Pool {
         txData = getVelodromeClaimTxData(this, tokenId, false);
         break;
       case Dapp.VELODROMEV2:
+      case Dapp.AERODROME:
         contractAddress = tokenId;
         txData = getVelodromeClaimTxData(this, tokenId, true);
         break;
@@ -1356,7 +1358,7 @@ export class Pool {
 
   /**
    * Add liquidity to Velodrome V2 or Ramses pool
-   * @param {Dapp} dapp VelodromeV2 or Ramses
+   * @param {Dapp} dapp VelodromeV2, Ramses or Aerodrome
    * @param {string} assetA First asset
    * @param {string} assetB Second asset
    * @param {BigNumber | string} amountA Amount first asset
@@ -1367,7 +1369,7 @@ export class Pool {
    * @returns {Promise<any>} Transaction
    */
   async addLiquidityV2(
-    dapp: Dapp.VELODROMEV2 | Dapp.RAMSES,
+    dapp: Dapp.VELODROMEV2 | Dapp.RAMSES | Dapp.AERODROME,
     assetA: string,
     assetB: string,
     amountA: BigNumber | string,
@@ -1397,7 +1399,7 @@ export class Pool {
 
   /**
    * Remove liquidity from Velodrome V2 or Ramses pool
-   * @param {Dapp} dapp VelodromeV2 or Ramses
+   * @param {Dapp} dapp VelodromeV2, Ramses or Aerodrome
    * @param {string} assetA First asset
    * @param {string} assetB Second asset
    * @param {BigNumber | string} amount Amount of LP tokens
@@ -1407,7 +1409,7 @@ export class Pool {
    * @returns {Promise<any>} Transaction
    */
   async removeLiquidityV2(
-    dapp: Dapp.VELODROMEV2 | Dapp.RAMSES,
+    dapp: Dapp.VELODROMEV2 | Dapp.RAMSES | Dapp.AERODROME,
     assetA: string,
     assetB: string,
     amount: BigNumber | string,

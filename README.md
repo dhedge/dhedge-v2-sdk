@@ -61,7 +61,7 @@ yarn add @dhedge/v2-sdk
               <a href="#uniswap-v3-style">Uniswap-v3 style protocols</a>
             </li>
             <li>
-              <a href="#velodromev2--ramses">VelodromeV2 / Ramses</a>
+              <a href="#velodromev2--ramses">VelodromeV2 / Ramses / Aerodrome</a>
             </li>
         </ul>
     </li>
@@ -378,12 +378,12 @@ const result = await pool.increaseLiquidity(
 const tx = await pool.claimFees(Dapp.UNISWAPV3, tokenId);
 ```
 
-#### VelodromeV2 / Ramses
+#### VelodromeV2 / Ramses / Aerodrome
 
-For VelodromeV2 / Ramses, we use `addLiquidityV2`, `stakeInGauge`, `unstakeFromGauge`, `removeLiquidityV2`, and `claimFees`.
+For VelodromeV2 / Ramses / Aerodrome , we use `addLiquidityV2`, `stakeInGauge`, `unstakeFromGauge`, `removeLiquidityV2`, and `claimFees`.
 
 Add liquidity of 100 USDC and 0.00043 WETH to USDC/WETH Ramses pool
-(for Velodrome just use Dapp.VELODROMEV2). see example in the [arrakis test](https://github.com/dhedge/dhedge-v2-sdk/blob/master/src/test/ramses.test.ts) and [velodromeV2 test](https://github.com/dhedge/dhedge-v2-sdk/blob/master/src/test/velodromeV2.test.ts)
+(for Velodrome just use Dapp.VELODROMEV2, for Aerodrome Dapp.AERODROME). see example in the [arrakis test](https://github.com/dhedge/dhedge-v2-sdk/blob/master/src/test/ramses.test.ts), [velodromeV2 test](https://github.com/dhedge/dhedge-v2-sdk/blob/master/src/test/velodromeV2.test.ts) and [aerdodrome test](https://github.com/dhedge/dhedge-v2-sdk/blob/master/src/test/aerdodrome.test.ts)
 
 ```ts
 const tx = await pool.addLiquidityV2(
