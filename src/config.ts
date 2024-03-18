@@ -138,3 +138,22 @@ export const UNISWAPV3_QUOTER_ADDRESS =
 
 export const SYNTHETIX_TRACKING_CODE =
   "0x4448454447450000000000000000000000000000000000000000000000000000";
+
+export const flatMoneyContractAddresses: Readonly<Partial<
+  Record<
+    Network,
+    {
+      DelayedOrder: string;
+      FlatcoinVault: string;
+      KeeperFee: string;
+      StableModule: string;
+    }
+  >
+>> = {
+  [Network.BASE]: {
+    DelayedOrder: "",
+    FlatcoinVault: "",
+    KeeperFee: "",
+    StableModule: ""
+  }
+};
