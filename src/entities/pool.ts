@@ -124,14 +124,19 @@ export class Pool {
    * @param {string} nasset Address of deposit asset
    * @param {BigNumber | string} amount Amount to be approved
    * @param {any} options Transaction options
+   * @param {boolean} estimateGas Simulate/estimate gas
    * @returns {Promise<any>} Transaction
    */
   async approveDeposit(
     asset: string,
     amount: BigNumber | string,
-    options: any = null
+    options: any = null,
+    estimateGas = false
   ): Promise<any> {
     const iERC20 = new ethers.Contract(asset, IERC20.abi, this.signer);
+    if (estimateGas) {
+      return await iERC20.estimateGas.approve(this.address, amount, options);
+    }
     const tx = await iERC20.approve(this.address, amount, options);
     return tx;
   }
@@ -141,13 +146,18 @@ export class Pool {
    * @param {string} asset Address of asset
    * @param {BigNumber | string} amount Amount to be deposited
    * @param {any} options Transaction options
+   * @param {boolean} estimateGas Simulate/estimate gas
    * @returns {Promise<any>} Transaction
    */
   async deposit(
     asset: string,
     amount: string | BigNumber,
-    options: any = null
+    options: any = null,
+    estimateGas = false
   ): Promise<any> {
+    if (estimateGas) {
+      return await this.poolLogic.estimateGas.deposit(asset, amount, options);
+    }
     const tx = await this.poolLogic.deposit(asset, amount, options);
     return tx;
   }
@@ -156,12 +166,20 @@ export class Pool {
    * Withdraw  assets from a pool
    * @param fundTokenAmount Amount of pool tokens to be withdrawn
    * @param {any} options Transaction options
+   * @param {boolean} estimateGas Simulate/estimate gas
    * @returns {Promise<any>} Transaction
    */
   async withdraw(
     fundTokenAmount: string | BigNumber,
-    options: any = null
+    options: any = null,
+    estimateGas = false
   ): Promise<any> {
+    if (estimateGas) {
+      return await this.poolLogic.estimateGas.withdraw(
+        fundTokenAmount,
+        options
+      );
+    }
     const tx = await this.poolLogic.withdraw(fundTokenAmount, options);
     return tx;
   }
@@ -518,6 +536,7 @@ export class Pool {
         stakeTxData = getVelodromeStakeTxData(amount, false);
         break;
       case Dapp.VELODROMEV2:
+      case Dapp.AERODROME:
         stakeTxData = getVelodromeStakeTxData(amount, true);
         break;
       default:
@@ -747,11 +766,13 @@ export class Pool {
    * Change enabled pool assets
    * @param {AssetEnabled[]} assets New pool assets
    * @param {any} options Transaction options
+   * @param {boolean} estimateGas Simulate/estimate gas
    * @returns {Promise<any>} Transaction
    */
   public async changeAssets(
     assets: AssetEnabled[],
-    options: any = null
+    options: any = null,
+    estimateGas = false
   ): Promise<any> {
     const currentAssetsEnabled = await this.getComposition();
     const currentAssets = currentAssetsEnabled.map(e =>
@@ -760,6 +781,14 @@ export class Pool {
     const newAssets = assets.map(e => e.asset.toLocaleLowerCase());
     const removedAssets = currentAssets.filter(e => !newAssets.includes(e));
     const changedAssets = assets.map(e => [e.asset, e.isDeposit]);
+
+    if (estimateGas) {
+      return await this.managerLogic.estimateGas.changeAssets(
+        changedAssets,
+        removedAssets,
+        options
+      );
+    }
     const tx = await this.managerLogic.changeAssets(
       changedAssets,
       removedAssets,
@@ -772,9 +801,17 @@ export class Pool {
    * Set a new trader with trading permissions
    * @param {string} trader Address trader account
    * @param {any} options Transaction options
+   * @param {boolean} estimateGas Simulate/estimate gas
    * @returns {Promise<any>} Transaction
    */
-  async setTrader(trader: string, options: any = null): Promise<any> {
+  async setTrader(
+    trader: string,
+    options: any = null,
+    estimateGas = false
+  ): Promise<any> {
+    if (estimateGas) {
+      return await this.managerLogic.estimateGas.setTrader(trader, options);
+    }
     const tx = await this.managerLogic.setTrader(trader, options);
     return tx;
   }
@@ -1122,6 +1159,7 @@ export class Pool {
         txData = getVelodromeClaimTxData(this, tokenId, false);
         break;
       case Dapp.VELODROMEV2:
+      case Dapp.AERODROME:
         contractAddress = tokenId;
         txData = getVelodromeClaimTxData(this, tokenId, true);
         break;
@@ -1325,7 +1363,7 @@ export class Pool {
 
   /**
    * Add liquidity to Velodrome V2 or Ramses pool
-   * @param {Dapp} dapp VelodromeV2 or Ramses
+   * @param {Dapp} dapp VelodromeV2, Ramses or Aerodrome
    * @param {string} assetA First asset
    * @param {string} assetB Second asset
    * @param {BigNumber | string} amountA Amount first asset
@@ -1336,7 +1374,7 @@ export class Pool {
    * @returns {Promise<any>} Transaction
    */
   async addLiquidityV2(
-    dapp: Dapp.VELODROMEV2 | Dapp.RAMSES,
+    dapp: Dapp.VELODROMEV2 | Dapp.RAMSES | Dapp.AERODROME,
     assetA: string,
     assetB: string,
     amountA: BigNumber | string,
@@ -1366,7 +1404,7 @@ export class Pool {
 
   /**
    * Remove liquidity from Velodrome V2 or Ramses pool
-   * @param {Dapp} dapp VelodromeV2 or Ramses
+   * @param {Dapp} dapp VelodromeV2, Ramses or Aerodrome
    * @param {string} assetA First asset
    * @param {string} assetB Second asset
    * @param {BigNumber | string} amount Amount of LP tokens
@@ -1376,7 +1414,7 @@ export class Pool {
    * @returns {Promise<any>} Transaction
    */
   async removeLiquidityV2(
-    dapp: Dapp.VELODROMEV2 | Dapp.RAMSES,
+    dapp: Dapp.VELODROMEV2 | Dapp.RAMSES | Dapp.AERODROME,
     assetA: string,
     assetB: string,
     amount: BigNumber | string,
@@ -1531,9 +1569,13 @@ export class Pool {
   /**
    * mintManagerFee
    * @param {any} options Transaction options
+   * @param {boolean} estimateGas Simulate/estimate gas
    * @returns {Promise<any>} Transaction
    */
-  async mintManagerFee(options: any = null): Promise<any> {
+  async mintManagerFee(options: any = null, estimateGas = false): Promise<any> {
+    if (estimateGas) {
+      return await this.poolLogic.estimateGas.mintManagerFee(options);
+    }
     const tx = await this.poolLogic.mintManagerFee(options);
     return tx;
   }
