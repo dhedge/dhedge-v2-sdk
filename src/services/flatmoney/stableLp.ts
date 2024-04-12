@@ -3,10 +3,10 @@
 import BigNumber from "bignumber.js";
 import { Pool, ethers } from "../..";
 import DelayedOrderAbi from "../../abi/flatmoney/DelayedOrder.json";
-import IKeeperFeeAbi from "../../abi/flatmoney/IKeeperFee.json";
 import { flatMoneyContractAddresses } from "../../config";
 import { getPoolTxOrGasEstimate } from "../../utils/contract";
 import { getStableDepositQuote, getStableWithdrawQuote } from "./stableModule";
+import { getKeeperFee } from "./keeperFee";
 
 export function getAnnounceStableDepositTxData(
   depositAmount: ethers.BigNumber | string,
@@ -42,20 +42,6 @@ export function getCancelExistingOrderTxData(account: string): string {
   ).encodeFunctionData("cancelExistingOrder", [account]);
 }
 
-const getKeeperFee = async (
-  pool: Pool,
-  keeperFeeContractAddress: string
-): Promise<ethers.BigNumber> => {
-  const keeperFeeContract = new ethers.Contract(
-    keeperFeeContractAddress,
-    IKeeperFeeAbi,
-    pool.signer
-  );
-  const keeperfee = await keeperFeeContract.getKeeperFee();
-
-  return keeperfee;
-};
-
 export async function mintUnitViaFlatMoney(
   pool: Pool,
   depositAmount: ethers.BigNumber | string,
@@ -68,7 +54,7 @@ export async function mintUnitViaFlatMoney(
     throw new Error("mintUnitViaFlatMoney: network not supported");
   }
 
-  const keeperfee = await getKeeperFee(pool, flatMoneyContracts.KeeperFee);
+  const keeperfee = await getKeeperFee(pool);
 
   const amountOut = await getStableDepositQuote(pool, depositAmount);
   const minAmountOut = new BigNumber(amountOut.toString())
@@ -100,7 +86,7 @@ export async function redeemUnitViaFlatMoney(
   if (!flatMoneyContracts) {
     throw new Error("redeemUnitViaFlatMoney: network not supported");
   }
-  const keeperfee = await getKeeperFee(pool, flatMoneyContracts.KeeperFee);
+  const keeperfee = await getKeeperFee(pool);
 
   const amountOut = await getStableWithdrawQuote(pool, withdrawAmount);
   const minAmountOut = new BigNumber(amountOut.toString())

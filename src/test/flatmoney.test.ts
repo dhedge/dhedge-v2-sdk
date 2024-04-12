@@ -1,26 +1,27 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import BigNumber from "bignumber.js";
 import { Dhedge, Pool } from "../entities";
-import { Network } from "../types";
+import { AssetEnabled, Network } from "../types";
 import {
   TestingRunParams,
   setTokenAmount,
   testingHelper
 } from "./utils/testingHelper";
 import { Contract } from "ethers";
-import { MAX_AMOUNT, TEST_POOL } from "./constants";
+import { CONTRACT_ADDRESS, MAX_AMOUNT, TEST_POOL } from "./constants";
 import { flatMoneyContractAddresses } from "../config";
 import DelayedOrderAbi from "../abi/flatmoney/DelayedOrder.json";
 import { allowanceDelta } from "./utils/token";
 
-const fWETH = "";
-const fWETH_SLOT = 0;
+const RETH = "0xb6fe221fe9eef5aba221c348ba20a1bf5e73624c";
+const RETH_SLOT = 0;
+const UNIT = "0xb95fB324b8A2fAF8ec4f76e3dF46C718402736e2";
 
 const testFlatMoney = ({ wallet, network, provider }: TestingRunParams) => {
   let dhedge: Dhedge;
   let pool: Pool;
   let delayOrderContract: Contract;
-  jest.setTimeout(100000);
+  jest.setTimeout(200000);
   describe(`flatmoney on ${network}`, () => {
     beforeAll(async () => {
       dhedge = new Dhedge(wallet, network);
@@ -46,18 +47,41 @@ const testFlatMoney = ({ wallet, network, provider }: TestingRunParams) => {
       await setTokenAmount({
         amount: new BigNumber(100).times(1e18).toString(),
         provider,
-        tokenAddress: fWETH,
-        slot: fWETH_SLOT,
-        userAddress: wallet.address
+        tokenAddress: RETH,
+        slot: RETH_SLOT,
+        userAddress: pool.address
       });
+
+      const currentAssets: any[] = await pool.managerLogic.getSupportedAssets();
+      const exisitingAssets = currentAssets.map(item => {
+        return {
+          asset: item[0],
+          isDeposit: item[1]
+        };
+      });
+
+      const newAssets: AssetEnabled[] = [
+        ...exisitingAssets,
+        { asset: CONTRACT_ADDRESS[network].USDC, isDeposit: true },
+        { asset: CONTRACT_ADDRESS[network].WETH, isDeposit: true },
+        {
+          asset: UNIT,
+          isDeposit: false
+        },
+        {
+          asset: RETH,
+          isDeposit: false
+        }
+      ];
+      await pool.changeAssets(newAssets);
     });
 
     it("mint UNIT", async () => {
       //approve
-      await pool.approveSpender(delayOrderContract.address, fWETH, MAX_AMOUNT);
+      await pool.approveSpender(delayOrderContract.address, RETH, MAX_AMOUNT);
       const collateralAllowanceDelta = await allowanceDelta(
         pool.address,
-        fWETH,
+        RETH,
         delayOrderContract.address,
         pool.signer
       );
@@ -77,11 +101,20 @@ const testFlatMoney = ({ wallet, network, provider }: TestingRunParams) => {
       expect(existingOrder.orderType).toBe(1);
     });
 
+    it("cancel order", async () => {
+      await provider.send("evm_increaseTime", [60 * 2]); // 1 min
+      await pool.cancelOrderViaFlatMoney();
+      const existingOrder = await delayOrderContract.getAnnouncedOrder(
+        pool.address
+      );
+      expect(existingOrder.orderType).toBe(0);
+    });
+
     it("redeem UNIT", async () => {
-      const withdrawAmountStr = new BigNumber(0.5).times(1e18).toString();
+      const withdrawAmountStr = new BigNumber(0.00145).times(1e18).toString();
       const tx = await pool.redeemUnitViaFlatMoney(
         withdrawAmountStr,
-        0.5,
+        1,
         null,
         false
       );
@@ -90,17 +123,6 @@ const testFlatMoney = ({ wallet, network, provider }: TestingRunParams) => {
         pool.address
       );
       expect(existingOrder.orderType).toBe(2);
-    });
-
-    it("cancel order", async () => {
-      const withdrawAmountStr = new BigNumber(0.1).times(1e18).toString();
-      await pool.redeemUnitViaFlatMoney(withdrawAmountStr, 0.5, null, false);
-
-      await pool.cancelOrderViaFlatMoney();
-      const existingOrder = await delayOrderContract.getAnnouncedOrder(
-        pool.address
-      );
-      expect(existingOrder.orderType).toBe(0);
     });
   });
 };
