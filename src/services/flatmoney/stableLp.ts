@@ -46,6 +46,7 @@ export async function mintUnitViaFlatMoney(
   pool: Pool,
   depositAmount: ethers.BigNumber | string,
   slippage: number, // 0.5 means 0.5%
+  maxKeeperFeeInUsd: number | null,
   options: any = null,
   estimateGas = false
 ): Promise<any> {
@@ -54,15 +55,22 @@ export async function mintUnitViaFlatMoney(
     throw new Error("mintUnitViaFlatMoney: network not supported");
   }
 
-  const keeperfee = await getKeeperFee(pool);
+  const keeperfee = await getKeeperFee(pool, maxKeeperFeeInUsd); // in RETH
 
-  const amountOut = await getStableDepositQuote(pool, depositAmount);
+  const adjustedDepositAmount = new BigNumber(depositAmount.toString()).minus(
+    keeperfee.toString() // keeper fee deducted from amountIn
+  );
+
+  const amountOut = await getStableDepositQuote(
+    pool,
+    adjustedDepositAmount.toFixed(0)
+  );
   const minAmountOut = new BigNumber(amountOut.toString())
     .times(1 - slippage / 100)
     .toFixed(0);
 
   const mintUnitTxData = await getAnnounceStableDepositTxData(
-    depositAmount,
+    adjustedDepositAmount.toFixed(0),
     minAmountOut,
     keeperfee
   );
@@ -79,6 +87,7 @@ export async function redeemUnitViaFlatMoney(
   pool: Pool,
   withdrawAmount: ethers.BigNumber | string,
   slippage: number, // 0.5 means 0.5%
+  maxKeeperFeeInUsd: number | null,
   options: any = null,
   estimateGas = false
 ): Promise<any> {
@@ -86,11 +95,12 @@ export async function redeemUnitViaFlatMoney(
   if (!flatMoneyContracts) {
     throw new Error("redeemUnitViaFlatMoney: network not supported");
   }
-  const keeperfee = await getKeeperFee(pool);
+  const keeperfee = await getKeeperFee(pool, maxKeeperFeeInUsd); // in RETH
 
   const amountOut = await getStableWithdrawQuote(pool, withdrawAmount);
   const minAmountOut = new BigNumber(amountOut.toString())
     .times(1 - slippage / 100)
+    .minus(keeperfee.toString()) // keeper fee deducted from amountOut
     .toFixed(0);
 
   const redeemUnitTxData = await getAnnounceStableWithdrawTxData(

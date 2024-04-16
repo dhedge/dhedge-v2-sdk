@@ -52,7 +52,7 @@ export const setTokenAmount = async ({
   amount: string;
   userAddress: string;
   tokenAddress: string;
-  slot: number;
+  slot: number | string;
   provider: ethers.providers.JsonRpcProvider;
 }): Promise<void> => {
   const toBytes32 = (bn: string) => {

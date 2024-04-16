@@ -16,6 +16,10 @@ import { allowanceDelta } from "./utils/token";
 const RETH = "0xb6fe221fe9eef5aba221c348ba20a1bf5e73624c";
 const RETH_SLOT = 0;
 const UNIT = "0xb95fB324b8A2fAF8ec4f76e3dF46C718402736e2";
+// https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/master/contracts/token/ERC20/ERC20Upgradeable.sol#L31
+// https://eips.ethereum.org/EIPS/eip-7201
+const UNIT_SLOT =
+  "0x52c63247e1f47db19d5ce0460030c497f067ca4cebf71ba98eeadabe20bace00";
 
 const testFlatMoney = ({ wallet, network, provider }: TestingRunParams) => {
   let dhedge: Dhedge;
@@ -49,6 +53,13 @@ const testFlatMoney = ({ wallet, network, provider }: TestingRunParams) => {
         provider,
         tokenAddress: RETH,
         slot: RETH_SLOT,
+        userAddress: pool.address
+      });
+      await setTokenAmount({
+        amount: new BigNumber(100).times(1e18).toString(),
+        provider,
+        tokenAddress: UNIT,
+        slot: UNIT_SLOT,
         userAddress: pool.address
       });
 
@@ -91,6 +102,7 @@ const testFlatMoney = ({ wallet, network, provider }: TestingRunParams) => {
       const tx = await pool.mintUnitViaFlatMoney(
         depositAmountStr,
         0.5,
+        5,
         null,
         false
       );
@@ -102,7 +114,7 @@ const testFlatMoney = ({ wallet, network, provider }: TestingRunParams) => {
     });
 
     it("cancel order", async () => {
-      await provider.send("evm_increaseTime", [60 * 2]); // 1 min
+      await provider.send("evm_increaseTime", [60 * 2]); // more than 1 min
       await pool.cancelOrderViaFlatMoney();
       const existingOrder = await delayOrderContract.getAnnouncedOrder(
         pool.address
@@ -111,10 +123,11 @@ const testFlatMoney = ({ wallet, network, provider }: TestingRunParams) => {
     });
 
     it("redeem UNIT", async () => {
-      const withdrawAmountStr = new BigNumber(0.00145).times(1e18).toString();
+      const withdrawAmountStr = new BigNumber(2).times(1e18).toString();
       const tx = await pool.redeemUnitViaFlatMoney(
         withdrawAmountStr,
-        1,
+        0.5,
+        5,
         null,
         false
       );
@@ -123,6 +136,9 @@ const testFlatMoney = ({ wallet, network, provider }: TestingRunParams) => {
         pool.address
       );
       expect(existingOrder.orderType).toBe(2);
+
+      await provider.send("evm_increaseTime", [60 * 2]); // more than 1 min
+      await pool.cancelOrderViaFlatMoney();
     });
   });
 };

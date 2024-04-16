@@ -1638,7 +1638,8 @@ export class Pool {
   /** deposit rETH to mint UNIT via the Flat Money protocol
    *
    * @param { BigNumber | string } depositAmount Amount of rETH to deposit
-   * @param { number } minAmountOut slippage, 0.5 represents 0.5%
+   * @param { number } slippage slippage, 0.5 represents 0.5%
+   * @param { number | null } maxKeeperFeeInUsd 5 represents $5; null will skip the maxKeeperFee check
    * @param {any} options Transaction options
    * @param {boolean} estimateGas Simulate/estimate gas
    * @returns {Promise<any>} Transaction
@@ -1646,6 +1647,7 @@ export class Pool {
   async mintUnitViaFlatMoney(
     depositAmount: ethers.BigNumber | string,
     slippage = 0.5,
+    maxKeeperFeeInUsd: number | null,
     options: any = null,
     estimateGas = false
   ): Promise<any> {
@@ -1653,6 +1655,7 @@ export class Pool {
       this,
       depositAmount,
       slippage,
+      maxKeeperFeeInUsd,
       options,
       estimateGas
     );
@@ -1662,7 +1665,8 @@ export class Pool {
   /** redeem UNIT via the Flat Money protocol
    *
    * @param { BigNumber | string } depositAmount Amount of UNIT to withdraw
-   * @param { number } minAmountOut slippage, 0.5 represents 0.5%
+   * @param { number } slippage slippage, 0.5 represents 0.5%
+   * @param { number | null } maxKeeperFeeInUsd 5 represents $5; null will skip the maxKeeperFee check
    * @param {any} options Transaction options
    * @param {boolean} estimateGas Simulate/estimate gas
    * @returns {Promise<any>} Transaction
@@ -1670,6 +1674,7 @@ export class Pool {
   async redeemUnitViaFlatMoney(
     withdrawAmount: ethers.BigNumber | string,
     slippage = 0.5,
+    maxKeeperFeeInUsd: number | null,
     options: any = null,
     estimateGas = false
   ): Promise<any> {
@@ -1677,6 +1682,7 @@ export class Pool {
       this,
       withdrawAmount,
       slippage,
+      maxKeeperFeeInUsd,
       options,
       estimateGas
     );

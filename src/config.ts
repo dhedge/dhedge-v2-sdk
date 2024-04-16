@@ -146,12 +146,14 @@ export const flatMoneyContractAddresses: Readonly<Partial<
       DelayedOrder: string;
       FlatcoinVault: string;
       StableModule: string;
+      RETH: string;
     }
   >
 >> = {
   [Network.BASE]: {
     DelayedOrder: "0x6D857e9D24a7566bB72a3FB0847A3E0e4E1c2879",
     FlatcoinVault: "0x95Fa1ddc9a78273f795e67AbE8f1Cd2Cd39831fF",
-    StableModule: "0xb95fB324b8A2fAF8ec4f76e3dF46C718402736e2"
+    StableModule: "0xb95fB324b8A2fAF8ec4f76e3dF46C718402736e2",
+    RETH: "0xb6fe221fe9eef5aba221c348ba20a1bf5e73624c"
   }
 };

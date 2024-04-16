@@ -30,18 +30,56 @@ export const getKeeperFeeContract = async (pool: Pool): Promise<Contract> => {
   return keeperFeeContract;
 };
 
-export const getKeeperFee = async (pool: Pool): Promise<ethers.BigNumber> => {
+export const getKeeperFee = async (
+  pool: Pool,
+  maxKeeperFeeInUsd: number | null
+): Promise<ethers.BigNumber> => {
   const keeperFeeContract = await getKeeperFeeContract(pool);
   const blockinfo = await pool.signer.provider.getBlock("latest");
   const basefee = blockinfo.baseFeePerGas;
 
+  let keeperfee: ethers.BigNumber;
   if (basefee) {
-    const keeperfee = await keeperFeeContract["getKeeperFee(uint256)"](
-      new BigNumber(basefee.mul(2).toString()).toFixed(0)
+    keeperfee = await keeperFeeContract["getKeeperFee(uint256)"](
+      new BigNumber(basefee.toString()).times(2).toFixed(0)
     );
-    return keeperfee;
   } else {
-    const keeperfee = await keeperFeeContract["getKeeperFee()"]();
-    return keeperfee;
+    keeperfee = await keeperFeeContract["getKeeperFee()"]();
   }
+
+  const keeperFeeInUsd = await getKeeperFeeInUsd(pool, keeperfee);
+
+  if (
+    Number.isFinite(maxKeeperFeeInUsd) &&
+    keeperFeeInUsd.gt(ethers.BigNumber.from(maxKeeperFeeInUsd).toString())
+  ) {
+    throw new Error("mintUnitViaFlatMoney: keeperFee too large");
+  }
+
+  return keeperfee;
+};
+
+export const getKeeperFeeInUsd = async (
+  pool: Pool,
+  keeperFee: ethers.BigNumber
+): Promise<BigNumber> => {
+  const flatMoneyContracts = flatMoneyContractAddresses[pool.network];
+  if (!flatMoneyContracts) {
+    throw new Error(
+      `getKeeperFeeInUsd: network of ${pool.network} not supported`
+    );
+  }
+  const fundComposition = await pool.getComposition();
+  const filteredFc = fundComposition.filter(
+    fc =>
+      fc.asset.toLocaleLowerCase() ===
+      flatMoneyContracts.RETH.toLocaleLowerCase()
+  );
+
+  if (!filteredFc[0])
+    throw new Error(`getKeeperFeeInUsd: required asset not enabled yet`);
+
+  const rateD1 = new BigNumber(filteredFc[0].rate.toString()).div(1e18);
+
+  return rateD1.times(keeperFee.toString()).div(1e18);
 };
