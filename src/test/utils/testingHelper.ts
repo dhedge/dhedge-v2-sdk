@@ -7,6 +7,7 @@ export type TestingRunParams = {
   network: Network;
   wallet: ethers.Wallet;
   provider: ethers.providers.JsonRpcProvider;
+  rpcUrl: string;
 };
 
 type TestHelperParams = {
@@ -17,8 +18,8 @@ export const testingHelper = ({
   network,
   testingRun
 }: TestHelperParams): void => {
-  const { wallet, provider } = getWalletData(network);
-  testingRun({ network, wallet, provider });
+  const { wallet, provider, rpcUrl } = getWalletData(network);
+  testingRun({ network, wallet, provider, rpcUrl });
 };
 
 export const beforeAfterReset = ({

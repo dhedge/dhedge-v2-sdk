@@ -35,13 +35,12 @@ export const getKeeperFee = async (
   maxKeeperFeeInUsd: number | null
 ): Promise<ethers.BigNumber> => {
   const keeperFeeContract = await getKeeperFeeContract(pool);
-  const blockinfo = await pool.signer.provider.getBlock("latest");
-  const basefee = blockinfo.baseFeePerGas;
+  const gasPrice = await pool.signer.provider.getGasPrice();
 
   let keeperfee: ethers.BigNumber;
-  if (basefee) {
+  if (gasPrice) {
     keeperfee = await keeperFeeContract["getKeeperFee(uint256)"](
-      new BigNumber(basefee.toString()).times(2).toFixed(0)
+      new BigNumber(gasPrice.toString()).times(1.2).toFixed(0)
     );
   } else {
     keeperfee = await keeperFeeContract["getKeeperFee()"]();

@@ -7,11 +7,12 @@ import {
   setTokenAmount,
   testingHelper
 } from "./utils/testingHelper";
-import { Contract } from "ethers";
+import { Contract, ethers } from "ethers";
 import { CONTRACT_ADDRESS, MAX_AMOUNT, TEST_POOL } from "./constants";
 import { flatMoneyContractAddresses } from "../config";
 import DelayedOrderAbi from "../abi/flatmoney/DelayedOrder.json";
 import { allowanceDelta } from "./utils/token";
+import { getKeeperFee } from "../services/flatmoney/keeperFee";
 
 const RETH = "0xb6fe221fe9eef5aba221c348ba20a1bf5e73624c";
 const RETH_SLOT = 0;
@@ -21,7 +22,12 @@ const UNIT = "0xb95fB324b8A2fAF8ec4f76e3dF46C718402736e2";
 const UNIT_SLOT =
   "0x52c63247e1f47db19d5ce0460030c497f067ca4cebf71ba98eeadabe20bace00";
 
-const testFlatMoney = ({ wallet, network, provider }: TestingRunParams) => {
+const testFlatMoney = ({
+  wallet,
+  network,
+  provider,
+  rpcUrl
+}: TestingRunParams) => {
   let dhedge: Dhedge;
   let pool: Pool;
   let delayOrderContract: Contract;
@@ -102,7 +108,7 @@ const testFlatMoney = ({ wallet, network, provider }: TestingRunParams) => {
       const tx = await pool.mintUnitViaFlatMoney(
         depositAmountStr,
         0.5,
-        5,
+        10, // set higher to tolerate high gasPrice returned by forked local chain
         null,
         false
       );
@@ -127,7 +133,7 @@ const testFlatMoney = ({ wallet, network, provider }: TestingRunParams) => {
       const tx = await pool.redeemUnitViaFlatMoney(
         withdrawAmountStr,
         0.5,
-        5,
+        10, //  set higher to tolerate high gasPrice returned by forked local chain
         null,
         false
       );
@@ -139,6 +145,15 @@ const testFlatMoney = ({ wallet, network, provider }: TestingRunParams) => {
 
       await provider.send("evm_increaseTime", [60 * 2]); // more than 1 min
       await pool.cancelOrderViaFlatMoney();
+    });
+
+    it("keeperFee is small", async () => {
+      const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+      const walletOnChain = wallet.connect(provider);
+      const dhedge = new Dhedge(walletOnChain, network);
+      const pool = await dhedge.loadPool(TEST_POOL[network]);
+      const keeperFee = await getKeeperFee(pool, 3);
+      expect(keeperFee).toBeTruthy();
     });
   });
 };
