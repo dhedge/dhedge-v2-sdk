@@ -64,6 +64,11 @@ import {
   getExitVestTxData
 } from "../services/ramses/vesting";
 import { getPoolTxOrGasEstimate } from "../utils/contract";
+import {
+  cancelOrderViaFlatMoney,
+  mintUnitViaFlatMoney,
+  redeemUnitViaFlatMoney
+} from "../services/flatmoney/stableLp";
 
 export class Pool {
   public readonly poolLogic: Contract;
@@ -1627,6 +1632,68 @@ export class Pool {
       [tokenAddress, txData, options],
       estimateGas
     );
+    return tx;
+  }
+
+  /** deposit rETH to mint UNIT via the Flat Money protocol
+   *
+   * @param { BigNumber | string } depositAmount Amount of rETH to deposit
+   * @param { number } slippage slippage, 0.5 represents 0.5%
+   * @param { number | null } maxKeeperFeeInUsd 5 represents $5; null will skip the maxKeeperFee check
+   * @param {any} options Transaction options
+   * @param {boolean} estimateGas Simulate/estimate gas
+   * @returns {Promise<any>} Transaction
+   */
+  async mintUnitViaFlatMoney(
+    depositAmount: ethers.BigNumber | string,
+    slippage = 0.5,
+    maxKeeperFeeInUsd: number | null,
+    options: any = null,
+    estimateGas = false
+  ): Promise<any> {
+    const tx = await mintUnitViaFlatMoney(
+      this,
+      depositAmount,
+      slippage,
+      maxKeeperFeeInUsd,
+      options,
+      estimateGas
+    );
+    return tx;
+  }
+
+  /** redeem UNIT via the Flat Money protocol
+   *
+   * @param { BigNumber | string } depositAmount Amount of UNIT to withdraw
+   * @param { number } slippage slippage, 0.5 represents 0.5%
+   * @param { number | null } maxKeeperFeeInUsd 5 represents $5; null will skip the maxKeeperFee check
+   * @param {any} options Transaction options
+   * @param {boolean} estimateGas Simulate/estimate gas
+   * @returns {Promise<any>} Transaction
+   */
+  async redeemUnitViaFlatMoney(
+    withdrawAmount: ethers.BigNumber | string,
+    slippage = 0.5,
+    maxKeeperFeeInUsd: number | null,
+    options: any = null,
+    estimateGas = false
+  ): Promise<any> {
+    const tx = await redeemUnitViaFlatMoney(
+      this,
+      withdrawAmount,
+      slippage,
+      maxKeeperFeeInUsd,
+      options,
+      estimateGas
+    );
+    return tx;
+  }
+
+  async cancelOrderViaFlatMoney(
+    options: any = null,
+    estimateGas = false
+  ): Promise<any> {
+    const tx = await cancelOrderViaFlatMoney(this, options, estimateGas);
     return tx;
   }
 }

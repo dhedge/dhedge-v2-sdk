@@ -427,3 +427,37 @@ const tx = await pool.borrow(Dapp.AAVE, WETH_TOKEN_ADDRESS, "100000000000000");
 ```ts
 const tx = await pool.repay(Dapp.AAVE, WETH_TOKEN_ADDRESS, "100000000000000");
 ```
+
+<br>
+
+### The Flat Money Protocol
+
+---
+
+##### 1. Minting UNIT : deposit 1 rETH to mint UNIT
+
+```ts
+      const depositAmount = new BigNumber(1).times(1e18).toString();
+      const tx = await pool.mintUnitViaFlatMoney(
+        depositAmount,
+        0.5,  // slippage, 0.5%
+        5,  // maxKeeperFeeInUsd, $5
+      );
+```
+
+##### 2. Redeeming UNIT : Redeem 1 UNIT for rETH
+
+```ts
+      const withdrawAmount = new BigNumber(1).times(1e18).toString();
+      const tx = await pool.redeemUnitViaFlatMoney(
+        withdrawAmount,
+        0.5,  // slippage, 0.5%
+        5, // maxKeeperFeeInUsd, $5
+      );
+```
+
+##### 3. Cancel announced order
+
+```ts
+      await pool.cancelOrderViaFlatMoney();
+```

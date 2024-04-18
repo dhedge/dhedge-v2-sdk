@@ -38,12 +38,15 @@ export const getWalletData = (
 ): {
   wallet: ethers.Wallet;
   provider: ethers.providers.JsonRpcProvider;
+  rpcUrl: string;
 } => {
   const provider = new ethers.providers.JsonRpcProvider(
     `http://127.0.0.1:${networkPortMap[network]}/`
   );
+  const rpcUrl = process.env[`${network.toUpperCase()}_URL`] || "";
   return {
     wallet: new ethers.Wallet(process.env.PRIVATE_KEY as string, provider),
-    provider
+    provider,
+    rpcUrl
   };
 };
