@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Price, Token } from "@uniswap/sdk-core";
 import {
   encodeSqrtRatioX96,
-  FeeAmount,
   nearestUsableTick,
   priceToClosestTick,
   TICK_SPACINGS,
@@ -9,14 +10,17 @@ import {
 } from "@uniswap/v3-sdk";
 import { ethers } from "ethers";
 import JSBI from "jsbi";
-import { Pool } from "../..";
+import { Dapp, Pool, Transaction } from "../..";
 import {
+  MaxUint128,
   networkChainIdMap,
   nonfungiblePositionManagerAddress
 } from "../../config";
-import { UniswapV3MintParams } from "./types";
 import INonfungiblePositionManager from "../../abi/INonfungiblePositionManager.json";
+import IVeldodromePositionManager from "../../abi/IVelodromeNonfungiblePositionManager.json";
+import IArrakisV1RouterStaking from "../../abi/IArrakisV1RouterStaking.json";
 import { getDeadline } from "../../utils/deadline";
+import BigNumber from "bignumber.js";
 
 export function tryParsePrice(
   baseToken: Token,
@@ -42,7 +46,7 @@ export function tryParsePrice(
 export function tryParseTick(
   baseToken: Token,
   quoteToken: Token,
-  feeAmount: FeeAmount,
+  feeAmount: number,
   value: string
 ): number {
   const price = tryParsePrice(baseToken, quoteToken, value);
@@ -64,7 +68,8 @@ export function tryParseTick(
   return nearestUsableTick(tick, TICK_SPACINGS[feeAmount]);
 }
 
-export async function getUniswapV3MintParams(
+export async function getUniswapV3MintTxData(
+  dapp: Dapp.UNISWAPV3 | Dapp.VELODROMECL,
   pool: Pool,
   assetA: string,
   assetB: string,
@@ -74,8 +79,8 @@ export async function getUniswapV3MintParams(
   maxPrice: number | null,
   minTick: number | null,
   maxTick: number | null,
-  feeAmount: FeeAmount
-): Promise<UniswapV3MintParams> {
+  feeAmount: number
+): Promise<any> {
   let tickLower = 0;
   let tickUpper = 0;
   const chainId = networkChainIdMap[pool.network];
@@ -88,7 +93,6 @@ export async function getUniswapV3MintParams(
     ? [tokenA, tokenB]
     : [tokenB, tokenA];
   const invertPrice = !tokenA.equals(token0);
-
   if (minPrice && maxPrice) {
     tickLower = invertPrice
       ? tryParseTick(token1, token0, feeAmount, maxPrice.toString())
@@ -104,30 +108,121 @@ export async function getUniswapV3MintParams(
     ? [amountB, amountA]
     : [amountA, amountB];
 
-  return [
-    token0.address,
-    token1.address,
-    feeAmount,
-    tickLower,
-    tickUpper,
-    amount0,
-    amount1,
-    "0",
-    "0",
-    pool.address,
-    await getDeadline(pool)
-  ];
+  const iNonfungiblePositionManager = new ethers.utils.Interface(
+    dapp === Dapp.UNISWAPV3
+      ? INonfungiblePositionManager.abi
+      : IVeldodromePositionManager.abi
+  );
+
+  return iNonfungiblePositionManager.encodeFunctionData(Transaction.MINT, [
+    [
+      token0.address,
+      token1.address,
+      feeAmount,
+      tickLower,
+      tickUpper,
+      amount0,
+      amount1,
+      "0",
+      "0",
+      pool.address,
+      await getDeadline(pool)
+    ]
+  ]);
+
+  return;
 }
 
 export async function getUniswapV3Liquidity(
+  dapp: Dapp.UNISWAPV3 | Dapp.VELODROMECL,
   tokenId: string,
   pool: Pool
-): Promise<ethers.BigNumber> {
+): Promise<BigNumber> {
   const iNonfungiblePositionManager = new ethers.Contract(
-    nonfungiblePositionManagerAddress[pool.network],
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    nonfungiblePositionManagerAddress[pool.network][dapp]!,
     INonfungiblePositionManager.abi,
     pool.signer
   );
   const result = await iNonfungiblePositionManager.positions(tokenId);
-  return result.liquidity;
+  return new BigNumber(result.liquidity.toString());
+}
+
+export async function getIncreaseLiquidityTxData(
+  pool: Pool,
+  dapp: Dapp,
+  tokenId: string,
+  amountA: ethers.BigNumber | string,
+  amountB: ethers.BigNumber | string
+): Promise<any> {
+  let txData;
+  if (dapp === Dapp.UNISWAPV3 || dapp === Dapp.VELODROMECL) {
+    const abi = new ethers.utils.Interface(INonfungiblePositionManager.abi);
+    txData = abi.encodeFunctionData(Transaction.INCREASE_LIQUIDITY, [
+      [tokenId, amountA, amountB, 0, 0, await getDeadline(pool)]
+    ]);
+  } else if (dapp === Dapp.ARRAKIS) {
+    const abi = new ethers.utils.Interface(IArrakisV1RouterStaking.abi);
+    txData = abi.encodeFunctionData(Transaction.ADD_LIQUIDITY_STAKE, [
+      tokenId,
+      amountA,
+      amountB,
+      0,
+      0,
+      0,
+      pool.address
+    ]);
+  } else {
+    throw new Error("dapp not supported");
+  }
+
+  return txData;
+}
+
+export async function getDecreaseLiquidityTxData(
+  pool: Pool,
+  dapp: Dapp,
+  tokenId: string,
+  amount = 100
+): Promise<any> {
+  let txData;
+  if (dapp === Dapp.UNISWAPV3 || dapp === Dapp.VELODROMECL) {
+    const abi = new ethers.utils.Interface(INonfungiblePositionManager.abi);
+    const liquidity = (await getUniswapV3Liquidity(dapp, tokenId, pool))
+      .times(amount)
+      .div(100);
+
+    const decreaseLiquidityTxData = abi.encodeFunctionData(
+      Transaction.DECREASE_LIQUIDITY,
+      [[tokenId, liquidity.toFixed(0), 0, 0, await getDeadline(pool)]]
+    );
+    const collectTxData = abi.encodeFunctionData(Transaction.COLLECT, [
+      [tokenId, pool.address, MaxUint128, MaxUint128]
+    ]);
+
+    const multicallParams = [decreaseLiquidityTxData, collectTxData];
+
+    if (amount === 100) {
+      const burnTxData = abi.encodeFunctionData(Transaction.BURN, [tokenId]);
+      multicallParams.push(burnTxData);
+    }
+    txData = abi.encodeFunctionData(Transaction.MULTI_CALL, [multicallParams]);
+  } else if (dapp === Dapp.ARRAKIS) {
+    const abi = new ethers.utils.Interface(IArrakisV1RouterStaking.abi);
+    const liquidity = new BigNumber(
+      (await pool.utils.getBalance(tokenId, pool.address)).toString()
+    )
+      .times(amount)
+      .div(100);
+    txData = abi.encodeFunctionData(Transaction.REMOVE_LIQUIDITY_UNSTAKE, [
+      tokenId,
+      liquidity,
+      0,
+      0,
+      pool.address
+    ]);
+  } else {
+    throw new Error("dapp not supported");
+  }
+  return txData;
 }

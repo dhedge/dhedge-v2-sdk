@@ -1,4 +1,3 @@
-import { FeeAmount } from "@uniswap/v3-sdk";
 import { ethers } from "ethers";
 import { Pool } from "../..";
 
@@ -12,7 +11,7 @@ export async function getUniswapV3SwapTxData(
   assetB: string,
   amountIn: string | ethers.BigNumber,
   slippage: number,
-  feeAmount: FeeAmount
+  feeAmount: number
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any> {
   const quoterContract = new ethers.Contract(

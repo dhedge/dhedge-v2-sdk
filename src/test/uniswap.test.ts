@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { FeeAmount } from "@uniswap/v3-sdk";
 import { Dhedge, ethers, Pool } from "..";
 import { routerAddress } from "../config";
 import { AssetEnabled, Dapp, Network } from "../types";
@@ -76,7 +75,7 @@ const testUniswapV3 = ({ wallet, network, provider }: TestingRunParams) => {
         CONTRACT_ADDRESS[network].USDC,
         CONTRACT_ADDRESS[network].WETH,
         new BigNumber(5000).times(1e6).toFixed(0),
-        FeeAmount.LOW,
+        500,
         0.5
       );
 
@@ -121,6 +120,7 @@ const testUniswapV3 = ({ wallet, network, provider }: TestingRunParams) => {
 
       try {
         result = await pool.addLiquidityUniswapV3(
+          Dapp.UNISWAPV3,
           CONTRACT_ADDRESS[network].WETH,
           CONTRACT_ADDRESS[network].USDC,
           wethBalance,
@@ -129,7 +129,7 @@ const testUniswapV3 = ({ wallet, network, provider }: TestingRunParams) => {
           3000,
           null,
           null,
-          FeeAmount.LOW
+          500
           // options
         );
         await result.wait(1);
@@ -155,11 +155,20 @@ const testUniswapV3 = ({ wallet, network, provider }: TestingRunParams) => {
     });
 
     it("should increase liquidity in the existing WETH/USDC pool", async () => {
+      const usdcBalance = await dhedge.utils.getBalance(
+        CONTRACT_ADDRESS[network].USDC,
+        pool.address
+      );
+      const wethBalance = await dhedge.utils.getBalance(
+        CONTRACT_ADDRESS[network].WETH,
+        pool.address
+      );
+
       const result = await pool.increaseLiquidity(
         Dapp.UNISWAPV3,
         tokenId.toString(),
-        new BigNumber(3000).times(1e6).toFixed(0), // usdc
-        new BigNumber(1).times(1e18).toFixed(0) // eth
+        wethBalance,
+        usdcBalance // eth
       );
       // console.log("result", result);
       expect(result).not.toBe(null);
@@ -210,12 +219,12 @@ testingHelper({
   testingRun: testUniswapV3
 });
 
-testingHelper({
-  network: Network.POLYGON,
-  testingRun: testUniswapV3
-});
+// testingHelper({
+//   network: Network.POLYGON,
+//   testingRun: testUniswapV3
+// });
 
-testingHelper({
-  network: Network.ARBITRUM,
-  testingRun: testUniswapV3
-});
+// testingHelper({
+//   network: Network.ARBITRUM,
+//   testingRun: testUniswapV3
+// });

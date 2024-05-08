@@ -98,12 +98,20 @@ export const aaveAddressProvider: AddressDappNetworkMap = {
     [Dapp.AAVEV3]: "0xe20fCBdBfFC4Dd138cE8b2E6FBb6CB49777ad64D"
   }
 };
-export const nonfungiblePositionManagerAddress: AddressNetworkMap = {
-  [Network.POLYGON]: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
-  [Network.OPTIMISM]: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
-  [Network.ARBITRUM]: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
-  // https://docs.uniswap.org/contracts/v3/reference/deployments
-  [Network.BASE]: "0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1"
+export const nonfungiblePositionManagerAddress: AddressDappNetworkMap = {
+  [Network.POLYGON]: {
+    [Dapp.UNISWAPV3]: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88"
+  },
+  [Network.OPTIMISM]: {
+    [Dapp.UNISWAPV3]: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
+    [Dapp.VELODROMECL]: "0xbb5dfe1380333cee4c2eebd7202c80de2256adf4"
+  },
+  [Network.ARBITRUM]: {
+    [Dapp.UNISWAPV3]: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88"
+  },
+  [Network.BASE]: {
+    [Dapp.UNISWAPV3]: "0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1"
+  }
 };
 
 export const networkChainIdMap: NetworkChainIdMap = {
