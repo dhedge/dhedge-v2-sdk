@@ -64,7 +64,11 @@ export async function getVelodromeCLDecreaseStakedLiquidityTxData(
     .div(100);
 
   return abi.encodeFunctionData("decreaseStakedLiquidity", [
-    [tokenId, liquidity.toFixed(0), 0, 0, await getDeadline(pool)]
+    tokenId,
+    liquidity.toFixed(0),
+    0,
+    0,
+    await getDeadline(pool)
   ]);
 }
 

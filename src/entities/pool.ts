@@ -3,6 +3,8 @@
 import { Contract, ethers, Wallet, BigNumber } from "ethers";
 
 import IERC20 from "../abi/IERC20.json";
+
+import IERC721 from "../abi/IERC721.json";
 import IMiniChefV2 from "../abi/IMiniChefV2.json";
 import ILendingPool from "../abi/ILendingPool.json";
 import ISynthetix from "../abi/ISynthetix.json";
@@ -49,6 +51,7 @@ import {
 } from "../services/velodrome/liquidity";
 import {
   getVelodromeClaimTxData,
+  getVelodromeCLClaimTxData,
   getVelodromeStakeTxData
 } from "../services/velodrome/staking";
 import { getLyraOptionTxData } from "../services/lyra/trade";
@@ -294,6 +297,35 @@ export class Pool {
     const approveTxData = iERC20.encodeFunctionData("approve", [
       spender,
       amount
+    ]);
+    const tx = await getPoolTxOrGasEstimate(
+      this,
+      [asset, approveTxData, options],
+      estimateGas
+    );
+    return tx;
+  }
+
+  /**
+   * Approve NFT for provided spender address
+   * @param {string} spender Spender address
+   * @param {string} asset Address of asset
+   * @param {string} tokenId NFT id
+   * @param {any} options Transaction options
+   * @param {boolean} estimateGas Simulate/estimate gas
+   * @returns {Promise<any>} Transaction
+   */
+  async approveSpenderNFT(
+    spender: string,
+    asset: string,
+    tokenId: string,
+    options: any = null,
+    estimateGas = false
+  ): Promise<any> {
+    const iERC71 = new ethers.utils.Interface(IERC721.abi);
+    const approveTxData = iERC71.encodeFunctionData("approve", [
+      spender,
+      tokenId
     ]);
     const tx = await getPoolTxOrGasEstimate(
       this,
@@ -1036,7 +1068,7 @@ export class Pool {
         break;
       case Dapp.VELODROMECL:
         const tokenIdOwner = await getVelodromeClOwner(this, tokenId);
-        if (tokenIdOwner === this.address) {
+        if (tokenIdOwner.toLowerCase() === this.address.toLowerCase()) {
           dappAddress = nonfungiblePositionManagerAddress[this.network][dapp];
         } else {
           //staked in gauge
@@ -1094,7 +1126,7 @@ export class Pool {
         break;
       case Dapp.VELODROMECL:
         const tokenIdOwner = await getVelodromeClOwner(this, tokenId);
-        if (tokenIdOwner === this.address) {
+        if (tokenIdOwner.toLowerCase() === this.address.toLowerCase()) {
           dappAddress = nonfungiblePositionManagerAddress[this.network][dapp];
         } else {
           //staked in gauge
@@ -1177,7 +1209,7 @@ export class Pool {
         break;
       case Dapp.VELODROMECL:
         const tokenIdOwner = await getVelodromeClOwner(this, tokenId);
-        if (tokenIdOwner === this.address) {
+        if (tokenIdOwner.toLowerCase() === this.address.toLowerCase()) {
           contractAddress =
             nonfungiblePositionManagerAddress[this.network][dapp];
           txData = iNonfungiblePositionManager.encodeFunctionData(
@@ -1187,7 +1219,7 @@ export class Pool {
         } else {
           //staked in gauge
           contractAddress = tokenIdOwner;
-          txData = getVelodromeClaimTxData(this, tokenId, true);
+          txData = getVelodromeCLClaimTxData(tokenId);
         }
         break;
       default:

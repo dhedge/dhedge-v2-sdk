@@ -108,26 +108,33 @@ export async function getUniswapV3MintTxData(
     ? [amountB, amountA]
     : [amountA, amountB];
 
-  const iNonfungiblePositionManager = new ethers.utils.Interface(
-    dapp === Dapp.UNISWAPV3
-      ? INonfungiblePositionManager.abi
-      : IVeldodromePositionManager.abi
+  const mintParams = [
+    token0.address,
+    token1.address,
+    feeAmount,
+    tickLower,
+    tickUpper,
+    amount0,
+    amount1,
+    "0",
+    "0",
+    pool.address,
+    await getDeadline(pool)
+  ];
+
+  let iNonfungiblePositionManager = new ethers.utils.Interface(
+    INonfungiblePositionManager.abi
   );
 
+  if (dapp === Dapp.VELODROMECL) {
+    iNonfungiblePositionManager = new ethers.utils.Interface(
+      IVeldodromePositionManager.abi
+    );
+    mintParams.push(0);
+  }
+
   return iNonfungiblePositionManager.encodeFunctionData(Transaction.MINT, [
-    [
-      token0.address,
-      token1.address,
-      feeAmount,
-      tickLower,
-      tickUpper,
-      amount0,
-      amount1,
-      "0",
-      "0",
-      pool.address,
-      await getDeadline(pool)
-    ]
+    mintParams
   ]);
 
   return;
