@@ -125,8 +125,8 @@ const testUniswapV3 = ({ wallet, network, provider }: TestingRunParams) => {
           CONTRACT_ADDRESS[network].USDC,
           wethBalance,
           usdcBalance,
-          2000,
-          3000,
+          3500,
+          4000,
           null,
           null,
           500

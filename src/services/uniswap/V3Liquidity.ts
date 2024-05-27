@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Price, Token } from "@uniswap/sdk-core";
+import { Token, Price } from "@uniswap/sdk-core";
 import {
   encodeSqrtRatioX96,
+  FeeAmount,
   nearestUsableTick,
   priceToClosestTick,
   TICK_SPACINGS,
@@ -65,7 +66,7 @@ export function tryParseTick(
     tick = priceToClosestTick(price);
   }
 
-  return nearestUsableTick(tick, TICK_SPACINGS[feeAmount]);
+  return nearestUsableTick(tick, TICK_SPACINGS[feeAmount as FeeAmount]);
 }
 
 export async function getUniswapV3MintTxData(
@@ -79,7 +80,7 @@ export async function getUniswapV3MintTxData(
   maxPrice: number | null,
   minTick: number | null,
   maxTick: number | null,
-  feeAmount: number
+  feeAmountOrTickSpacing: number
 ): Promise<any> {
   let tickLower = 0;
   let tickUpper = 0;
@@ -95,11 +96,31 @@ export async function getUniswapV3MintTxData(
   const invertPrice = !tokenA.equals(token0);
   if (minPrice && maxPrice) {
     tickLower = invertPrice
-      ? tryParseTick(token1, token0, feeAmount, maxPrice.toString())
-      : tryParseTick(token0, token1, feeAmount, minPrice.toString());
+      ? tryParseTick(
+          token1,
+          token0,
+          feeAmountOrTickSpacing,
+          maxPrice.toString()
+        )
+      : tryParseTick(
+          token0,
+          token1,
+          feeAmountOrTickSpacing,
+          minPrice.toString()
+        );
     tickUpper = invertPrice
-      ? tryParseTick(token1, token0, feeAmount, minPrice.toString())
-      : tryParseTick(token0, token1, feeAmount, maxPrice.toString());
+      ? tryParseTick(
+          token1,
+          token0,
+          feeAmountOrTickSpacing,
+          minPrice.toString()
+        )
+      : tryParseTick(
+          token0,
+          token1,
+          feeAmountOrTickSpacing,
+          maxPrice.toString()
+        );
   } else if (minTick && maxTick) {
     tickLower = minTick;
     tickUpper = maxTick;
@@ -111,7 +132,7 @@ export async function getUniswapV3MintTxData(
   const mintParams = [
     token0.address,
     token1.address,
-    feeAmount,
+    feeAmountOrTickSpacing,
     tickLower,
     tickUpper,
     amount0,

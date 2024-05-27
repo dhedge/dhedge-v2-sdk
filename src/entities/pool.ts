@@ -322,8 +322,8 @@ export class Pool {
     options: any = null,
     estimateGas = false
   ): Promise<any> {
-    const iERC71 = new ethers.utils.Interface(IERC721.abi);
-    const approveTxData = iERC71.encodeFunctionData("approve", [
+    const iERC721 = new ethers.utils.Interface(IERC721.abi);
+    const approveTxData = iERC721.encodeFunctionData("approve", [
       spender,
       tokenId
     ]);
@@ -990,7 +990,7 @@ export class Pool {
    * @param { number } maxPrice Upper price range (assetB per assetA)
    * @param { number } minTick Lower tick range
    * @param { number } maxTick Upper tick range
-   * @param { FeeAmount } number Fee tier UniswapV3 or tick spacing VelodromeCL
+   * @param { number } feeAmountOrTickSpacing Fee tier UniswapV3 or tick spacing VelodromeCL
    * @param {any} options Transaction options
    * @param {boolean} estimateGas Simulate/estimate gas
    * @returns {Promise<any>} Transaction
@@ -1005,7 +1005,7 @@ export class Pool {
     maxPrice: number | null,
     minTick: number | null,
     maxTick: number | null,
-    feeAmount: number,
+    feeAmountOrTickSpacing: number,
     options: any = null,
     estimateGas = false
   ): Promise<any> {
@@ -1014,7 +1014,7 @@ export class Pool {
       (minTick === null || maxTick === null)
     )
       throw new Error("Need to provide price or tick range");
-    if (minPrice && maxPrice && dapp === Dapp.VELODROMECL)
+    if ((minPrice || maxPrice) && dapp === Dapp.VELODROMECL)
       throw new Error("no price conversion for Velodrome CL");
 
     const mintTxData = await getUniswapV3MintTxData(
@@ -1028,7 +1028,7 @@ export class Pool {
       maxPrice,
       minTick,
       maxTick,
-      feeAmount
+      feeAmountOrTickSpacing
     );
 
     const tx = await getPoolTxOrGasEstimate(
