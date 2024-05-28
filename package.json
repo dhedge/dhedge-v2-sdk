@@ -1,6 +1,6 @@
 {
   "name": "@dhedge/v2-sdk",
-  "version": "1.9.9",
+  "version": "1.10.0",
   "license": "MIT",
   "description": "🛠 An SDK for building applications on top of dHEDGE V2",
   "main": "dist/index.js",
@@ -48,7 +48,7 @@
     "@ethersproject/providers": "5.0.12",
     "@lyrafinance/lyra-js": "^0.0.20",
     "@sushiswap/sdk": "5.0.0-canary.7",
-    "@uniswap/sdk-core": "^3.0.1",
+    "@uniswap/sdk-core": "3.0.1",
     "@uniswap/v3-sdk": "^3.8.2",
     "axios": "^0.21.4",
     "bignumber.js": "^9.0.2",

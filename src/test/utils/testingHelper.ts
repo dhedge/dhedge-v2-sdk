@@ -1,7 +1,11 @@
 import { BigNumber, ethers } from "ethers";
 import { Network } from "../../types";
 import { getWalletData } from "../wallet";
-import { CONTRACT_ADDRESS, USDC_BALANCEOF_SLOT } from "../constants";
+import {
+  CONTRACT_ADDRESS,
+  USDC_BALANCEOF_SLOT,
+  WETH_BALANCEOF_SLOT
+} from "../constants";
 
 export type TestingRunParams = {
   network: Network;
@@ -89,6 +93,26 @@ export const setUSDCAmount = async ({
     provider,
     tokenAddress: CONTRACT_ADDRESS[network].USDC,
     slot: USDC_BALANCEOF_SLOT[network]
+  });
+};
+
+export const setWETHAmount = async ({
+  provider,
+  userAddress,
+  amount,
+  network
+}: {
+  amount: string;
+  userAddress: string;
+  provider: ethers.providers.JsonRpcProvider;
+  network: Network;
+}): Promise<void> => {
+  await setTokenAmount({
+    amount,
+    userAddress,
+    provider,
+    tokenAddress: CONTRACT_ADDRESS[network].WETH,
+    slot: WETH_BALANCEOF_SLOT[network]
   });
 };
 

@@ -27,7 +27,7 @@ export async function getLyraOptionTxData(
   const filteredPosition = positions.filter(
     e =>
       e.strikeId.toNumber() === strikeId &&
-      isCall(e.optionType) == (optionType === "call") &&
+      isCall(e.optionType) === (optionType === "call") &&
       e.state === 1
   );
   const positionId =

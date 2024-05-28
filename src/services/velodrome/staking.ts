@@ -2,6 +2,7 @@
 import { BigNumber, ethers } from "ethers";
 import IVelodromeGaugeV1 from "../../abi/IVelodromeGauge.json";
 import IVelodromeGaugeV2 from "../../abi/IVelodromeGaugeV2.json";
+import IVelodromeCLGauge from "../../abi/IVelodromeCLGauge.json";
 import { Pool } from "../../entities";
 import { call } from "../../utils/contract";
 const iVelodromeGaugeV1 = new ethers.utils.Interface(IVelodromeGaugeV1.abi);
@@ -41,4 +42,9 @@ export async function getVelodromeClaimTxData(
       rewardAssets
     ]);
   }
+}
+
+export async function getVelodromeCLClaimTxData(tokenId: string): Promise<any> {
+  const iVelodromeCLGauge = new ethers.utils.Interface(IVelodromeCLGauge.abi);
+  return iVelodromeCLGauge.encodeFunctionData("getReward(uint256)", [tokenId]);
 }

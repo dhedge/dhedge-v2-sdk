@@ -56,11 +56,13 @@ export const CONTRACT_ADDRESS = {
     WMATIC: "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270",
     uniswapV3: {
       nonfungiblePositionManager: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88"
-    }
+    },
+    VELODROME_CL_USDC_WETH_GAUGE: "",
+    VELO: ""
   },
 
   [Network.OPTIMISM]: {
-    USDC: "0x7F5c764cBc14f9669B88837ca1490cCa17c31607",
+    USDC: "0x0b2c639c533813f4aa9d7837caf62653d097ff85",
     SUSD: "0x8c6f28f2f1a3c87f0f938b96d27520d9751ec8d9",
     SWETH: "",
     WETH: "0x4200000000000000000000000000000000000006",
@@ -69,10 +71,13 @@ export const CONTRACT_ADDRESS = {
     uniswapV3: {
       nonfungiblePositionManager: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88"
     },
+
     WMATIC: "",
     //
     ARRAKIS_USDC_WETH_GAUGE: "",
-    ARRAKIS_USDC_WETH_LP: ""
+    ARRAKIS_USDC_WETH_LP: "",
+    VELODROME_CL_USDC_WETH_GAUGE: "0x8d8d1CdDD5960276A1CDE360e7b5D210C3387948",
+    VELO: "0x9560e827aF36c94D2Ac33a39bCE1Fe78631088Db"
   },
   [Network.ARBITRUM]: {
     USDC: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
@@ -90,7 +95,9 @@ export const CONTRACT_ADDRESS = {
     //
     ARRAKIS_USDC_WETH_GAUGE: "",
     ARRAKIS_USDC_WETH_LP: "",
-    WMATIC: ""
+    WMATIC: "",
+    VELODROME_CL_USDC_WETH_GAUGE: "",
+    VELO: ""
   },
   [Network.BASE]: {
     USDC: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
@@ -103,15 +110,24 @@ export const CONTRACT_ADDRESS = {
     //
     ARRAKIS_USDC_WETH_GAUGE: "",
     ARRAKIS_USDC_WETH_LP: "",
-    WMATIC: ""
+    WMATIC: "",
+    VELODROME_CL_USDC_WETH_GAUGE: "",
+    VELO: ""
   }
 };
 
 export const MAX_AMOUNT = ethers.constants.MaxUint256;
 
 export const USDC_BALANCEOF_SLOT = {
-  [Network.OPTIMISM]: 0,
+  [Network.OPTIMISM]: 9,
   [Network.ARBITRUM]: 9,
   [Network.POLYGON]: 0,
   [Network.BASE]: 9
+};
+
+export const WETH_BALANCEOF_SLOT = {
+  [Network.OPTIMISM]: 3,
+  [Network.ARBITRUM]: 51,
+  [Network.POLYGON]: 0,
+  [Network.BASE]: 0
 };

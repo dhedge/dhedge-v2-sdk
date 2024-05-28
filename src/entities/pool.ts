@@ -3,13 +3,14 @@
 import { Contract, ethers, Wallet, BigNumber } from "ethers";
 
 import IERC20 from "../abi/IERC20.json";
+
+import IERC721 from "../abi/IERC721.json";
 import IMiniChefV2 from "../abi/IMiniChefV2.json";
 import ILendingPool from "../abi/ILendingPool.json";
 import ISynthetix from "../abi/ISynthetix.json";
 import IUniswapV2Router from "../abi/IUniswapV2Router.json";
 import INonfungiblePositionManager from "../abi/INonfungiblePositionManager.json";
 import IAaveIncentivesController from "../abi/IAaveIncentivesController.json";
-import IArrakisV1RouterStaking from "../abi/IArrakisV1RouterStaking.json";
 import ILiquidityGaugeV4 from "../abi/ILiquidityGaugeV4.json";
 import IBalancerRewardsGauge from "../abi/IBalancerRewardsGauge.json";
 
@@ -34,19 +35,23 @@ import {
 
 import { Utils } from "./utils";
 import {
-  getUniswapV3Liquidity,
-  getUniswapV3MintParams
+  getDecreaseLiquidityTxData,
+  getIncreaseLiquidityTxData,
+  getUniswapV3MintTxData
 } from "../services/uniswap/V3Liquidity";
-import { FeeAmount } from "@uniswap/v3-sdk";
 import { getUniswapV3SwapTxData } from "../services/uniswap/V3Trade";
 import { getEasySwapperTxData } from "../services/toros/easySwapper";
 import { getAaveV3ClaimTxData } from "../services/aave/incentives";
 import {
   getVelodromeAddLiquidityTxData,
+  getVelodromeCLDecreaseStakedLiquidityTxData,
+  getVelodromeCLIncreaseStakedLiquidityTxData,
+  getVelodromeClOwner,
   getVelodromeRemoveLiquidityTxData
 } from "../services/velodrome/liquidity";
 import {
   getVelodromeClaimTxData,
+  getVelodromeCLClaimTxData,
   getVelodromeStakeTxData
 } from "../services/velodrome/staking";
 import { getLyraOptionTxData } from "../services/lyra/trade";
@@ -261,7 +266,7 @@ export class Pool {
   ): Promise<any> {
     const iERC20 = new ethers.utils.Interface(IERC20.abi);
     const approveTxData = iERC20.encodeFunctionData("approve", [
-      nonfungiblePositionManagerAddress[this.network],
+      nonfungiblePositionManagerAddress[this.network][Dapp.UNISWAPV3],
       amount
     ]);
     const tx = await getPoolTxOrGasEstimate(
@@ -292,6 +297,35 @@ export class Pool {
     const approveTxData = iERC20.encodeFunctionData("approve", [
       spender,
       amount
+    ]);
+    const tx = await getPoolTxOrGasEstimate(
+      this,
+      [asset, approveTxData, options],
+      estimateGas
+    );
+    return tx;
+  }
+
+  /**
+   * Approve NFT for provided spender address
+   * @param {string} spender Spender address
+   * @param {string} asset Address of asset
+   * @param {string} tokenId NFT id
+   * @param {any} options Transaction options
+   * @param {boolean} estimateGas Simulate/estimate gas
+   * @returns {Promise<any>} Transaction
+   */
+  async approveSpenderNFT(
+    spender: string,
+    asset: string,
+    tokenId: string,
+    options: any = null,
+    estimateGas = false
+  ): Promise<any> {
+    const iERC721 = new ethers.utils.Interface(IERC721.abi);
+    const approveTxData = iERC721.encodeFunctionData("approve", [
+      spender,
+      tokenId
     ]);
     const tx = await getPoolTxOrGasEstimate(
       this,
@@ -509,7 +543,7 @@ export class Pool {
    * Stake liquidity pool tokens in gauge contract
    * @param {Dapp} dapp Platform like Balancer or Velodrome
    * @param {string} gauge Gauge contract address
-   * @param {BigNumber | string} amount Amount of liquidity pool tokens
+   * @param {BigNumber | string} amount Amount of liquidity pool tokens or token ID for Velodrome CL
    * @param {any} options Transaction options
    * @param {boolean} estimateGas Simulate/estimate gas
    * @returns {Promise<any>} Transaction
@@ -537,6 +571,7 @@ export class Pool {
         break;
       case Dapp.VELODROMEV2:
       case Dapp.AERODROME:
+      case Dapp.VELODROMECL:
         stakeTxData = getVelodromeStakeTxData(amount, true);
         break;
       default:
@@ -584,7 +619,7 @@ export class Pool {
   /**
    * Unstake liquidity pool tokens from Velodrome or Balancer gauge
    * @param {string} gauge Gauge contract address
-   * @param {BigNumber | string} amount Amount of liquidity pool tokens
+   * @param {BigNumber | string} amount Amount of liquidity pool tokens or CL token ID
    * @param {any} options Transaction options
    * @param {boolean} estimateGas Simulate/estimate gas
    * @returns {Promise<any>} Transaction
@@ -946,6 +981,7 @@ export class Pool {
 
   /**
    * Create UniswapV3 liquidity pool
+   * @param {dapp} Platform either UniswapV3 or VelodromeCL
    * @param {string} assetA First asset
    * @param {string} assetB Second asset
    * @param {BigNumber | string} amountA Amount first asset
@@ -954,12 +990,13 @@ export class Pool {
    * @param { number } maxPrice Upper price range (assetB per assetA)
    * @param { number } minTick Lower tick range
    * @param { number } maxTick Upper tick range
-   * @param { FeeAmount } feeAmount Fee tier (Low 0.05%, Medium 0.3%, High 1%)
+   * @param { number } feeAmountOrTickSpacing Fee tier UniswapV3 or tick spacing VelodromeCL
    * @param {any} options Transaction options
    * @param {boolean} estimateGas Simulate/estimate gas
    * @returns {Promise<any>} Transaction
    */
   async addLiquidityUniswapV3(
+    dapp: Dapp.UNISWAPV3 | Dapp.VELODROMECL,
     assetA: string,
     assetB: string,
     amountA: BigNumber | string,
@@ -968,7 +1005,7 @@ export class Pool {
     maxPrice: number | null,
     minTick: number | null,
     maxTick: number | null,
-    feeAmount: FeeAmount,
+    feeAmountOrTickSpacing: number,
     options: any = null,
     estimateGas = false
   ): Promise<any> {
@@ -977,12 +1014,11 @@ export class Pool {
       (minTick === null || maxTick === null)
     )
       throw new Error("Need to provide price or tick range");
+    if ((minPrice || maxPrice) && dapp === Dapp.VELODROMECL)
+      throw new Error("no price conversion for Velodrome CL");
 
-    const iNonfungiblePositionManager = new ethers.utils.Interface(
-      INonfungiblePositionManager.abi
-    );
-
-    const mintTxParams = await getUniswapV3MintParams(
+    const mintTxData = await getUniswapV3MintTxData(
+      dapp,
       this,
       assetA,
       assetB,
@@ -992,15 +1028,16 @@ export class Pool {
       maxPrice,
       minTick,
       maxTick,
-      feeAmount
+      feeAmountOrTickSpacing
     );
-    const mintTxData = iNonfungiblePositionManager.encodeFunctionData(
-      Transaction.MINT,
-      [mintTxParams]
-    );
+
     const tx = await getPoolTxOrGasEstimate(
       this,
-      [nonfungiblePositionManagerAddress[this.network], mintTxData, options],
+      [
+        nonfungiblePositionManagerAddress[this.network][dapp],
+        mintTxData,
+        options
+      ],
       estimateGas
     );
     return tx;
@@ -1022,46 +1059,37 @@ export class Pool {
     options: any = null,
     estimateGas = false
   ): Promise<any> {
-    let txData;
     let dappAddress;
-    if (dapp === Dapp.UNISWAPV3) {
-      dappAddress = nonfungiblePositionManagerAddress[this.network];
-      const abi = new ethers.utils.Interface(INonfungiblePositionManager.abi);
-      const liquidity = (await getUniswapV3Liquidity(tokenId, this))
-        .mul(Math.round(amount * 1e4))
-        .div(1e6);
-      const decreaseLiquidityTxData = abi.encodeFunctionData(
-        Transaction.DECREASE_LIQUIDITY,
-        [[tokenId, liquidity, 0, 0, await getDeadline(this)]]
-      );
-      const collectTxData = abi.encodeFunctionData(Transaction.COLLECT, [
-        [tokenId, this.address, MaxUint128, MaxUint128]
-      ]);
-
-      const multicallParams = [decreaseLiquidityTxData, collectTxData];
-
-      if (amount === 100) {
-        const burnTxData = abi.encodeFunctionData(Transaction.BURN, [tokenId]);
-        multicallParams.push(burnTxData);
-      }
-      txData = abi.encodeFunctionData(Transaction.MULTI_CALL, [
-        multicallParams
-      ]);
-    } else if (dapp === Dapp.ARRAKIS) {
-      dappAddress = routerAddress[this.network][dapp];
-      const abi = new ethers.utils.Interface(IArrakisV1RouterStaking.abi);
-      const liquidity = (await this.utils.getBalance(tokenId, this.address))
-        .mul(Math.round(amount * 1e4))
-        .div(1e6);
-      txData = abi.encodeFunctionData(Transaction.REMOVE_LIQUIDITY_UNSTAKE, [
-        tokenId,
-        liquidity,
-        0,
-        0,
-        this.address
-      ]);
+    let isStaked = false;
+    let txData;
+    switch (dapp) {
+      case Dapp.UNISWAPV3:
+        dappAddress = nonfungiblePositionManagerAddress[this.network][dapp];
+        break;
+      case Dapp.VELODROMECL:
+        const tokenIdOwner = await getVelodromeClOwner(this, tokenId);
+        if (tokenIdOwner.toLowerCase() === this.address.toLowerCase()) {
+          dappAddress = nonfungiblePositionManagerAddress[this.network][dapp];
+        } else {
+          //staked in gauge
+          dappAddress = tokenIdOwner;
+          isStaked = true;
+        }
+        break;
+      case Dapp.ARRAKIS:
+        dappAddress = routerAddress[this.network][dapp];
+        break;
+      default:
+        throw new Error("dapp not supported");
+    }
+    if (!isStaked) {
+      txData = await getDecreaseLiquidityTxData(this, dapp, tokenId, amount);
     } else {
-      throw new Error("dapp not supported");
+      txData = await getVelodromeCLDecreaseStakedLiquidityTxData(
+        this,
+        tokenId,
+        amount
+      );
     }
     const tx = await getPoolTxOrGasEstimate(
       this,
@@ -1072,7 +1100,7 @@ export class Pool {
   }
 
   /**
-   * Increase liquidity of an UniswapV3 or Arrakis liquidity pool
+   * Increase liquidity of an UniswapV, VelodromeCL or Arrakis liquidity pool
    * @param {Dapp} dapp Platform either UniswapV3 or Arrakis
    * @param {string} tokenId Token Id of UniswapV3 position
    * @param {BigNumber | string} amountA Amount first asset
@@ -1089,28 +1117,44 @@ export class Pool {
     options: any = null,
     estimateGas = false
   ): Promise<any> {
-    let txData;
     let dappAddress;
-    if (dapp === Dapp.UNISWAPV3) {
-      dappAddress = nonfungiblePositionManagerAddress[this.network];
-      const abi = new ethers.utils.Interface(INonfungiblePositionManager.abi);
-      txData = abi.encodeFunctionData(Transaction.INCREASE_LIQUIDITY, [
-        [tokenId, amountA, amountB, 0, 0, await getDeadline(this)]
-      ]);
-    } else if (dapp === Dapp.ARRAKIS) {
-      dappAddress = routerAddress[this.network][dapp];
-      const abi = new ethers.utils.Interface(IArrakisV1RouterStaking.abi);
-      txData = abi.encodeFunctionData(Transaction.ADD_LIQUIDITY_STAKE, [
+    let isStaked = false;
+    let txData;
+    switch (dapp) {
+      case Dapp.UNISWAPV3:
+        dappAddress = nonfungiblePositionManagerAddress[this.network][dapp];
+        break;
+      case Dapp.VELODROMECL:
+        const tokenIdOwner = await getVelodromeClOwner(this, tokenId);
+        if (tokenIdOwner.toLowerCase() === this.address.toLowerCase()) {
+          dappAddress = nonfungiblePositionManagerAddress[this.network][dapp];
+        } else {
+          //staked in gauge
+          dappAddress = tokenIdOwner;
+          isStaked = true;
+        }
+        break;
+      case Dapp.ARRAKIS:
+        dappAddress = routerAddress[this.network][dapp];
+        break;
+      default:
+        throw new Error("dapp not supported");
+    }
+    if (!isStaked) {
+      txData = await getIncreaseLiquidityTxData(
+        this,
+        dapp,
         tokenId,
         amountA,
-        amountB,
-        0,
-        0,
-        0,
-        this.address
-      ]);
+        amountB
+      );
     } else {
-      throw new Error("dapp not supported");
+      txData = await getVelodromeCLIncreaseStakedLiquidityTxData(
+        this,
+        tokenId,
+        amountA,
+        amountB
+      );
     }
     const tx = await getPoolTxOrGasEstimate(
       this,
@@ -1136,12 +1180,12 @@ export class Pool {
   ): Promise<any> {
     let txData;
     let contractAddress;
+    const iNonfungiblePositionManager = new ethers.utils.Interface(
+      INonfungiblePositionManager.abi
+    );
     switch (dapp) {
       case Dapp.UNISWAPV3:
-        contractAddress = nonfungiblePositionManagerAddress[this.network];
-        const iNonfungiblePositionManager = new ethers.utils.Interface(
-          INonfungiblePositionManager.abi
-        );
+        contractAddress = nonfungiblePositionManagerAddress[this.network][dapp];
         txData = iNonfungiblePositionManager.encodeFunctionData(
           Transaction.COLLECT,
           [[tokenId, this.address, MaxUint128, MaxUint128]]
@@ -1162,6 +1206,21 @@ export class Pool {
       case Dapp.AERODROME:
         contractAddress = tokenId;
         txData = getVelodromeClaimTxData(this, tokenId, true);
+        break;
+      case Dapp.VELODROMECL:
+        const tokenIdOwner = await getVelodromeClOwner(this, tokenId);
+        if (tokenIdOwner.toLowerCase() === this.address.toLowerCase()) {
+          contractAddress =
+            nonfungiblePositionManagerAddress[this.network][dapp];
+          txData = iNonfungiblePositionManager.encodeFunctionData(
+            Transaction.COLLECT,
+            [[tokenId, this.address, MaxUint128, MaxUint128]]
+          );
+        } else {
+          //staked in gauge
+          contractAddress = tokenIdOwner;
+          txData = getVelodromeCLClaimTxData(tokenId);
+        }
         break;
       default:
         throw new Error("dapp not supported");
@@ -1190,7 +1249,7 @@ export class Pool {
     assetFrom: string,
     assetTo: string,
     amountIn: BigNumber | string,
-    feeAmount: FeeAmount,
+    feeAmount: number,
     slippage = 0.5,
     options: any = null,
     estimateGas = false
