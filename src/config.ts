@@ -77,7 +77,9 @@ export const stakingAddress: AddressDappNetworkMap = {
     [Dapp.AAVE]: "0x357D51124f59836DeD84c8a1730D72B749d8BC23",
     [Dapp.AAVEV3]: "0x929EC64c34a17401F460460D4B9390518E5B473e"
   },
-  [Network.OPTIMISM]: {},
+  [Network.OPTIMISM]: {
+    [Dapp.AAVEV3]: "0x929EC64c34a17401F460460D4B9390518E5B473e"
+  },
   [Network.ARBITRUM]: {},
   [Network.BASE]: {}
 };
