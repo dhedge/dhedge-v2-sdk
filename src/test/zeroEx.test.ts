@@ -76,15 +76,24 @@ const testZeroEx = ({ wallet, network, provider }: TestingRunParams) => {
 
 testingHelper({
   network: Network.OPTIMISM,
+  onFork: true,
   testingRun: testZeroEx
 });
 
 testingHelper({
   network: Network.POLYGON,
+  onFork: true,
   testingRun: testZeroEx
 });
 
 testingHelper({
   network: Network.BASE,
+  onFork: true,
+  testingRun: testZeroEx
+});
+
+testingHelper({
+  network: Network.ARBITRUM,
+  onFork: true,
   testingRun: testZeroEx
 });
