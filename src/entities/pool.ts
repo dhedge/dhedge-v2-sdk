@@ -44,8 +44,6 @@ import { getEasySwapperTxData } from "../services/toros/easySwapper";
 import { getAaveV3ClaimTxData } from "../services/aave/incentives";
 import {
   getVelodromeAddLiquidityTxData,
-  getVelodromeCLDecreaseStakedLiquidityTxData,
-  getVelodromeCLIncreaseStakedLiquidityTxData,
   getVelodromeClOwner,
   getVelodromeRemoveLiquidityTxData
 } from "../services/velodrome/liquidity";
@@ -1085,10 +1083,8 @@ export class Pool {
     if (!isStaked) {
       txData = await getDecreaseLiquidityTxData(this, dapp, tokenId, amount);
     } else {
-      txData = await getVelodromeCLDecreaseStakedLiquidityTxData(
-        this,
-        tokenId,
-        amount
+      throw new Error(
+        "unsupported decreaseStakedLiquidity: unstake first to decrease lp"
       );
     }
     const tx = await getPoolTxOrGasEstimate(
@@ -1149,11 +1145,8 @@ export class Pool {
         amountB
       );
     } else {
-      txData = await getVelodromeCLIncreaseStakedLiquidityTxData(
-        this,
-        tokenId,
-        amountA,
-        amountB
+      throw new Error(
+        "unsupported increaseStakedLiquidity: unstake first to increase lp"
       );
     }
     const tx = await getPoolTxOrGasEstimate(
