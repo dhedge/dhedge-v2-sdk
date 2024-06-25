@@ -1,4 +1,4 @@
-import { BigNumber, ethers } from "ethers";
+import { BigNumber, Contract, ethers } from "ethers";
 import { Network } from "../../types";
 import { getWalletData } from "../wallet";
 import {
@@ -6,6 +6,8 @@ import {
   USDC_BALANCEOF_SLOT,
   WETH_BALANCEOF_SLOT
 } from "../constants";
+import { Pool } from "../../entities";
+import AssetHandler from "../../abi/AssetHandler.json";
 
 export type TestingRunParams = {
   network: Network;
@@ -118,4 +120,53 @@ export const setWETHAmount = async ({
 
 export const wait = (seconds: number): Promise<void> => {
   return new Promise(resolve => setTimeout(resolve, seconds * 1000));
+};
+
+export const runWithImpersonateAccount = async (
+  {
+    account,
+    provider
+  }: {
+    account: string;
+    provider: ethers.providers.JsonRpcProvider;
+  },
+  fnToRun: ({ signer }: { signer: ethers.providers.JsonRpcSigner }) => void
+): Promise<void> => {
+  await provider.send("hardhat_impersonateAccount", [account]);
+
+  await provider.send("hardhat_setBalance", [
+    account,
+    ethers.utils.hexValue(ethers.utils.parseEther("1000"))
+  ]);
+  const signer = provider.getSigner(account);
+  await fnToRun({ signer });
+
+  await provider.send("hardhat_stopImpersonatingAccount", [account]);
+};
+
+export const setChainlinkTimeout = async (
+  {
+    pool,
+    provider
+  }: {
+    pool: Pool;
+    provider: ethers.providers.JsonRpcProvider;
+  },
+  time: number
+): Promise<void> => {
+  const assetHandler = await pool.factory.callStatic.getAssetHandler();
+  const assetHandlerContract = new Contract(
+    assetHandler,
+    AssetHandler.abi,
+    provider
+  );
+  const ownerOfAssetHandler = await assetHandlerContract.callStatic.owner();
+  await runWithImpersonateAccount(
+    { provider, account: ownerOfAssetHandler },
+    async ({ signer }) => {
+      await assetHandlerContract
+        .connect(signer)
+        .functions.setChainlinkTimeout(time);
+    }
+  );
 };

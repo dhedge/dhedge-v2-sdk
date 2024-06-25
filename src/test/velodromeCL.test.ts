@@ -1,13 +1,13 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import BigNumber from "bignumber.js";
 import { Dhedge, Pool, ethers } from "..";
+
 import { nonfungiblePositionManagerAddress } from "../config";
 import { AssetEnabled, Dapp, Network } from "../types";
 import { CONTRACT_ADDRESS, MAX_AMOUNT, TEST_POOL } from "./constants";
 import {
   TestingRunParams,
   beforeAfterReset,
+  setChainlinkTimeout,
   setUSDCAmount,
   setWETHAmount,
   testingHelper
@@ -16,6 +16,7 @@ import { allowanceDelta, balanceDelta } from "./utils/token";
 import INonfungiblePositionManager from "../abi/INonfungiblePositionManager.json";
 
 const testVelodromeCL = ({ wallet, network, provider }: TestingRunParams) => {
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const VELODROME_POSITION_MANGER = nonfungiblePositionManagerAddress[network][
     Dapp.VELODROMECL
   ]!;
@@ -41,6 +42,10 @@ const testVelodromeCL = ({ wallet, network, provider }: TestingRunParams) => {
       ]);
       dhedge = new Dhedge(wallet, network);
       pool = await dhedge.loadPool(TEST_POOL[network]);
+
+      // setChainlinkTimeout
+      await setChainlinkTimeout({ pool, provider }, 86400 * 365);
+
       await setUSDCAmount({
         amount: new BigNumber(10000).times(1e6).toFixed(0),
         userAddress: pool.address,
@@ -59,6 +64,10 @@ const testVelodromeCL = ({ wallet, network, provider }: TestingRunParams) => {
         { asset: WETH, isDeposit: true },
         {
           asset: VELODROME_POSITION_MANGER,
+          isDeposit: false
+        },
+        {
+          asset: VELO,
           isDeposit: false
         }
       ];
