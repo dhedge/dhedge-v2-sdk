@@ -88,3 +88,8 @@ testingHelper({
   network: Network.BASE,
   testingRun: testZeroEx
 });
+
+testingHelper({
+  network: Network.ARBITRUM,
+  testingRun: testZeroEx
+});
