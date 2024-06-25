@@ -16,11 +16,11 @@ export type TestingRunParams = {
 
 type TestHelperParams = {
   testingRun: (testingRunParams: TestingRunParams) => void;
-} & { network: Network; onFork: boolean };
+} & { network: Network; onFork?: boolean };
 
 export const testingHelper = ({
   network,
-  onFork,
+  onFork = true,
   testingRun
 }: TestHelperParams): void => {
   const { wallet, provider, rpcUrl } = getWalletData(network, onFork);

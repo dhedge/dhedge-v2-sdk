@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import { Network } from "../types";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-require("dotenv").config(); 
+require("dotenv").config();
 
 export const networkPortMap = {
   [Network.POLYGON]: 8542,
@@ -12,7 +12,7 @@ export const networkPortMap = {
 
 export const getWalletData = (
   network: Network,
-  onFork: boolean
+  onFork = true
 ): {
   wallet: ethers.Wallet;
   provider: ethers.providers.JsonRpcProvider;
