@@ -31,7 +31,7 @@ export const routerAddress: AddressDappNetworkMap = {
     [Dapp.UNISWAPV3]: "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
     [Dapp.ARRAKIS]: "0xc73fb100a995b33f9fa181d420f4c8d74506df66",
     [Dapp.TOROS]: "0xB2F1498983bf9c9442c35F772e6C1AdE66a8DeDE",
-    [Dapp.ZEROEX]: "0x111111125421ca6dc452d289314280a0f8842a65"
+    [Dapp.ZEROEX]: "0xdef1c0ded9bec7f1a1670819833240f027b25eff"
   },
   [Network.OPTIMISM]: {
     [Dapp.UNISWAPV3]: "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
@@ -43,7 +43,7 @@ export const routerAddress: AddressDappNetworkMap = {
     [Dapp.VELODROMEV2]: "0xa062ae8a9c5e11aaa026fc2670b0d65ccc8b2858",
     [Dapp.LYRA]: "0xCCE7819d65f348c64B7Beb205BA367b3fE33763B",
     [Dapp.ARRAKIS]: "0x9ce88a56d120300061593eF7AD074A1B710094d5",
-    [Dapp.ZEROEX]: "0x111111125421ca6dc452d289314280a0f8842a65"
+    [Dapp.ZEROEX]: "0xdef1abe32c034e558cdd535791643c58a13acc10"
   },
   [Network.ARBITRUM]: {
     [Dapp.ONEINCH]: "0x111111125421ca6dc452d289314280a0f8842a65",
