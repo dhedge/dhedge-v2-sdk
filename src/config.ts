@@ -106,7 +106,7 @@ export const nonfungiblePositionManagerAddress: AddressDappNetworkMap = {
   },
   [Network.OPTIMISM]: {
     [Dapp.UNISWAPV3]: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
-    [Dapp.VELODROMECL]: "0xbb5dfe1380333cee4c2eebd7202c80de2256adf4"
+    [Dapp.VELODROMECL]: "0x416b433906b1B72FA758e166e239c43d68dC6F29"
   },
   [Network.ARBITRUM]: {
     [Dapp.UNISWAPV3]: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88"
