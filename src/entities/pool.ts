@@ -570,6 +570,7 @@ export class Pool {
       case Dapp.VELODROMEV2:
       case Dapp.AERODROME:
       case Dapp.VELODROMECL:
+      case Dapp.AERODROMECL:
         stakeTxData = getVelodromeStakeTxData(amount, true);
         break;
       default:
@@ -979,7 +980,7 @@ export class Pool {
 
   /**
    * Create UniswapV3 liquidity pool
-   * @param {dapp} Platform either UniswapV3 or VelodromeCL
+   * @param {dapp} Platform UniswapV3, VelodromeCL or AerodromeCL
    * @param {string} assetA First asset
    * @param {string} assetB Second asset
    * @param {BigNumber | string} amountA Amount first asset
