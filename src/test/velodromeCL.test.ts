@@ -182,6 +182,22 @@ const testVelodromeCL = ({ wallet, network, provider }: TestingRunParams) => {
         );
       });
 
+      it("increases liquidity in a  staked CL position", async () => {
+        const usdcBalance = await pool.utils.getBalance(USDC, pool.address);
+        const wethBalance = await pool.utils.getBalance(WETH, pool.address);
+        const positionBefore = await velodromePositionManager.positions(
+          tokenId
+        );
+        await pool.increaseLiquidity(
+          Dapp.VELODROMECL,
+          tokenId,
+          usdcBalance.div(2),
+          wethBalance.div(2)
+        );
+        const positionAfter = await velodromePositionManager.positions(tokenId);
+        expect(positionAfter.liquidity.gt(positionBefore.liquidity));
+      });
+
       it("collects fess of a staked CL position", async () => {
         await provider.send("evm_increaseTime", [24 * 3600]); // 1 day
         await provider.send("evm_mine", []);

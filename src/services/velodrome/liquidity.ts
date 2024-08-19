@@ -51,11 +51,12 @@ export async function getVelodromeRemoveLiquidityTxData(
 
 export async function getVelodromeClOwner(
   pool: Pool,
+  dapp: Dapp.VELODROMECL | Dapp.AERODROMECL,
   tokenId: string
 ): Promise<string> {
   const iNonfungiblePositionManager = new ethers.Contract(
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    nonfungiblePositionManagerAddress[pool.network][Dapp.VELODROMECL]!,
+    nonfungiblePositionManagerAddress[pool.network][dapp]!,
     INonfungiblePositionManager.abi,
     pool.signer
   );
