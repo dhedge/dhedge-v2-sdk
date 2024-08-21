@@ -1,4 +1,3 @@
-import BigNumber from "bignumber.js";
 import { Dhedge, Pool, ethers } from "..";
 
 import { nonfungiblePositionManagerAddress } from "../config";
@@ -8,24 +7,21 @@ import {
   TestingRunParams,
   beforeAfterReset,
   setChainlinkTimeout,
-  setUSDCAmount,
-  setWETHAmount,
   testingHelper
 } from "./utils/testingHelper";
 import { allowanceDelta, balanceDelta } from "./utils/token";
 import INonfungiblePositionManager from "../abi/INonfungiblePositionManager.json";
 
-const testVelodromeCL = ({ wallet, network, provider }: TestingRunParams) => {
+const testAerodromeCL = ({ wallet, network, provider }: TestingRunParams) => {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const VELODROME_POSITION_MANGER = nonfungiblePositionManagerAddress[network][
-    Dapp.VELODROMECL
+  const AERODROME_POSITION_MANGER = nonfungiblePositionManagerAddress[network][
+    Dapp.AERODROMECL
   ]!;
 
   const USDC = CONTRACT_ADDRESS[network].USDC;
-  const WETH = CONTRACT_ADDRESS[network].WETH;
-  const USDC_WETH_CL_GAUGE =
-    CONTRACT_ADDRESS[network].VELODROME_CL_USDC_WETH_GAUGE;
-  const VELO = CONTRACT_ADDRESS[network].VELO;
+  const USDT = CONTRACT_ADDRESS[network].USDT;
+  const USDC_USDT_CL_GAUGE = "0xBd85D45f1636fCEB2359d9Dcf839f12b3cF5AF3F";
+  const AERO = CONTRACT_ADDRESS[network].VELO;
 
   let dhedge: Dhedge;
   let pool: Pool;
@@ -33,7 +29,7 @@ const testVelodromeCL = ({ wallet, network, provider }: TestingRunParams) => {
   let tokenId: string;
   jest.setTimeout(100000);
 
-  describe(`[${network}] veldorome CL  tests`, () => {
+  describe(`[${network}] Aerodrome CL  tests`, () => {
     beforeAll(async () => {
       // top up ETH (gas)
       await provider.send("hardhat_setBalance", [
@@ -46,35 +42,22 @@ const testVelodromeCL = ({ wallet, network, provider }: TestingRunParams) => {
       // setChainlinkTimeout
       await setChainlinkTimeout({ pool, provider }, 86400 * 365);
 
-      await setUSDCAmount({
-        amount: new BigNumber(10000).times(1e6).toFixed(0),
-        userAddress: pool.address,
-        network,
-        provider
-      });
-      await setWETHAmount({
-        amount: new BigNumber(3).times(1e18).toFixed(0),
-        userAddress: pool.address,
-        network,
-        provider
-      });
-
       const newAssets: AssetEnabled[] = [
         { asset: USDC, isDeposit: true },
-        { asset: WETH, isDeposit: true },
+        { asset: USDT, isDeposit: true },
         {
-          asset: VELODROME_POSITION_MANGER,
+          asset: AERODROME_POSITION_MANGER,
           isDeposit: false
         },
         {
-          asset: VELO,
+          asset: AERO,
           isDeposit: false
         }
       ];
       await pool.changeAssets(newAssets);
 
       velodromePositionManager = new ethers.Contract(
-        VELODROME_POSITION_MANGER,
+        AERODROME_POSITION_MANGER,
         INonfungiblePositionManager.abi,
         pool.signer
       );
@@ -83,32 +66,32 @@ const testVelodromeCL = ({ wallet, network, provider }: TestingRunParams) => {
     beforeAfterReset({ beforeAll, afterAll, provider });
 
     describe("Liquidity", () => {
-      it("approves unlimited USDC and WETH on for Velodrome CL", async () => {
-        await pool.approveSpender(VELODROME_POSITION_MANGER, USDC, MAX_AMOUNT);
-        await pool.approveSpender(VELODROME_POSITION_MANGER, WETH, MAX_AMOUNT);
+      it("approves unlimited USDC and USDT on for Aerodrome CL", async () => {
+        await pool.approveSpender(AERODROME_POSITION_MANGER, USDC, MAX_AMOUNT);
+        await pool.approveSpender(AERODROME_POSITION_MANGER, USDT, MAX_AMOUNT);
         const UsdcAllowanceDelta = await allowanceDelta(
           pool.address,
           USDC,
-          VELODROME_POSITION_MANGER,
+          AERODROME_POSITION_MANGER,
           pool.signer
         );
         await expect(UsdcAllowanceDelta.gt(0));
       });
 
-      it("adds USDC and WETH to a Velodrome CL (mint position)", async () => {
+      it("adds USDC and WETH to a CL (mint position)", async () => {
         const usdcBalance = await pool.utils.getBalance(USDC, pool.address);
-        const wethBalance = await pool.utils.getBalance(WETH, pool.address);
+        const usdtBalance = await pool.utils.getBalance(USDT, pool.address);
         await pool.addLiquidityUniswapV3(
-          Dapp.VELODROMECL,
+          Dapp.AERODROMECL,
           USDC,
-          WETH,
+          USDT,
           usdcBalance.div(2),
-          wethBalance.div(2),
+          usdtBalance.div(2),
           null,
           null,
-          193700,
-          193900,
-          100
+          -2,
+          4,
+          1
         );
 
         tokenId = (
@@ -119,15 +102,15 @@ const testVelodromeCL = ({ wallet, network, provider }: TestingRunParams) => {
 
       it("increases liquidity in a CL position", async () => {
         const usdcBalance = await pool.utils.getBalance(USDC, pool.address);
-        const wethBalance = await pool.utils.getBalance(WETH, pool.address);
+        const usdtBalance = await pool.utils.getBalance(USDT, pool.address);
         const positionBefore = await velodromePositionManager.positions(
           tokenId
         );
         await pool.increaseLiquidity(
-          Dapp.VELODROMECL,
+          Dapp.AERODROMECL,
           tokenId,
           usdcBalance.div(2),
-          wethBalance.div(2)
+          usdtBalance.div(2)
         );
         const positionAfter = await velodromePositionManager.positions(tokenId);
         expect(positionAfter.liquidity.gt(positionBefore.liquidity));
@@ -137,7 +120,7 @@ const testVelodromeCL = ({ wallet, network, provider }: TestingRunParams) => {
         const positionBefore = await velodromePositionManager.positions(
           tokenId
         );
-        await pool.decreaseLiquidity(Dapp.VELODROMECL, tokenId, 50);
+        await pool.decreaseLiquidity(Dapp.AERODROMECL, tokenId, 50);
         const positionAfter = await velodromePositionManager.positions(tokenId);
         expect(positionAfter.liquidity.lt(positionBefore.liquidity));
       });
@@ -145,52 +128,52 @@ const testVelodromeCL = ({ wallet, network, provider }: TestingRunParams) => {
       it("collects fess of a CL position", async () => {
         await provider.send("evm_increaseTime", [24 * 3600 * 3]); // 1 day
         await provider.send("evm_mine", []);
-        await pool.claimFees(Dapp.VELODROMECL, tokenId);
+        await pool.claimFees(Dapp.AERODROMECL, tokenId);
         expect((await balanceDelta(pool.address, USDC, pool.signer)).gt(0));
       });
     });
     describe("Liquidity staking", () => {
       it("stakes a CL position in gauge", async () => {
-        await pool.approveSpender(VELODROME_POSITION_MANGER, USDC, MAX_AMOUNT);
-        await pool.approveSpender(VELODROME_POSITION_MANGER, WETH, MAX_AMOUNT);
+        await pool.approveSpender(AERODROME_POSITION_MANGER, USDC, MAX_AMOUNT);
+        await pool.approveSpender(AERODROME_POSITION_MANGER, USDT, MAX_AMOUNT);
         const usdcBalance = await pool.utils.getBalance(USDC, pool.address);
-        const wethBalance = await pool.utils.getBalance(WETH, pool.address);
+        const usdtBalance = await pool.utils.getBalance(USDT, pool.address);
         await pool.addLiquidityUniswapV3(
-          Dapp.VELODROMECL,
+          Dapp.AERODROMECL,
           USDC,
-          WETH,
+          USDT,
           usdcBalance.div(2),
-          wethBalance.div(2),
+          usdtBalance.div(2),
           null,
           null,
-          193700,
-          193900,
-          100
+          -2,
+          4,
+          1
         );
 
         tokenId = (
           await velodromePositionManager.tokenOfOwnerByIndex(pool.address, 0)
         ).toString();
         await pool.approveSpenderNFT(
-          USDC_WETH_CL_GAUGE,
-          VELODROME_POSITION_MANGER,
+          USDC_USDT_CL_GAUGE,
+          AERODROME_POSITION_MANGER,
           tokenId
         );
-        await pool.stakeInGauge(Dapp.VELODROMECL, USDC_WETH_CL_GAUGE, tokenId);
+        await pool.stakeInGauge(Dapp.AERODROMECL, USDC_USDT_CL_GAUGE, tokenId);
         expect(await velodromePositionManager.ownerOf(tokenId)).toBe(
-          USDC_WETH_CL_GAUGE
+          USDC_USDT_CL_GAUGE
         );
       });
 
       it("collects fess of a staked CL position", async () => {
         await provider.send("evm_increaseTime", [24 * 3600]); // 1 day
         await provider.send("evm_mine", []);
-        await pool.claimFees(Dapp.VELODROMECL, tokenId);
-        expect((await balanceDelta(pool.address, VELO, pool.signer)).gt(0));
+        await pool.claimFees(Dapp.AERODROMECL, tokenId);
+        expect((await balanceDelta(pool.address, AERO, pool.signer)).gt(0));
       });
 
       it("unstakes a CL position from a gauge", async () => {
-        await pool.unstakeFromGauge(USDC_WETH_CL_GAUGE, tokenId);
+        await pool.unstakeFromGauge(USDC_USDT_CL_GAUGE, tokenId);
         expect(
           (await velodromePositionManager.ownerOf(tokenId)).toLowerCase()
         ).toBe(pool.address.toLowerCase());
@@ -200,6 +183,6 @@ const testVelodromeCL = ({ wallet, network, provider }: TestingRunParams) => {
 };
 
 testingHelper({
-  network: Network.OPTIMISM,
-  testingRun: testVelodromeCL
+  network: Network.BASE,
+  testingRun: testAerodromeCL
 });
