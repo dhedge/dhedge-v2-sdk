@@ -25,7 +25,8 @@ export enum Dapp {
   LYRA = "lyra",
   ZEROEX = "0x",
   RAMSES = "ramses",
-  AERODROME = "aerodrome"
+  AERODROME = "aerodrome",
+  COMPOUNDV3 = "compoundV3"
 }
 
 export enum Transaction {

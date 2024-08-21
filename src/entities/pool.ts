@@ -72,6 +72,10 @@ import {
   mintUnitViaFlatMoney,
   redeemUnitViaFlatMoney
 } from "../services/flatmoney/stableLp";
+import {
+  getCompoundV3LendTxData,
+  getCompoundV3WithdrawTxData
+} from "../services/compound/lending";
 
 export class Pool {
   public readonly poolLogic: Contract;
@@ -658,13 +662,18 @@ export class Pool {
     options: any = null,
     estimateGas = false
   ): Promise<any> {
-    const iLendingPool = new ethers.utils.Interface(ILendingPool.abi);
-    const depositTxData = iLendingPool.encodeFunctionData(Transaction.DEPOSIT, [
-      asset,
-      amount,
-      this.address,
-      referralCode
-    ]);
+    let depositTxData;
+    if (dapp === Dapp.COMPOUNDV3) {
+      depositTxData = getCompoundV3LendTxData(asset, amount);
+    } else {
+      const iLendingPool = new ethers.utils.Interface(ILendingPool.abi);
+      depositTxData = iLendingPool.encodeFunctionData(Transaction.DEPOSIT, [
+        asset,
+        amount,
+        this.address,
+        referralCode
+      ]);
+    }
     const tx = await getPoolTxOrGasEstimate(
       this,
       [routerAddress[this.network][dapp], depositTxData, options],
@@ -689,11 +698,17 @@ export class Pool {
     options: any = null,
     estimateGas = false
   ): Promise<any> {
-    const iLendingPool = new ethers.utils.Interface(ILendingPool.abi);
-    const withdrawTxData = iLendingPool.encodeFunctionData(
-      Transaction.WITHDRAW,
-      [asset, amount, this.address]
-    );
+    let withdrawTxData;
+    if (dapp === Dapp.COMPOUNDV3) {
+      withdrawTxData = getCompoundV3WithdrawTxData(asset, amount);
+    } else {
+      const iLendingPool = new ethers.utils.Interface(ILendingPool.abi);
+      withdrawTxData = iLendingPool.encodeFunctionData(Transaction.WITHDRAW, [
+        asset,
+        amount,
+        this.address
+      ]);
+    }
     const tx = await getPoolTxOrGasEstimate(
       this,
       [routerAddress[this.network][dapp], withdrawTxData, options],
