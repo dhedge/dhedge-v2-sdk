@@ -113,7 +113,8 @@ export const nonfungiblePositionManagerAddress: AddressDappNetworkMap = {
     [Dapp.UNISWAPV3]: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88"
   },
   [Network.BASE]: {
-    [Dapp.UNISWAPV3]: "0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1"
+    [Dapp.UNISWAPV3]: "0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1",
+    [Dapp.AERODROMECL]: "0x827922686190790b37229fd06084350e74485b72"
   }
 };
 
