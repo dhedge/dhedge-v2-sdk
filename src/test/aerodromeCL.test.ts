@@ -54,7 +54,7 @@ const testAerodromeCL = ({ wallet, network, provider }: TestingRunParams) => {
           isDeposit: false
         }
       ];
-      await pool.changeAssets(newAssets);
+      await pool.managerLogic.changeAssets(newAssets, []);
 
       velodromePositionManager = new ethers.Contract(
         AERODROME_POSITION_MANGER,
