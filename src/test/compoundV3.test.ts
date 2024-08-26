@@ -7,15 +7,15 @@ import { CONTRACT_ADDRESS, MAX_AMOUNT, TEST_POOL } from "./constants";
 import {
   TestingRunParams,
   beforeAfterReset,
-  setUSDCAmount,
+  setWETHAmount,
   testingHelper
 } from "./utils/testingHelper";
 import { allowanceDelta, balanceDelta } from "./utils/token";
 import { getWalletData } from "./wallet";
 
 const testCompoundV3 = ({ network, provider }: TestingRunParams) => {
-  const USDC = CONTRACT_ADDRESS[network].USDC;
-  const COMPOUNDV3_USDC = CONTRACT_ADDRESS[network].COMPOUNDV3_USDC;
+  const WETH = CONTRACT_ADDRESS[network].WETH;
+  const COMPOUNDV3_WETH = CONTRACT_ADDRESS[network].COMPOUNDV3_WETH;
 
   let dhedge: Dhedge;
   let pool: Pool;
@@ -31,17 +31,17 @@ const testCompoundV3 = ({ network, provider }: TestingRunParams) => {
       ]);
       dhedge = new Dhedge(wallet, network);
       pool = await dhedge.loadPool(TEST_POOL[network]);
-      await setUSDCAmount({
-        amount: new BigNumber(10).times(1e6).toFixed(0),
+      await setWETHAmount({
+        amount: new BigNumber(1e18).toFixed(0),
         userAddress: pool.address,
         network,
         provider
       });
 
       const newAssets: AssetEnabled[] = [
-        { asset: USDC, isDeposit: true },
+        { asset: WETH, isDeposit: true },
         {
-          asset: COMPOUNDV3_USDC,
+          asset: COMPOUNDV3_WETH,
           isDeposit: false
         }
       ];
@@ -49,27 +49,27 @@ const testCompoundV3 = ({ network, provider }: TestingRunParams) => {
     });
     beforeAfterReset({ beforeAll, afterAll, provider });
 
-    it("approves unlimited USDC for cUSDCv3 market", async () => {
-      await pool.approveSpender(COMPOUNDV3_USDC, USDC, MAX_AMOUNT);
+    it("approves unlimited WETH for cWETHv3 market", async () => {
+      await pool.approveSpender(COMPOUNDV3_WETH, WETH, MAX_AMOUNT);
       const UsdcAllowanceDelta = await allowanceDelta(
         pool.address,
-        USDC,
-        COMPOUNDV3_USDC,
+        WETH,
+        COMPOUNDV3_WETH,
         pool.signer
       );
       await expect(UsdcAllowanceDelta.gt(0));
     });
 
-    it("lends USDC to CompundV3 USDC market", async () => {
-      const usdcBalance = await pool.utils.getBalance(USDC, pool.address);
-      await pool.lendCompoundV3(COMPOUNDV3_USDC, USDC, usdcBalance);
+    it("lends WETH to CompundV3 WETH market", async () => {
+      const wethBalance = await pool.utils.getBalance(WETH, pool.address);
+      await pool.lendCompoundV3(COMPOUNDV3_WETH, WETH, wethBalance);
 
-      const cUSDCTokenDelta = await balanceDelta(
+      const cWETHTokenDelta = await balanceDelta(
         pool.address,
-        COMPOUNDV3_USDC,
+        COMPOUNDV3_WETH,
         pool.signer
       );
-      expect(cUSDCTokenDelta.gt(0));
+      expect(cWETHTokenDelta.gt(0));
     });
   });
 };
