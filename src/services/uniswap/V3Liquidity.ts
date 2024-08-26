@@ -70,7 +70,7 @@ export function tryParseTick(
 }
 
 export async function getUniswapV3MintTxData(
-  dapp: Dapp.UNISWAPV3 | Dapp.VELODROMECL,
+  dapp: Dapp.UNISWAPV3 | Dapp.VELODROMECL | Dapp.AERODROMECL,
   pool: Pool,
   assetA: string,
   assetB: string,
@@ -147,7 +147,7 @@ export async function getUniswapV3MintTxData(
     INonfungiblePositionManager.abi
   );
 
-  if (dapp === Dapp.VELODROMECL) {
+  if (dapp === Dapp.VELODROMECL || dapp === Dapp.AERODROMECL) {
     iNonfungiblePositionManager = new ethers.utils.Interface(
       IVeldodromePositionManager.abi
     );
@@ -162,7 +162,7 @@ export async function getUniswapV3MintTxData(
 }
 
 export async function getUniswapV3Liquidity(
-  dapp: Dapp.UNISWAPV3 | Dapp.VELODROMECL,
+  dapp: Dapp.UNISWAPV3 | Dapp.VELODROMECL | Dapp.AERODROMECL,
   tokenId: string,
   pool: Pool
 ): Promise<BigNumber> {
@@ -184,7 +184,11 @@ export async function getIncreaseLiquidityTxData(
   amountB: ethers.BigNumber | string
 ): Promise<any> {
   let txData;
-  if (dapp === Dapp.UNISWAPV3 || dapp === Dapp.VELODROMECL) {
+  if (
+    dapp === Dapp.UNISWAPV3 ||
+    dapp === Dapp.VELODROMECL ||
+    dapp === Dapp.AERODROMECL
+  ) {
     const abi = new ethers.utils.Interface(INonfungiblePositionManager.abi);
     txData = abi.encodeFunctionData(Transaction.INCREASE_LIQUIDITY, [
       [tokenId, amountA, amountB, 0, 0, await getDeadline(pool)]
@@ -214,7 +218,11 @@ export async function getDecreaseLiquidityTxData(
   amount = 100
 ): Promise<any> {
   let txData;
-  if (dapp === Dapp.UNISWAPV3 || dapp === Dapp.VELODROMECL) {
+  if (
+    dapp === Dapp.UNISWAPV3 ||
+    dapp === Dapp.VELODROMECL ||
+    dapp === Dapp.AERODROMECL
+  ) {
     const abi = new ethers.utils.Interface(INonfungiblePositionManager.abi);
     const liquidity = (await getUniswapV3Liquidity(dapp, tokenId, pool))
       .times(amount)

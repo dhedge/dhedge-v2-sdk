@@ -574,6 +574,7 @@ export class Pool {
       case Dapp.VELODROMEV2:
       case Dapp.AERODROME:
       case Dapp.VELODROMECL:
+      case Dapp.AERODROMECL:
         stakeTxData = getVelodromeStakeTxData(amount, true);
         break;
       default:
@@ -1037,7 +1038,7 @@ export class Pool {
 
   /**
    * Create UniswapV3 liquidity pool
-   * @param {dapp} Platform either UniswapV3 or VelodromeCL
+   * @param {dapp} Platform UniswapV3, VelodromeCL or AerodromeCL
    * @param {string} assetA First asset
    * @param {string} assetB Second asset
    * @param {BigNumber | string} amountA Amount first asset
@@ -1052,7 +1053,7 @@ export class Pool {
    * @returns {Promise<any>} Transaction
    */
   async addLiquidityUniswapV3(
-    dapp: Dapp.UNISWAPV3 | Dapp.VELODROMECL,
+    dapp: Dapp.UNISWAPV3 | Dapp.VELODROMECL | Dapp.AERODROMECL,
     assetA: string,
     assetB: string,
     amountA: BigNumber | string,
@@ -1070,8 +1071,8 @@ export class Pool {
       (minTick === null || maxTick === null)
     )
       throw new Error("Need to provide price or tick range");
-    if ((minPrice || maxPrice) && dapp === Dapp.VELODROMECL)
-      throw new Error("no price conversion for Velodrome CL");
+    if ((minPrice || maxPrice) && dapp !== Dapp.UNISWAPV3)
+      throw new Error("no price conversion for Aerodrome/Velodrome CL");
 
     const mintTxData = await getUniswapV3MintTxData(
       dapp,
@@ -1123,7 +1124,8 @@ export class Pool {
         dappAddress = nonfungiblePositionManagerAddress[this.network][dapp];
         break;
       case Dapp.VELODROMECL:
-        const tokenIdOwner = await getVelodromeClOwner(this, tokenId);
+      case Dapp.AERODROMECL:
+        const tokenIdOwner = await getVelodromeClOwner(this, dapp, tokenId);
         if (tokenIdOwner.toLowerCase() === this.address.toLowerCase()) {
           dappAddress = nonfungiblePositionManagerAddress[this.network][dapp];
         } else {
@@ -1179,7 +1181,8 @@ export class Pool {
         dappAddress = nonfungiblePositionManagerAddress[this.network][dapp];
         break;
       case Dapp.VELODROMECL:
-        const tokenIdOwner = await getVelodromeClOwner(this, tokenId);
+      case Dapp.AERODROMECL:
+        const tokenIdOwner = await getVelodromeClOwner(this, dapp, tokenId);
         if (tokenIdOwner.toLowerCase() === this.address.toLowerCase()) {
           dappAddress = nonfungiblePositionManagerAddress[this.network][dapp];
         } else {
@@ -1259,7 +1262,8 @@ export class Pool {
         txData = getVelodromeClaimTxData(this, tokenId, true);
         break;
       case Dapp.VELODROMECL:
-        const tokenIdOwner = await getVelodromeClOwner(this, tokenId);
+      case Dapp.AERODROMECL:
+        const tokenIdOwner = await getVelodromeClOwner(this, dapp, tokenId);
         if (tokenIdOwner.toLowerCase() === this.address.toLowerCase()) {
           contractAddress =
             nonfungiblePositionManagerAddress[this.network][dapp];
