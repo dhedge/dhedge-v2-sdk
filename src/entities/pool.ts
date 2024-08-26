@@ -662,21 +662,43 @@ export class Pool {
     options: any = null,
     estimateGas = false
   ): Promise<any> {
-    let depositTxData;
-    if (dapp === Dapp.COMPOUNDV3) {
-      depositTxData = getCompoundV3LendTxData(asset, amount);
-    } else {
-      const iLendingPool = new ethers.utils.Interface(ILendingPool.abi);
-      depositTxData = iLendingPool.encodeFunctionData(Transaction.DEPOSIT, [
-        asset,
-        amount,
-        this.address,
-        referralCode
-      ]);
-    }
+    const iLendingPool = new ethers.utils.Interface(ILendingPool.abi);
+    const depositTxData = iLendingPool.encodeFunctionData(Transaction.DEPOSIT, [
+      asset,
+      amount,
+      this.address,
+      referralCode
+    ]);
+
     const tx = await getPoolTxOrGasEstimate(
       this,
       [routerAddress[this.network][dapp], depositTxData, options],
+      estimateGas
+    );
+    return tx;
+  }
+
+  /**
+   * Lend asset to a Compound V3 style lending pool
+   * @param {string} market Address of market e.g cUSDCv3 address
+   * @param {string} asset Asset
+   * @param {BigNumber | string} amount Amount of asset to lend
+   * @param {any} options Transaction options
+   * @param {boolean} estimateGas Simulate/estimate gas
+   * @returns {Promise<any>} Transaction
+   */
+  async lendCompoundV3(
+    market: string,
+    asset: string,
+    amount: BigNumber | string,
+    options: any = null,
+    estimateGas = false
+  ): Promise<any> {
+    const supplyTxData = getCompoundV3LendTxData(asset, amount);
+
+    const tx = await getPoolTxOrGasEstimate(
+      this,
+      [market, supplyTxData, options],
       estimateGas
     );
     return tx;
@@ -698,20 +720,41 @@ export class Pool {
     options: any = null,
     estimateGas = false
   ): Promise<any> {
-    let withdrawTxData;
-    if (dapp === Dapp.COMPOUNDV3) {
-      withdrawTxData = getCompoundV3WithdrawTxData(asset, amount);
-    } else {
-      const iLendingPool = new ethers.utils.Interface(ILendingPool.abi);
-      withdrawTxData = iLendingPool.encodeFunctionData(Transaction.WITHDRAW, [
-        asset,
-        amount,
-        this.address
-      ]);
-    }
+    const iLendingPool = new ethers.utils.Interface(ILendingPool.abi);
+    const withdrawTxData = iLendingPool.encodeFunctionData(
+      Transaction.WITHDRAW,
+      [asset, amount, this.address]
+    );
+
     const tx = await getPoolTxOrGasEstimate(
       this,
       [routerAddress[this.network][dapp], withdrawTxData, options],
+      estimateGas
+    );
+    return tx;
+  }
+
+  /**
+   * Witdraw asset from a COmpound V3 style lending pool
+   * @param {string} market Address of market e.g cUSDCv3 address
+   * @param {string} asset Asset
+   * @param  {BigNumber | string} amount Amount of asset to withdraw
+   * @param {any} options Transaction options
+   * @param {boolean} estimateGas Simulate/estimate gas
+   * @returns {Promise<any>} Transaction
+   */
+  async withdrawCompoundV3(
+    market: string,
+    asset: string,
+    amount: BigNumber | string,
+    options: any = null,
+    estimateGas = false
+  ): Promise<any> {
+    const withdrawTxData = getCompoundV3WithdrawTxData(asset, amount);
+
+    const tx = await getPoolTxOrGasEstimate(
+      this,
+      [market, withdrawTxData, options],
       estimateGas
     );
     return tx;

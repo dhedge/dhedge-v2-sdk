@@ -51,8 +51,7 @@ export const routerAddress: AddressDappNetworkMap = {
     [Dapp.AAVEV3]: "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
     [Dapp.BALANCER]: "0xBA12222222228d8Ba445958a75a0704d566BF2C8",
     [Dapp.RAMSES]: "0xaaa87963efeb6f7e0a2711f397663105acb1805e",
-    [Dapp.ZEROEX]: "0xdef1c0ded9bec7f1a1670819833240f027b25eff",
-    [Dapp.COMPOUNDV3]: "0x9c4ec768c28520b50860ea7a15bd7213a9ff58bf" //cUSDCv3
+    [Dapp.ZEROEX]: "0xdef1c0ded9bec7f1a1670819833240f027b25eff"
   },
   [Network.BASE]: {
     [Dapp.ONEINCH]: "0x111111125421ca6dc452d289314280a0f8842a65",
