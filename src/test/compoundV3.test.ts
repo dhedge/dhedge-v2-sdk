@@ -21,7 +21,7 @@ const testCompoundV3 = ({ network, provider }: TestingRunParams) => {
   let pool: Pool;
   jest.setTimeout(100000);
 
-  describe(`[${network}] aerodrome tests`, () => {
+  describe(`[${network}] compound V3 tests`, () => {
     beforeAll(async () => {
       const { wallet } = getWalletData(network);
       // top up ETH (gas)
