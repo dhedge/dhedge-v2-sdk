@@ -72,6 +72,10 @@ import {
   mintUnitViaFlatMoney,
   redeemUnitViaFlatMoney
 } from "../services/flatmoney/stableLp";
+import {
+  getCompoundV3LendTxData,
+  getCompoundV3WithdrawTxData
+} from "../services/compound/lending";
 
 export class Pool {
   public readonly poolLogic: Contract;
@@ -666,9 +670,36 @@ export class Pool {
       this.address,
       referralCode
     ]);
+
     const tx = await getPoolTxOrGasEstimate(
       this,
       [routerAddress[this.network][dapp], depositTxData, options],
+      estimateGas
+    );
+    return tx;
+  }
+
+  /**
+   * Lend asset to a Compound V3 style lending pool
+   * @param {string} market Address of market e.g cUSDCv3 address
+   * @param {string} asset Asset
+   * @param {BigNumber | string} amount Amount of asset to lend
+   * @param {any} options Transaction options
+   * @param {boolean} estimateGas Simulate/estimate gas
+   * @returns {Promise<any>} Transaction
+   */
+  async lendCompoundV3(
+    market: string,
+    asset: string,
+    amount: BigNumber | string,
+    options: any = null,
+    estimateGas = false
+  ): Promise<any> {
+    const supplyTxData = getCompoundV3LendTxData(asset, amount);
+
+    const tx = await getPoolTxOrGasEstimate(
+      this,
+      [market, supplyTxData, options],
       estimateGas
     );
     return tx;
@@ -695,9 +726,36 @@ export class Pool {
       Transaction.WITHDRAW,
       [asset, amount, this.address]
     );
+
     const tx = await getPoolTxOrGasEstimate(
       this,
       [routerAddress[this.network][dapp], withdrawTxData, options],
+      estimateGas
+    );
+    return tx;
+  }
+
+  /**
+   * Witdraw asset from a COmpound V3 style lending pool
+   * @param {string} market Address of market e.g cUSDCv3 address
+   * @param {string} asset Asset
+   * @param  {BigNumber | string} amount Amount of asset to withdraw
+   * @param {any} options Transaction options
+   * @param {boolean} estimateGas Simulate/estimate gas
+   * @returns {Promise<any>} Transaction
+   */
+  async withdrawCompoundV3(
+    market: string,
+    asset: string,
+    amount: BigNumber | string,
+    options: any = null,
+    estimateGas = false
+  ): Promise<any> {
+    const withdrawTxData = getCompoundV3WithdrawTxData(asset, amount);
+
+    const tx = await getPoolTxOrGasEstimate(
+      this,
+      [market, withdrawTxData, options],
       estimateGas
     );
     return tx;
