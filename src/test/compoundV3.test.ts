@@ -71,6 +71,16 @@ const testCompoundV3 = ({ network, provider }: TestingRunParams) => {
       );
       expect(cWETHTokenDelta.gt(0));
     });
+
+    it("withdraw WETH from CompundV3 WETH market", async () => {
+      const cWETHBalance = await pool.utils.getBalance(
+        COMPOUNDV3_WETH,
+        pool.address
+      );
+      await pool.withdrawCompoundV3(COMPOUNDV3_WETH, WETH, cWETHBalance);
+      const wethBalance = await balanceDelta(pool.address, WETH, pool.signer);
+      expect(wethBalance.gt(0));
+    });
   });
 };
 
