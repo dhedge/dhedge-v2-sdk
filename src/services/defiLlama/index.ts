@@ -97,7 +97,7 @@ export async function getDefiLlamaTxData(
   } else {
     if (!(dapp === Dapp.ONEINCH || dapp === Dapp.ZEROEX))
       throw new Error("dapp not supported");
-    return await getDefiLLamSwapResult(
+    return await getDefiLlamSwapResult(
       pool,
       dappDefiLlamaMap[dapp] as any,
       assetFrom,
