@@ -169,3 +169,8 @@ export const flatMoneyContractAddresses: Readonly<Partial<
     RETH: "0xb6fe221fe9eef5aba221c348ba20a1bf5e73624c"
   }
 };
+
+export const dappDefiLlamaMap: Readonly<Partial<Record<Dapp, string>>> = {
+  [Dapp.ONEINCH]: "1inch",
+  [Dapp.ZEROEX]: "Matcha/0x"
+};

@@ -76,6 +76,7 @@ import {
   getCompoundV3LendTxData,
   getCompoundV3WithdrawTxData
 } from "../services/compound/lending";
+import { getDefiLlamaTxData } from "../services/defiLlama";
 
 export class Pool {
   public readonly poolLogic: Contract;
@@ -432,6 +433,43 @@ export class Pool {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [routerAddress[this.network][dapp], swapTxData, options],
+      estimateGas
+    );
+    return tx;
+  }
+
+  /**
+   * Uses the DefiLlama API to trade an asset into another asset
+   * @param {Dapp | null} dapp Protocol to use for trading, if null, the protocol with the best price will be used
+   * @param {string} assetFrom Asset to trade from
+   * @param {string} assetTo Asset to trade into
+   * @param {BigNumber | string} amountIn Amount
+   * @param {number} slippage Slippage tolerance in %
+   * @param {any} options Transaction options
+   * @param {boolean} estimateGas Simulate/estimate gas
+   * @returns {Promise<any>} Transaction
+   */
+  async tradeDefiLlama(
+    dapp: Dapp | null,
+    assetFrom: string,
+    assetTo: string,
+    amountIn: BigNumber | string,
+    slippage = 0.5,
+    options: any = null,
+    estimateGas = false
+  ): Promise<any> {
+    const { txData, protocolAddress } = await getDefiLlamaTxData(
+      this,
+      dapp,
+      assetFrom,
+      assetTo,
+      amountIn,
+      slippage
+    );
+
+    const tx = await getPoolTxOrGasEstimate(
+      this,
+      [protocolAddress, txData, options],
       estimateGas
     );
     return tx;
