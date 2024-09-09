@@ -12,7 +12,7 @@ export type DefiLlamaResult = {
   txData: string;
 };
 
-export async function getDefiLlamSwapResult(
+export async function getDefiLlamaSwapResult(
   pool: Pool,
   protocol: "1inch" | "Matcha/0x",
   assetFrom: string,
@@ -77,7 +77,7 @@ export async function getDefiLlamaTxData(
   if (!dapp) {
     const result = await Promise.all(
       Object.values(dappDefiLlamaMap).map(async protocol =>
-        getDefiLlamSwapResult(
+        getDefiLlamaSwapResult(
           pool,
           protocol as any,
           assetFrom,
@@ -87,7 +87,6 @@ export async function getDefiLlamaTxData(
         )
       )
     );
-    console.log(result);
     const maxResult = result.reduce((max, current) => {
       return current.amountReturned.isGreaterThan(max.amountReturned)
         ? current
@@ -97,7 +96,7 @@ export async function getDefiLlamaTxData(
   } else {
     if (!(dapp === Dapp.ONEINCH || dapp === Dapp.ZEROEX))
       throw new Error("dapp not supported");
-    return await getDefiLlamSwapResult(
+    return await getDefiLlamaSwapResult(
       pool,
       dappDefiLlamaMap[dapp] as any,
       assetFrom,
