@@ -64,7 +64,8 @@ import { getZeroExTradeTxData } from "../services/zeroEx/zeroExTrade";
 import { getOneInchSwapTxData } from "../services/oneInch";
 import {
   getCreateVestTxData,
-  getExitVestTxData
+  getExitVestTxData,
+  getRewardsTxDta
 } from "../services/ramses/vesting";
 import { getPoolTxOrGasEstimate } from "../utils/contract";
 import {
@@ -1038,7 +1039,7 @@ export class Pool {
 
   /**
    * Create UniswapV3 liquidity pool
-   * @param {dapp} Platform UniswapV3, VelodromeCL or AerodromeCL
+   * @param {dapp} Platform UniswapV3, VelodromeCL, AerodromeCL or RamesesCL
    * @param {string} assetA First asset
    * @param {string} assetB Second asset
    * @param {BigNumber | string} amountA Amount first asset
@@ -1053,7 +1054,7 @@ export class Pool {
    * @returns {Promise<any>} Transaction
    */
   async addLiquidityUniswapV3(
-    dapp: Dapp.UNISWAPV3 | Dapp.VELODROMECL | Dapp.AERODROMECL,
+    dapp: Dapp.UNISWAPV3 | Dapp.VELODROMECL | Dapp.AERODROMECL | Dapp.RAMSESCL,
     assetA: string,
     assetB: string,
     amountA: BigNumber | string,
@@ -1178,6 +1179,7 @@ export class Pool {
     let txData;
     switch (dapp) {
       case Dapp.UNISWAPV3:
+      case Dapp.RAMSESCL:
         dappAddress = nonfungiblePositionManagerAddress[this.network][dapp];
         break;
       case Dapp.VELODROMECL:
@@ -1239,6 +1241,7 @@ export class Pool {
     );
     switch (dapp) {
       case Dapp.UNISWAPV3:
+      case Dapp.RAMSESCL:
         contractAddress = nonfungiblePositionManagerAddress[this.network][dapp];
         txData = iNonfungiblePositionManager.encodeFunctionData(
           Transaction.COLLECT,
@@ -1283,6 +1286,34 @@ export class Pool {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [contractAddress, txData, options],
+      estimateGas
+    );
+    return tx;
+  }
+
+  /**
+   * Get rewards of an NFT position
+   * @param {Dapp} dapp Platform e.g. Ramses CL
+   * @param {string} tokenId Token Id
+   * @param {string[]} rewards Reward tokens
+   * @param {any} options Transaction option
+   * @param {boolean} estimateGas Simulate/estimate gas
+   * @returns {Promise<any>} Transaction
+   */
+  async getRewards(
+    dapp: Dapp,
+    tokenId: string,
+    rewards: string[],
+    options: any = null,
+    estimateGas = false
+  ): Promise<any> {
+    const tx = await getPoolTxOrGasEstimate(
+      this,
+      [
+        nonfungiblePositionManagerAddress[this.network][dapp],
+        getRewardsTxDta(tokenId, rewards),
+        options
+      ],
       estimateGas
     );
     return tx;
