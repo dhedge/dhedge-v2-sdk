@@ -170,7 +170,7 @@ export async function getUniswapV3MintTxData(
 }
 
 export async function getUniswapV3Liquidity(
-  dapp: Dapp.UNISWAPV3 | Dapp.VELODROMECL | Dapp.AERODROMECL,
+  dapp: Dapp.UNISWAPV3 | Dapp.VELODROMECL | Dapp.AERODROMECL | Dapp.RAMSESCL,
   tokenId: string,
   pool: Pool
 ): Promise<BigNumber> {
