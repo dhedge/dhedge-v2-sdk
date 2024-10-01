@@ -1,4 +1,3 @@
-import BigNumber from "bignumber.js";
 import { Dhedge, Pool, ethers } from "..";
 
 import { nonfungiblePositionManagerAddress } from "../config";
@@ -8,8 +7,6 @@ import {
   TestingRunParams,
   beforeAfterReset,
   setChainlinkTimeout,
-  setUSDCAmount,
-  setWETHAmount,
   testingHelper
 } from "./utils/testingHelper";
 import { allowanceDelta, balanceDelta } from "./utils/token";
@@ -25,7 +22,7 @@ const testRamsesCL = ({ wallet, network, provider }: TestingRunParams) => {
   const WETH = CONTRACT_ADDRESS[network].WETH;
   //if other chains then define per network
   const RAM = "0xaaa6c1e32c55a7bfa8066a6fae9b42650f262418";
-  const xoRAM = "0xaaa1ee8dc1864ae49185c368e8c64dd780a50fb7";
+  const ARB = "0x912ce59144191c1204e64559fe8253a0e49e6548";
 
   let dhedge: Dhedge;
   let pool: Pool;
@@ -46,19 +43,6 @@ const testRamsesCL = ({ wallet, network, provider }: TestingRunParams) => {
       // setChainlinkTimeout
       await setChainlinkTimeout({ pool, provider }, 86400 * 365);
 
-      await setUSDCAmount({
-        amount: new BigNumber(10000).times(1e6).toFixed(0),
-        userAddress: pool.address,
-        network,
-        provider
-      });
-      await setWETHAmount({
-        amount: new BigNumber(3).times(1e18).toFixed(0),
-        userAddress: pool.address,
-        network,
-        provider
-      });
-
       const newAssets: AssetEnabled[] = [
         { asset: USDC, isDeposit: true },
         { asset: WETH, isDeposit: true },
@@ -67,15 +51,13 @@ const testRamsesCL = ({ wallet, network, provider }: TestingRunParams) => {
           isDeposit: false
         },
         {
-          asset: RAM,
-          isDeposit: false
-        },
-        {
-          asset: xoRAM,
+          asset: ARB,
           isDeposit: false
         }
       ];
       await pool.changeAssets(newAssets);
+      await pool.approve(Dapp.ONEINCH, USDC, MAX_AMOUNT);
+      await pool.trade(Dapp.ONEINCH, USDC, WETH, (2.5 * 1e6).toString());
 
       ramsesPositionManager = new ethers.Contract(
         RAMSES_POSITION_MANGER,
@@ -104,15 +86,15 @@ const testRamsesCL = ({ wallet, network, provider }: TestingRunParams) => {
         const wethBalance = await pool.utils.getBalance(WETH, pool.address);
         await pool.addLiquidityUniswapV3(
           Dapp.RAMSESCL,
-          USDC,
           WETH,
+          USDC,
           usdcBalance.div(2),
           wethBalance.div(2),
           null,
           null,
-          193700,
-          193900,
-          100
+          -204460,
+          -193470,
+          500
         );
 
         tokenId = (
@@ -152,7 +134,7 @@ const testRamsesCL = ({ wallet, network, provider }: TestingRunParams) => {
       it("get rewards of a CL position", async () => {
         await provider.send("evm_increaseTime", [24 * 3600 * 3]); // 1 day
         await provider.send("evm_mine", []);
-        await pool.getRewards(Dapp.RAMSESCL, tokenId, [RAM, xoRAM]);
+        await pool.getRewards(Dapp.RAMSESCL, tokenId, [RAM]);
         expect((await balanceDelta(pool.address, RAM, pool.signer)).gt(0));
       });
     });

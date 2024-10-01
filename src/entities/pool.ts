@@ -1122,6 +1122,7 @@ export class Pool {
     let txData;
     switch (dapp) {
       case Dapp.UNISWAPV3:
+      case Dapp.RAMSESCL:
         dappAddress = nonfungiblePositionManagerAddress[this.network][dapp];
         break;
       case Dapp.VELODROMECL:
