@@ -137,6 +137,14 @@ const testRamsesCL = ({ wallet, network, provider }: TestingRunParams) => {
         await pool.getRewards(Dapp.RAMSESCL, tokenId, [RAM]);
         expect((await balanceDelta(pool.address, RAM, pool.signer)).gt(0));
       });
+
+      it("decreases 100% liquidity and burns a CL position", async () => {
+        await pool.decreaseLiquidity(Dapp.RAMSESCL, tokenId, 100);
+        const positionAfter = await ramsesPositionManager.balanceOf(
+          pool.address
+        );
+        expect(positionAfter.eq(0));
+      });
     });
   });
 };

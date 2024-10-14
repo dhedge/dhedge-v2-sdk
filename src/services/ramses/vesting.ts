@@ -16,9 +16,9 @@ export function getExitVestTxData(vestId: number): string {
   return iXRam.encodeFunctionData("exitVest", [vestId, false]);
 }
 
-export function getRewardsTxDta(tokrnId: string, rewards: string[]): string {
+export function getRewardsTxDta(tokenId: string, rewards: string[]): string {
   return iRamsesNonfungiblePositionManager.encodeFunctionData("getReward", [
-    tokrnId,
+    tokenId,
     rewards
   ]);
 }
