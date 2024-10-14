@@ -381,7 +381,7 @@ const result = await pool.increaseLiquidity(
 const tx = await pool.claimFees(Dapp.UNISWAPV3, tokenId);
 ```
 
-4. Claim rewards (e.g. gor Ramses CL)
+4. Claim rewards (e.g. for Ramses CL)
 
 ```ts
 const tx = await pool.getRewards(Dapp.RAMSESCL, tokenId, [RAM_ADDRESS]);
