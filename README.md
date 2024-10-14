@@ -361,6 +361,9 @@ const tx = await pool.decreaseLiquidity(
 );
 ```
 
+Removing 100% will burn the NFT position.
+Burning a Ramses CL NFT position won't claim rewards, so `getRewards` needs to be called before.
+
 3. Increase liquidity in the existing WETH/USDC pool
 
 ```ts
@@ -376,6 +379,12 @@ const result = await pool.increaseLiquidity(
 
 ```ts
 const tx = await pool.claimFees(Dapp.UNISWAPV3, tokenId);
+```
+
+4. Claim rewards (e.g. for Ramses CL)
+
+```ts
+const tx = await pool.getRewards(Dapp.RAMSESCL, tokenId, [RAM_ADDRESS]);
 ```
 
 #### VelodromeV2 / Ramses / Aerodrome
