@@ -84,6 +84,12 @@ Then you need to copy .env.example file to .env and set your API key there.
 ONEINCH_API_KEY=YOUR_API_KEY_FROM_1INCH
 ```
 
+For trading with the DefiLlama API you neeed to set:
+
+```
+DEFILLAMA_API_KEY=YOUR_API_KEY_FROM_DEFILLAMA
+```
+
 Initialize the sdk with an [ethers wallet](https://docs.ethers.io/v5/api/signer/#Wallet) and the network.
 
 ```ts
@@ -209,6 +215,22 @@ const amountIn = "1000000"
 const slippage = 0.5
 const tx = await pool.trade(
   Dapp.SUSHISWAP,
+  "USDC_TOKEN_ADDRESS",
+  "DAI_TOKEN_ADDRESS",
+  amountIn,
+  slippage
+)
+```
+
+#### 11. Trade pool assets with the DefiLlama API
+
+Trade 1 USDC into DAI either on 1Inch or 0x, it will be executed on the protocol with the best price
+
+```ts
+const amountIn = "1000000"
+const slippage = 0.5
+const tx = await pool.tradeDefiLlama(
+  null,
   "USDC_TOKEN_ADDRESS",
   "DAI_TOKEN_ADDRESS",
   amountIn,
