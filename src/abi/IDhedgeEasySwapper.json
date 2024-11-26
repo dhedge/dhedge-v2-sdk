@@ -128,7 +128,13 @@
 		"type": "function"
 	},
 	{
-		"inputs": [],
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_depositor",
+				"type": "address"
+			}
+		],
 		"name": "getTrackedAssets",
 		"outputs": [
 			{
@@ -145,7 +151,7 @@
 					}
 				],
 				"internalType": "struct IWithdrawalVault.TrackedAsset[]",
-				"name": "trackedAssets",
+				"name": "trackedAssets_",
 				"type": "tuple[]"
 			}
 		],
@@ -171,120 +177,6 @@
 			}
 		],
 		"name": "initWithdrawal",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "_portion",
-				"type": "uint256"
-			},
-			{
-				"internalType": "address",
-				"name": "_to",
-				"type": "address"
-			}
-		],
-		"name": "recoverAssets",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "recoverAssets",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"components": [
-					{
-						"components": [
-							{
-								"internalType": "contract IERC20",
-								"name": "token",
-								"type": "address"
-							},
-							{
-								"internalType": "uint256",
-								"name": "amount",
-								"type": "uint256"
-							},
-							{
-								"components": [
-									{
-										"internalType": "bytes32",
-										"name": "routerKey",
-										"type": "bytes32"
-									},
-									{
-										"internalType": "bytes",
-										"name": "swapData",
-										"type": "bytes"
-									}
-								],
-								"internalType": "struct ISwapper.AggregatorData",
-								"name": "aggregatorData",
-								"type": "tuple"
-							}
-						],
-						"internalType": "struct ISwapper.SrcTokenSwapDetails[]",
-						"name": "srcData",
-						"type": "tuple[]"
-					},
-					{
-						"components": [
-							{
-								"internalType": "contract IERC20",
-								"name": "destToken",
-								"type": "address"
-							},
-							{
-								"internalType": "uint256",
-								"name": "minDestAmount",
-								"type": "uint256"
-							}
-						],
-						"internalType": "struct ISwapper.DestData",
-						"name": "destData",
-						"type": "tuple"
-					}
-				],
-				"internalType": "struct IWithdrawalVault.MultiInSingleOutData",
-				"name": "_swapData",
-				"type": "tuple"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_expectedDestTokenAmount",
-				"type": "uint256"
-			}
-		],
-		"name": "swapToSingleAsset",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_dHedgeVault",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_slippageTolerance",
-				"type": "uint256"
-			}
-		],
-		"name": "unrollAssets",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"

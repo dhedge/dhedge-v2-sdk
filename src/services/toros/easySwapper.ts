@@ -79,13 +79,6 @@ export async function getEasySwapperTxData(
     : [assetTo, assetFrom];
   const iDhedgeEasySwapper = new ethers.utils.Interface(IDhedgeEasySwapper);
   if (isWithdrawal) {
-    console.log(
-      iDhedgeEasySwapper.encodeFunctionData("initWithdrawal", [
-        torosAsset,
-        amountIn,
-        slippage * 100
-      ])
-    );
     return iDhedgeEasySwapper.encodeFunctionData("initWithdrawal", [
       torosAsset,
       amountIn,
@@ -163,6 +156,6 @@ export async function getCompleteWithdrawalTxData(
         minDestAmount
       }
     },
-    minDestAmount
+    minDestAmount.mul(10000 - slippage * 100).div(10000)
   ]);
 }

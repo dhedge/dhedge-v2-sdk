@@ -24,9 +24,7 @@ export async function getOneInchSwapTxData(
     dst: assetTo,
     amount: amountIn.toString(),
     from: forEasySwapper ? routerAddress[pool.network].toros : pool.address,
-    origin: forEasySwapper
-      ? routerAddress[pool.network].toros
-      : pool.signer.address,
+    receiver: forEasySwapper ? routerAddress[pool.network].toros : pool.address,
     slippage: slippage,
     disableEstimate: true,
     usePermit2: false
