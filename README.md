@@ -216,6 +216,26 @@ const tx = await pool.trade(
 )
 ```
 
+#### 🚨 Important Update  
+Due to the upgrade of our contract, trading out of a Toros token now involves a second step. Please follow the updated process below:
+1. Step:
+```ts
+const tx = await pool.trade(
+  Dapp.TOROS,
+  "TOROS_TOKEN_ADDRESS",
+  "USDC_TOKEN_ADDRESS",
+  '100000000',
+  slippage
+)
+```
+2. Step:
+```ts
+const tx = await pool.completeTorosWithdrawal(
+  "USDC_TOKEN_ADDRESS",
+  slippage
+)
+```
+
 ### Liquidity
 
 ---

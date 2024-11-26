@@ -40,7 +40,10 @@ import {
   getUniswapV3MintTxData
 } from "../services/uniswap/V3Liquidity";
 import { getUniswapV3SwapTxData } from "../services/uniswap/V3Trade";
-import { getEasySwapperTxData } from "../services/toros/easySwapper";
+import {
+  getCompleteWithdrawalTxData,
+  getEasySwapperTxData
+} from "../services/toros/easySwapper";
 import { getAaveV3ClaimTxData } from "../services/aave/incentives";
 import {
   getVelodromeAddLiquidityTxData,
@@ -371,13 +374,13 @@ export class Pool {
         );
         break;
       case Dapp.ONEINCH:
-        swapTxData = await getOneInchSwapTxData(
+        ({ swapTxData } = await getOneInchSwapTxData(
           this,
           assetFrom,
           assetTo,
           amountIn,
           slippage
-        );
+        ));
         break;
       case Dapp.BALANCER:
         swapTxData = await this.utils.getBalancerSwapTx(
@@ -1840,6 +1843,33 @@ export class Pool {
     estimateGas = false
   ): Promise<any> {
     const tx = await cancelOrderViaFlatMoney(this, options, estimateGas);
+    return tx;
+  }
+
+  /**
+   * Complete a Toros withdrawal to a single asset
+   * @param {string} destinationToken Address of destination asset
+   * @param {number} slippage Slippage tolerance in %
+   * @param {any} options Transaction options
+   * @param {boolean} estimateGas Simulate/estimate gas
+   * @returns {Promise<any>} Transaction
+   */
+  async completeTorosWithdrawal(
+    destinationToken: string,
+    slippage = 0.5,
+    options: any = null,
+    estimateGas = false
+  ): Promise<any> {
+    const txData = await getCompleteWithdrawalTxData(
+      this,
+      destinationToken,
+      slippage
+    );
+    const tx = await getPoolTxOrGasEstimate(
+      this,
+      [routerAddress[this.network].toros, txData, options],
+      estimateGas
+    );
     return tx;
   }
 }
