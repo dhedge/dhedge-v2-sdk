@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from "axios";
 import { ApiError, ethers } from "../..";
-import { networkChainIdMap } from "../../config";
+import { networkChainIdMap, routerAddress } from "../../config";
 import { Pool } from "../../entities";
 
 const oneInchBaseUrl = "https://api.1inch.dev/swap/v6.0/";
@@ -11,8 +11,9 @@ export async function getOneInchSwapTxData(
   assetFrom: string,
   assetTo: string,
   amountIn: ethers.BigNumber | string,
-  slippage: number
-): Promise<string> {
+  slippage: number,
+  forEasySwapper = false
+): Promise<{ swapTxData: string; dstAmount: string }> {
   if (!process.env.ONEINCH_API_KEY)
     throw new Error("ONEINCH_API_KEY not configured in .env file");
 
@@ -22,8 +23,8 @@ export async function getOneInchSwapTxData(
     src: assetFrom,
     dst: assetTo,
     amount: amountIn.toString(),
-    from: pool.address,
-    origin: pool.signer.address,
+    from: forEasySwapper ? routerAddress[pool.network].toros : pool.address,
+    receiver: forEasySwapper ? routerAddress[pool.network].toros : pool.address,
     slippage: slippage,
     disableEstimate: true,
     usePermit2: false
@@ -35,7 +36,9 @@ export async function getOneInchSwapTxData(
       },
       params
     });
-    return response.data.tx.data;
+    const swapTxData = response.data.tx.data;
+    const dstAmount = response.data.dstAmount;
+    return { swapTxData, dstAmount };
   } catch (e) {
     throw new ApiError("Swap api request of 1inch failed");
   }

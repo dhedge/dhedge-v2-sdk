@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { BigNumber, Contract, ethers } from "ethers";
 import { Network } from "../../types";
 import { getWalletData } from "../wallet";
@@ -34,8 +35,8 @@ export const beforeAfterReset = ({
   afterAll,
   provider
 }: {
-  beforeAll: jest.Lifecycle;
-  afterAll: jest.Lifecycle;
+  beforeAll: any;
+  afterAll: any;
   provider: ethers.providers.JsonRpcProvider;
 }): void => {
   let snapshot = "";
