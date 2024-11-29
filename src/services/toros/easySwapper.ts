@@ -91,6 +91,8 @@ export async function getEasySwapperTxData(
       investAsset
     );
     if (!depositAsset) throw new Error("no deposit assets");
+    if (depositAsset.toLowerCase() !== investAsset.toLowerCase())
+      throw new Error("can only trade deposit asset");
     const minAmountOut = await getEasySwapperDepositQuote(
       pool,
       torosAsset,
