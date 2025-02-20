@@ -21,6 +21,7 @@ import INonfungiblePositionManager from "../../abi/INonfungiblePositionManager.j
 import IVeldodromePositionManager from "../../abi/IVelodromeNonfungiblePositionManager.json";
 import IRamsesPositionManager from "../../abi/IRamsesNonfungiblePositionManager.json";
 import IArrakisV1RouterStaking from "../../abi/IArrakisV1RouterStaking.json";
+import IPancakeMasterChef from "../../abi/IPancakeMasterChefV3.json";
 import { getDeadline } from "../../utils/deadline";
 import BigNumber from "bignumber.js";
 
@@ -71,7 +72,12 @@ export function tryParseTick(
 }
 
 export async function getUniswapV3MintTxData(
-  dapp: Dapp.UNISWAPV3 | Dapp.VELODROMECL | Dapp.AERODROMECL | Dapp.RAMSESCL,
+  dapp:
+    | Dapp.UNISWAPV3
+    | Dapp.VELODROMECL
+    | Dapp.AERODROMECL
+    | Dapp.RAMSESCL
+    | Dapp.PANCAKECL,
   pool: Pool,
   assetA: string,
   assetB: string,
@@ -170,7 +176,12 @@ export async function getUniswapV3MintTxData(
 }
 
 export async function getUniswapV3Liquidity(
-  dapp: Dapp.UNISWAPV3 | Dapp.VELODROMECL | Dapp.AERODROMECL | Dapp.RAMSESCL,
+  dapp:
+    | Dapp.UNISWAPV3
+    | Dapp.VELODROMECL
+    | Dapp.AERODROMECL
+    | Dapp.RAMSESCL
+    | Dapp,
   tokenId: string,
   pool: Pool
 ): Promise<BigNumber> {
@@ -224,14 +235,16 @@ export async function getDecreaseLiquidityTxData(
   pool: Pool,
   dapp: Dapp,
   tokenId: string,
-  amount = 100
+  amount = 100,
+  isStaked: boolean
 ): Promise<any> {
   let txData;
   if (
     dapp === Dapp.UNISWAPV3 ||
     dapp === Dapp.VELODROMECL ||
     dapp === Dapp.AERODROMECL ||
-    dapp === Dapp.RAMSESCL
+    dapp === Dapp.RAMSESCL ||
+    dapp === Dapp.PANCAKECL
   ) {
     const abi = new ethers.utils.Interface(INonfungiblePositionManager.abi);
     const liquidity = (await getUniswapV3Liquidity(dapp, tokenId, pool))
@@ -247,6 +260,15 @@ export async function getDecreaseLiquidityTxData(
     ]);
 
     const multicallParams = [decreaseLiquidityTxData, collectTxData];
+
+    if (isStaked && dapp === Dapp.PANCAKECL) {
+      const abi = new ethers.utils.Interface(IPancakeMasterChef);
+      const harvestTxData = abi.encodeFunctionData(Transaction.HARVEST, [
+        tokenId,
+        pool.address
+      ]);
+      multicallParams.unshift(harvestTxData);
+    }
 
     if (amount === 100) {
       const burnTxData = abi.encodeFunctionData(Transaction.BURN, [tokenId]);

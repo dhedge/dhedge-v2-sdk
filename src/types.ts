@@ -27,7 +27,8 @@ export enum Dapp {
   RAMSES = "ramses",
   AERODROME = "aerodrome",
   AERODROMECL = "aerodromeCL",
-  RAMSESCL = "ramsesCL"
+  RAMSESCL = "ramsesCL",
+  PANCAKECL = "pancakeCL"
 }
 
 export enum Transaction {

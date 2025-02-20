@@ -84,7 +84,9 @@ export const stakingAddress: AddressDappNetworkMap = {
     [Dapp.AAVEV3]: "0x929EC64c34a17401F460460D4B9390518E5B473e"
   },
   [Network.ARBITRUM]: {},
-  [Network.BASE]: {}
+  [Network.BASE]: {
+    [Dapp.PANCAKECL]: "0xC6A2Db661D5a5690172d8eB0a7DEA2d3008665A3"
+  }
 };
 
 export const aaveAddressProvider: AddressDappNetworkMap = {
@@ -117,7 +119,8 @@ export const nonfungiblePositionManagerAddress: AddressDappNetworkMap = {
   },
   [Network.BASE]: {
     [Dapp.UNISWAPV3]: "0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1",
-    [Dapp.AERODROMECL]: "0x827922686190790b37229fd06084350e74485b72"
+    [Dapp.AERODROMECL]: "0x827922686190790b37229fd06084350e74485b72",
+    [Dapp.PANCAKECL]: "0x46A15B0b27311cedF172AB29E4f4766fbE7F4364"
   }
 };
 
