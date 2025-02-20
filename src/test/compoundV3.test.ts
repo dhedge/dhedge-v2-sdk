@@ -81,6 +81,10 @@ const testCompoundV3 = ({ network, provider }: TestingRunParams) => {
       const wethBalance = await balanceDelta(pool.address, WETH, pool.signer);
       expect(wethBalance.gt(0));
     });
+
+    it("harvests rewards from CompundV3", async () => {
+      await pool.harvestCompoundV3Rewards(COMPOUNDV3_WETH);
+    });
   });
 };
 

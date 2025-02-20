@@ -80,6 +80,7 @@ import {
   getCompoundV3LendTxData,
   getCompoundV3WithdrawTxData
 } from "../services/compound/lending";
+import { getCompoundV3ClaimTxData } from "../services/compound/rewards";
 
 export class Pool {
   public readonly poolLogic: Contract;
@@ -1032,6 +1033,31 @@ export class Pool {
       this,
       [
         stakingAddress[this.network][Dapp.AAVEV3] as string,
+        claimTxData,
+        options
+      ],
+      estimateGas
+    );
+    return tx;
+  }
+
+  /**
+   * Claim rewards from CompoundV3
+   * @param {string} asset Compound lending asset
+   * @param {any} options Transaction options
+   * @param {boolean} estimateGas Simulate/estimate gas
+   * @returns {Promise<any>} Transaction
+   */
+  async harvestCompoundV3Rewards(
+    asset: string,
+    options: any = null,
+    estimateGas = false
+  ): Promise<any> {
+    const claimTxData = await getCompoundV3ClaimTxData(this, asset);
+    const tx = await getPoolTxOrGasEstimate(
+      this,
+      [
+        stakingAddress[this.network][Dapp.COMPOUNDV3] as string,
         claimTxData,
         options
       ],
