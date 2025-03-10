@@ -207,7 +207,8 @@ export async function getIncreaseLiquidityTxData(
     dapp === Dapp.UNISWAPV3 ||
     dapp === Dapp.VELODROMECL ||
     dapp === Dapp.AERODROMECL ||
-    dapp === Dapp.RAMSESCL
+    dapp === Dapp.RAMSESCL ||
+    dapp === Dapp.PANCAKECL
   ) {
     const abi = new ethers.utils.Interface(INonfungiblePositionManager.abi);
     txData = abi.encodeFunctionData(Transaction.INCREASE_LIQUIDITY, [

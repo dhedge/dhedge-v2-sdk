@@ -586,7 +586,7 @@ export class Pool {
         stakeTxData = getVelodromeStakeTxData(amount, true);
         break;
       case Dapp.PANCAKECL:
-        stakeTxData = getPancakeStakeTxData;
+        stakeTxData = getPancakeStakeTxData(this, amount.toString(), gauge);
         break;
       default:
         throw new Error("dapp not supported");
