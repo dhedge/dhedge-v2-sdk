@@ -28,7 +28,7 @@ export enum Dapp {
   AERODROME = "aerodrome",
   AERODROMECL = "aerodromeCL",
   RAMSESCL = "ramsesCL",
-  PANCAKECL = "pancakeCL"
+  PANCAKECL = "pancakeCL",
   COMPOUNDV3 = "compoundV3"
 }
 
