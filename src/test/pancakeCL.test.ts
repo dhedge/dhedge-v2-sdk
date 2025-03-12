@@ -167,6 +167,10 @@ const testPancakeCL = ({ wallet, network, provider }: TestingRunParams) => {
         expect(positionAfter.liquidity.gt(positionBefore.liquidity));
       });
 
+      it("collects fess from a staked CL position", async () => {
+        await pool.claimFees(Dapp.PANCAKECL, tokenId);
+      });
+
       it("decreases liquidity from a CL position", async () => {
         const positionBefore = await positionManager.positions(tokenId);
         await pool.decreaseLiquidity(Dapp.PANCAKECL, tokenId, 50);

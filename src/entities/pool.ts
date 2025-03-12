@@ -81,6 +81,7 @@ import {
   getCompoundV3WithdrawTxData
 } from "../services/compound/lending";
 import {
+  getPancakeHarvestClaimTxData,
   getPancakeStakeTxData,
   getPancakeUnStakeTxData
 } from "../services/pancake/staking";
@@ -1316,10 +1317,7 @@ export class Pool {
           //staked in gauge or pancake masterchef
           contractAddress = tokenIdOwner;
           if (dapp === Dapp.PANCAKECL) {
-            txData = iNonfungiblePositionManager.encodeFunctionData(
-              Transaction.COLLECT,
-              [[tokenId, this.address, MaxUint128, MaxUint128]]
-            );
+            txData = getPancakeHarvestClaimTxData(this, tokenId);
           } else {
             txData = getVelodromeCLClaimTxData(tokenId);
           }
