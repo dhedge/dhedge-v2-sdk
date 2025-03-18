@@ -7,3 +7,4 @@ secrets.ts
 *.tgz
 
 /coverage
+cache
