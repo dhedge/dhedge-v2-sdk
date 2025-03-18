@@ -46,8 +46,8 @@ import {
 } from "../services/toros/easySwapper";
 import { getAaveV3ClaimTxData } from "../services/aave/incentives";
 import {
+  getClOwner,
   getVelodromeAddLiquidityTxData,
-  getVelodromeClOwner,
   getVelodromeRemoveLiquidityTxData
 } from "../services/velodrome/liquidity";
 import {
@@ -81,6 +81,11 @@ import {
   getCompoundV3WithdrawTxData
 } from "../services/compound/lending";
 import { getCompoundV3ClaimTxData } from "../services/compound/rewards";
+import {
+  getPancakeHarvestClaimTxData,
+  getPancakeStakeTxData,
+  getPancakeUnStakeTxData
+} from "../services/pancake/staking";
 
 export class Pool {
   public readonly poolLogic: Contract;
@@ -582,12 +587,19 @@ export class Pool {
       case Dapp.AERODROMECL:
         stakeTxData = getVelodromeStakeTxData(amount, true);
         break;
+      case Dapp.PANCAKECL:
+        stakeTxData = getPancakeStakeTxData(this, amount.toString(), gauge);
+        break;
       default:
         throw new Error("dapp not supported");
     }
+    const txTo =
+      dapp !== Dapp.PANCAKECL
+        ? gauge
+        : nonfungiblePositionManagerAddress[this.network][dapp];
     const tx = await getPoolTxOrGasEstimate(
       this,
-      [gauge, stakeTxData, options],
+      [txTo, stakeTxData, options],
       estimateGas
     );
     return tx;
@@ -638,10 +650,18 @@ export class Pool {
     options: any = null,
     estimateGas = false
   ): Promise<any> {
+    let unstakeTxData;
     const rewardsGauge = new ethers.utils.Interface(IBalancerRewardsGauge.abi);
-    const unstakeTxData = rewardsGauge.encodeFunctionData("withdraw(uint256)", [
-      amount
-    ]);
+    if (
+      gauge.toLowerCase() ===
+      stakingAddress[this.network][Dapp.PANCAKECL]?.toLowerCase()
+    ) {
+      unstakeTxData = getPancakeUnStakeTxData(this, amount.toString());
+    } else {
+      unstakeTxData = rewardsGauge.encodeFunctionData("withdraw(uint256)", [
+        amount
+      ]);
+    }
     const tx = await getPoolTxOrGasEstimate(
       this,
       [gauge, unstakeTxData, options],
@@ -1083,7 +1103,12 @@ export class Pool {
    * @returns {Promise<any>} Transaction
    */
   async addLiquidityUniswapV3(
-    dapp: Dapp.UNISWAPV3 | Dapp.VELODROMECL | Dapp.AERODROMECL | Dapp.RAMSESCL,
+    dapp:
+      | Dapp.UNISWAPV3
+      | Dapp.VELODROMECL
+      | Dapp.AERODROMECL
+      | Dapp.RAMSESCL
+      | Dapp.PANCAKECL,
     assetA: string,
     assetB: string,
     amountA: BigNumber | string,
@@ -1156,7 +1181,8 @@ export class Pool {
         break;
       case Dapp.VELODROMECL:
       case Dapp.AERODROMECL:
-        const tokenIdOwner = await getVelodromeClOwner(this, dapp, tokenId);
+      case Dapp.PANCAKECL:
+        const tokenIdOwner = await getClOwner(this, dapp, tokenId);
         if (tokenIdOwner.toLowerCase() === this.address.toLowerCase()) {
           dappAddress = nonfungiblePositionManagerAddress[this.network][dapp];
         } else {
@@ -1171,8 +1197,14 @@ export class Pool {
       default:
         throw new Error("dapp not supported");
     }
-    if (!isStaked) {
-      txData = await getDecreaseLiquidityTxData(this, dapp, tokenId, amount);
+    if (!isStaked || dapp === Dapp.PANCAKECL) {
+      txData = await getDecreaseLiquidityTxData(
+        this,
+        dapp,
+        tokenId,
+        amount,
+        isStaked
+      );
     } else {
       throw new Error(
         "unsupported decreaseStakedLiquidity: unstake first to decrease lp"
@@ -1214,7 +1246,8 @@ export class Pool {
         break;
       case Dapp.VELODROMECL:
       case Dapp.AERODROMECL:
-        const tokenIdOwner = await getVelodromeClOwner(this, dapp, tokenId);
+      case Dapp.PANCAKECL:
+        const tokenIdOwner = await getClOwner(this, dapp, tokenId);
         if (tokenIdOwner.toLowerCase() === this.address.toLowerCase()) {
           dappAddress = nonfungiblePositionManagerAddress[this.network][dapp];
         } else {
@@ -1229,7 +1262,8 @@ export class Pool {
       default:
         throw new Error("dapp not supported");
     }
-    if (!isStaked) {
+    //PancakeCL supports increase liquidity to staked position
+    if (!isStaked || dapp === Dapp.PANCAKECL) {
       txData = await getIncreaseLiquidityTxData(
         this,
         dapp,
@@ -1296,7 +1330,8 @@ export class Pool {
         break;
       case Dapp.VELODROMECL:
       case Dapp.AERODROMECL:
-        const tokenIdOwner = await getVelodromeClOwner(this, dapp, tokenId);
+      case Dapp.PANCAKECL:
+        const tokenIdOwner = await getClOwner(this, dapp, tokenId);
         if (tokenIdOwner.toLowerCase() === this.address.toLowerCase()) {
           contractAddress =
             nonfungiblePositionManagerAddress[this.network][dapp];
@@ -1305,9 +1340,13 @@ export class Pool {
             [[tokenId, this.address, MaxUint128, MaxUint128]]
           );
         } else {
-          //staked in gauge
+          //staked in gauge or pancake masterchef
           contractAddress = tokenIdOwner;
-          txData = getVelodromeCLClaimTxData(tokenId);
+          if (dapp === Dapp.PANCAKECL) {
+            txData = getPancakeHarvestClaimTxData(this, tokenId);
+          } else {
+            txData = getVelodromeCLClaimTxData(tokenId);
+          }
         }
         break;
       default:

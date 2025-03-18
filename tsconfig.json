@@ -32,6 +32,6 @@
     "noEmit": true,
     "resolveJsonModule": true,
     "target": "es6",
-    "types": ["node", "jest"],
+    "types": ["node", "jest"]
   }
 }

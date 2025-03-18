@@ -49,9 +49,9 @@ export async function getVelodromeRemoveLiquidityTxData(
   ]);
 }
 
-export async function getVelodromeClOwner(
+export async function getClOwner(
   pool: Pool,
-  dapp: Dapp.VELODROMECL | Dapp.AERODROMECL,
+  dapp: Dapp.VELODROMECL | Dapp.AERODROMECL | Dapp.PANCAKECL,
   tokenId: string
 ): Promise<string> {
   const iNonfungiblePositionManager = new ethers.Contract(
