@@ -85,7 +85,8 @@ export const stakingAddress: AddressDappNetworkMap = {
     [Dapp.COMPOUNDV3]: "0x443ea0340cb75a160f31a440722dec7b5bc3c2e9"
   },
   [Network.ARBITRUM]: {
-    [Dapp.COMPOUNDV3]: "0x88730d254a2f7e6ac8388c3198afd694ba9f7fae"
+    [Dapp.COMPOUNDV3]: "0x88730d254a2f7e6ac8388c3198afd694ba9f7fae",
+    [Dapp.PANCAKECL]: "0x5e09ACf80C0296740eC5d6F643005a4ef8DaA694"
   },
   [Network.BASE]: {
     [Dapp.PANCAKECL]: "0xC6A2Db661D5a5690172d8eB0a7DEA2d3008665A3"
@@ -118,7 +119,8 @@ export const nonfungiblePositionManagerAddress: AddressDappNetworkMap = {
   },
   [Network.ARBITRUM]: {
     [Dapp.UNISWAPV3]: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
-    [Dapp.RAMSESCL]: "0xAA277CB7914b7e5514946Da92cb9De332Ce610EF"
+    [Dapp.RAMSESCL]: "0xAA277CB7914b7e5514946Da92cb9De332Ce610EF",
+    [Dapp.PANCAKECL]: "0x46a15b0b27311cedf172ab29e4f4766fbe7f4364"
   },
   [Network.BASE]: {
     [Dapp.UNISWAPV3]: "0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1",
