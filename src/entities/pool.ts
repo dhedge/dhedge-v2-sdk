@@ -95,6 +95,7 @@ export class Pool {
   public readonly address: string;
   public readonly utils: Utils;
   public readonly network: Network;
+  public readonly isDhedge: boolean;
 
   public constructor(
     network: Network,
@@ -102,7 +103,8 @@ export class Pool {
     poolLogic: Contract,
     mangerLogic: Contract,
     utils: Utils,
-    factory: Contract
+    factory: Contract,
+    isDhedge = true
   ) {
     this.network = network;
     this.poolLogic = poolLogic;
@@ -111,6 +113,7 @@ export class Pool {
     this.signer = signer;
     this.utils = utils;
     this.factory = factory;
+    this.isDhedge = isDhedge;
   }
 
   /**
