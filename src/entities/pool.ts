@@ -1111,7 +1111,8 @@ export class Pool {
       | Dapp.VELODROMECL
       | Dapp.AERODROMECL
       | Dapp.RAMSESCL
-      | Dapp.PANCAKECL,
+      | Dapp.PANCAKECL
+      | Dapp.SHADOWCL,
     assetA: string,
     assetB: string,
     amountA: BigNumber | string,
@@ -1180,6 +1181,7 @@ export class Pool {
     switch (dapp) {
       case Dapp.UNISWAPV3:
       case Dapp.RAMSESCL:
+      case Dapp.SHADOWCL:
         dappAddress = nonfungiblePositionManagerAddress[this.network][dapp];
         break;
       case Dapp.VELODROMECL:
@@ -1245,6 +1247,7 @@ export class Pool {
     switch (dapp) {
       case Dapp.UNISWAPV3:
       case Dapp.RAMSESCL:
+      case Dapp.SHADOWCL:
         dappAddress = nonfungiblePositionManagerAddress[this.network][dapp];
         break;
       case Dapp.VELODROMECL:
@@ -1309,6 +1312,7 @@ export class Pool {
     switch (dapp) {
       case Dapp.UNISWAPV3:
       case Dapp.RAMSESCL:
+      case Dapp.SHADOWCL:
         contractAddress = nonfungiblePositionManagerAddress[this.network][dapp];
         txData = iNonfungiblePositionManager.encodeFunctionData(
           Transaction.COLLECT,

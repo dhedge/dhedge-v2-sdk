@@ -5,7 +5,8 @@ export enum Network {
   POLYGON = "polygon",
   OPTIMISM = "optimism",
   ARBITRUM = "arbitrum",
-  BASE = "base"
+  BASE = "base",
+  SONIC = "sonic"
 }
 
 export enum Dapp {
@@ -29,7 +30,8 @@ export enum Dapp {
   AERODROMECL = "aerodromeCL",
   RAMSESCL = "ramsesCL",
   PANCAKECL = "pancakeCL",
-  COMPOUNDV3 = "compoundV3"
+  COMPOUNDV3 = "compoundV3",
+  SHADOWCL = "shadowCL"
 }
 
 export enum Transaction {
