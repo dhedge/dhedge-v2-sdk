@@ -47,7 +47,7 @@ const testOdos = ({ wallet, network, provider }: TestingRunParams) => {
       const usdcAllowanceDelta = await allowanceDelta(
         pool.address,
         USDC,
-        routerAddress[network]["1inch"]!,
+        routerAddress[network]["odos"]!,
         pool.signer
       );
       await expect(usdcAllowanceDelta.gt(0));
@@ -86,19 +86,24 @@ const testOdos = ({ wallet, network, provider }: TestingRunParams) => {
   });
 };
 
+// testingHelper({
+//   network: Network.OPTIMISM,
+//   testingRun: testOdos
+// });
+
 testingHelper({
-  network: Network.OPTIMISM,
+  network: Network.ARBITRUM,
   testingRun: testOdos
 });
 
 // testingHelper({
 //   network: Network.POLYGON,
 //   onFork: false,
-//   testingRun: testOneInch
+//   testingRun: testOdos
 // });
 
 // testingHelper({
 //   network: Network.BASE,
 //   onFork: false,
-//   testingRun: testOneInch
+//   testingRun: testOdos
 // });

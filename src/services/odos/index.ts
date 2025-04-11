@@ -13,6 +13,13 @@ export async function getOdosSwapTxData(
   amountIn: ethers.BigNumber | string,
   slippage: number
 ): Promise<string> {
+  let referralCode = 0; //  Defaults to 0 for unregistered activity.
+  if (
+    process.env.ODOS_REFERAL_CODE &&
+    Number(process.env.ODOS_REFERAL_CODE) > 0
+  ) {
+    referralCode = Number(process.env.ODOS_REFERAL_CODE);
+  }
   const quoteParams = {
     chainId: networkChainIdMap[pool.network],
     inputTokens: [
@@ -28,7 +35,8 @@ export async function getOdosSwapTxData(
       }
     ],
     slippageLimitPercent: slippage,
-    userAddr: pool.address
+    userAddr: pool.address,
+    referralCode
   };
   try {
     const quoteResult = await axios.post(
