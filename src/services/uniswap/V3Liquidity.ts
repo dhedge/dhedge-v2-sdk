@@ -196,7 +196,9 @@ export async function getUniswapV3Liquidity(
   const iNonfungiblePositionManager = new ethers.Contract(
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     nonfungiblePositionManagerAddress[pool.network][dapp]!,
-    INonfungiblePositionManager.abi,
+    dapp === Dapp.SHADOWCL
+      ? IShadowNonfungiblePositionManager
+      : INonfungiblePositionManager.abi,
     pool.signer
   );
   const result = await iNonfungiblePositionManager.positions(tokenId);

@@ -7,7 +7,8 @@ export const networkPortMap = {
   [Network.POLYGON]: 8542,
   [Network.OPTIMISM]: 8544,
   [Network.ARBITRUM]: 8540,
-  [Network.BASE]: 8546
+  [Network.BASE]: 8546,
+  [Network.SONIC]: 8547
 };
 
 export const getWalletData = (

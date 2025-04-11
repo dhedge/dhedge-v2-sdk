@@ -31,7 +31,7 @@ export enum Dapp {
   RAMSESCL = "ramsesCL",
   PANCAKECL = "pancakeCL",
   COMPOUNDV3 = "compoundV3",
-  ODOS = "odos"
+  ODOS = "odos",
   SHADOWCL = "shadowCL"
 }
 

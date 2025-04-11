@@ -65,7 +65,8 @@ export const routerAddress: AddressDappNetworkMap = {
     [Dapp.TOROS]: "0xf067575Eb60c7587C11e867907AA7284833704d1"
   },
   [Network.SONIC]: {
-    [Dapp.AAVEV3]: "0x5362dBb1e601abF3a4c14c22ffEdA64042E5eAA3"
+    [Dapp.AAVEV3]: "0x5362dBb1e601abF3a4c14c22ffEdA64042E5eAA3",
+    [Dapp.ODOS]: "0xaC041Df48dF9791B0654f1Dbbf2CC8450C5f2e9D"
   }
 };
 
@@ -98,7 +99,9 @@ export const stakingAddress: AddressDappNetworkMap = {
   [Network.BASE]: {
     [Dapp.PANCAKECL]: "0xC6A2Db661D5a5690172d8eB0a7DEA2d3008665A3"
   },
-  [Network.SONIC]: {}
+  [Network.SONIC]: {
+    [Dapp.SHADOWCL]: "0xe879d0E44e6873cf4ab71686055a4f6817685f02"
+  }
 };
 
 export const aaveAddressProvider: AddressDappNetworkMap = {

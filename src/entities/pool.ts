@@ -1393,13 +1393,13 @@ export class Pool {
     options: any = null,
     estimateGas = false
   ): Promise<any> {
+    const claimAddress =
+      dapp === Dapp.RAMSESCL
+        ? nonfungiblePositionManagerAddress[this.network][dapp]
+        : stakingAddress[this.network][dapp];
     const tx = await getPoolTxOrGasEstimate(
       this,
-      [
-        nonfungiblePositionManagerAddress[this.network][dapp],
-        getRewardsTxDta(tokenId, rewards),
-        options
-      ],
+      [claimAddress, getRewardsTxDta(tokenId, rewards), options],
       estimateGas
     );
     return tx;

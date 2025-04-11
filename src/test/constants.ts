@@ -128,6 +128,25 @@ export const CONTRACT_ADDRESS = {
     VELO: "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
     COMPOUNDV3_WETH: "",
     TOROS: ""
+  },
+  [Network.SONIC]: {
+    USDC: "0x29219dd400f2bf60e5a23d13be72b486d4038894",
+    USDT: "",
+    SUSD: "",
+    WETH: "0x50c42deacd8fc9773493ed674b675be577f2634b",
+    WBTC: "",
+    SWETH: "",
+    uniswapV3: {
+      nonfungiblePositionManager: ""
+    },
+    //
+    ARRAKIS_USDC_WETH_GAUGE: "",
+    ARRAKIS_USDC_WETH_LP: "",
+    WMATIC: "",
+    VELODROME_CL_USDC_WETH_GAUGE: "",
+    VELO: "",
+    COMPOUNDV3_WETH: "",
+    TOROS: ""
   }
 };
 
@@ -137,12 +156,14 @@ export const USDC_BALANCEOF_SLOT = {
   [Network.OPTIMISM]: 9,
   [Network.ARBITRUM]: 9,
   [Network.POLYGON]: 0,
-  [Network.BASE]: 9
+  [Network.BASE]: 9,
+  [Network.SONIC]: 9
 };
 
 export const WETH_BALANCEOF_SLOT = {
   [Network.OPTIMISM]: 3,
   [Network.ARBITRUM]: 51,
   [Network.POLYGON]: 0,
-  [Network.BASE]: 0
+  [Network.BASE]: 0,
+  [Network.SONIC]: 0
 };
