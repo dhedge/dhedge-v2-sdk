@@ -23,7 +23,6 @@ export class Dhedge {
       PoolFactory.abi,
       this.signer
     );
-
     this.utils = new Utils(this.network, this.signer);
   }
 
@@ -87,9 +86,10 @@ export class Dhedge {
    * @param {string} address Pool address
    * @returns {Pool} Loaded Pool
    */
-  public async loadPool(address: string): Promise<Pool> {
+  public async loadPool(address: string, isDhedge = true): Promise<Pool> {
     const poolLogic = new Contract(address, PoolLogic.abi, this.signer);
-    const managerLogicAddress = await poolLogic.poolManagerLogic();
+    let managerLogicAddress = address;
+    if (isDhedge) managerLogicAddress = await poolLogic.poolManagerLogic();
     const managerLogic = new Contract(
       managerLogicAddress,
       ManagerLogic.abi,
@@ -102,7 +102,8 @@ export class Dhedge {
       poolLogic,
       managerLogic,
       this.utils,
-      this.factory
+      this.factory,
+      isDhedge
     );
   }
 
