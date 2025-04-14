@@ -55,14 +55,16 @@ export const routerAddress: AddressDappNetworkMap = {
     [Dapp.BALANCER]: "0xBA12222222228d8Ba445958a75a0704d566BF2C8",
     [Dapp.RAMSES]: "0xaaa87963efeb6f7e0a2711f397663105acb1805e",
     [Dapp.ZEROEX]: "0xdef1c0ded9bec7f1a1670819833240f027b25eff",
-    [Dapp.TOROS]: "0xA5679C4272A056Bb83f039961fae7D99C48529F5"
+    [Dapp.TOROS]: "0xA5679C4272A056Bb83f039961fae7D99C48529F5",
+    [Dapp.ODOS]: "0xa669e7A0d4b3e4Fa48af2dE86BD4CD7126Be4e13"
   },
   [Network.BASE]: {
     [Dapp.ONEINCH]: "0x111111125421ca6dc452d289314280a0f8842a65",
     [Dapp.ZEROEX]: "0xdef1c0ded9bec7f1a1670819833240f027b25eff",
     [Dapp.AERODROME]: "0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43",
     [Dapp.AAVEV3]: "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5",
-    [Dapp.TOROS]: "0xf067575Eb60c7587C11e867907AA7284833704d1"
+    [Dapp.TOROS]: "0xf067575Eb60c7587C11e867907AA7284833704d1",
+    [Dapp.ODOS]: "0x19cEeAd7105607Cd444F5ad10dd51356436095a1"
   },
   [Network.SONIC]: {
     [Dapp.AAVEV3]: "0x5362dBb1e601abF3a4c14c22ffEdA64042E5eAA3",
@@ -186,10 +188,11 @@ export const flatMoneyContractAddresses: Readonly<Partial<
   Record<
     Network,
     {
+      OrderExecution?: string;
       DelayedOrder: string;
       FlatcoinVault: string;
       StableModule: string;
-      RETH: string;
+      COLLATERAL: string;
     }
   >
 >> = {
@@ -197,6 +200,13 @@ export const flatMoneyContractAddresses: Readonly<Partial<
     DelayedOrder: "0x6D857e9D24a7566bB72a3FB0847A3E0e4E1c2879",
     FlatcoinVault: "0x95Fa1ddc9a78273f795e67AbE8f1Cd2Cd39831fF",
     StableModule: "0xb95fB324b8A2fAF8ec4f76e3dF46C718402736e2",
-    RETH: "0xb6fe221fe9eef5aba221c348ba20a1bf5e73624c"
+    COLLATERAL: "0xb6fe221fe9eef5aba221c348ba20a1bf5e73624c" // RETH
+  },
+  [Network.OPTIMISM]: {
+    OrderExecution: "0x7805CB7fb2C2e70FDdF92949065D9Ee1Fc2F72a8",
+    DelayedOrder: "0xd917A0C9B21Bb71DF1209d2c211Ad83004F01554", // OrderAnnouncementModule
+    FlatcoinVault: "0x86C7b9640302082B0dF78023F930d8612bFcaD3f",
+    COLLATERAL: "0x68f180fcCe6836688e9084f035309E29Bf0A2095", // WBTC
+    StableModule: "0x357CB23571EF7a3d6189b7FAcFC361eA71f7CAB5"
   }
 };

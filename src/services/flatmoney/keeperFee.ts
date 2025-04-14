@@ -4,6 +4,7 @@ import IFlatcoinVaultAbi from "../../abi/flatmoney/IFlatcoinVault.json";
 import KeeperFeeAbi from "../../abi/flatmoney/KeeperFee.json";
 import { flatMoneyContractAddresses } from "../../config";
 import BigNumber from "bignumber.js";
+import { JsonRpcProvider } from "@ethersproject/providers";
 
 export const getKeeperFeeContract = async (pool: Pool): Promise<Contract> => {
   const flatMoneyContracts = flatMoneyContractAddresses[pool.network];
@@ -35,12 +36,16 @@ export const getKeeperFee = async (
   maxKeeperFeeInUsd: number | null
 ): Promise<ethers.BigNumber> => {
   const keeperFeeContract = await getKeeperFeeContract(pool);
-  const gasPrice = await pool.signer.provider.getGasPrice();
+
+  const feeHistory = await (pool.signer
+    .provider as JsonRpcProvider).send("eth_feeHistory", [1, "latest"]);
+
+  const gasPrice = Number(feeHistory.baseFeePerGas[0]);
 
   let keeperfee: ethers.BigNumber;
   if (gasPrice) {
     keeperfee = await keeperFeeContract["getKeeperFee(uint256)"](
-      new BigNumber(gasPrice.toString()).times(1.2).toFixed(0)
+      new BigNumber(gasPrice.toString()).times(1.5).toFixed(0)
     );
   } else {
     keeperfee = await keeperFeeContract["getKeeperFee()"]();
@@ -72,7 +77,7 @@ export const getKeeperFeeInUsd = async (
   const filteredFc = fundComposition.filter(
     fc =>
       fc.asset.toLocaleLowerCase() ===
-      flatMoneyContracts.RETH.toLocaleLowerCase()
+      flatMoneyContracts.COLLATERAL.toLocaleLowerCase()
   );
 
   if (!filteredFc[0])
@@ -80,5 +85,8 @@ export const getKeeperFeeInUsd = async (
 
   const rateD1 = new BigNumber(filteredFc[0].rate.toString()).div(1e18);
 
-  return rateD1.times(keeperFee.toString()).div(1e18);
+  const assetDecimal = await pool.utils.getDecimals(
+    flatMoneyContracts.COLLATERAL
+  );
+  return rateD1.times(keeperFee.toString()).div(10 ** assetDecimal);
 };
