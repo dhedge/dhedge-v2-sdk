@@ -34,7 +34,7 @@
     "@size-limit/preset-small-lib": "^5.0.1",
     "@types/jest": "^28.1.7",
     "@types/lodash": "^4.14.178",
-    "hardhat": "2.22.18",
+    "hardhat": "2.23.0",
     "husky": "^7.0.1",
     "jest": "^28.1.3",
     "size-limit": "^5.0.1",

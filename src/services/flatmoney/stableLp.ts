@@ -3,6 +3,7 @@
 import BigNumber from "bignumber.js";
 import { Pool, ethers } from "../..";
 import DelayedOrderAbi from "../../abi/flatmoney/DelayedOrder.json";
+import IOrderExecutionModuleAbi from "../../abi/flatmoney/v2/IOrderExecutionModule.json";
 import { flatMoneyContractAddresses } from "../../config";
 import { getPoolTxOrGasEstimate } from "../../utils/contract";
 import { getStableDepositQuote, getStableWithdrawQuote } from "./stableModule";
@@ -42,6 +43,12 @@ export function getCancelExistingOrderTxData(account: string): string {
   ).encodeFunctionData("cancelExistingOrder", [account]);
 }
 
+export function getCancelExistingOrderTxDataForV2(account: string): string {
+  return new ethers.utils.Interface(
+    IOrderExecutionModuleAbi
+  ).encodeFunctionData("cancelExistingOrder", [account]);
+}
+
 export async function mintUnitViaFlatMoney(
   pool: Pool,
   depositAmount: ethers.BigNumber | string,
@@ -55,7 +62,7 @@ export async function mintUnitViaFlatMoney(
     throw new Error("mintUnitViaFlatMoney: network not supported");
   }
 
-  const keeperfee = await getKeeperFee(pool, maxKeeperFeeInUsd); // in RETH
+  const keeperfee = await getKeeperFee(pool, maxKeeperFeeInUsd); // in COLLATERAL
 
   const adjustedDepositAmount = new BigNumber(depositAmount.toString()).minus(
     keeperfee.toString() // keeper fee deducted from amountIn
@@ -125,11 +132,26 @@ export async function cancelOrderViaFlatMoney(
   if (!flatMoneyContracts) {
     throw new Error("cancelOrderViaFlatMoney: network not supported");
   }
-  const cancelOrderTxData = await getCancelExistingOrderTxData(pool.address);
-  const tx = await getPoolTxOrGasEstimate(
-    pool,
-    [flatMoneyContracts.DelayedOrder, cancelOrderTxData, options],
-    estimateGas
-  );
-  return tx;
+  // flat money v2
+  // use OrderExecution module to cancel order
+  let toAddress = flatMoneyContracts.DelayedOrder;
+  let cancelOrderTxData = getCancelExistingOrderTxData(pool.address);
+  if (flatMoneyContracts.OrderExecution) {
+    toAddress = flatMoneyContracts.OrderExecution;
+    cancelOrderTxData = await getCancelExistingOrderTxDataForV2(pool.address);
+  }
+  // use trader address to cancel order
+  if (estimateGas) {
+    return pool.signer.estimateGas({
+      to: toAddress,
+      data: cancelOrderTxData
+    });
+  } else {
+    const tx = await pool.signer.sendTransaction({
+      to: toAddress,
+      data: cancelOrderTxData,
+      ...options
+    });
+    return tx;
+  }
 }
