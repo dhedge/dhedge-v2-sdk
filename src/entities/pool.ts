@@ -1121,7 +1121,8 @@ export class Pool {
       | Dapp.VELODROMECL
       | Dapp.AERODROMECL
       | Dapp.RAMSESCL
-      | Dapp.PANCAKECL,
+      | Dapp.PANCAKECL
+      | Dapp.SHADOWCL,
     assetA: string,
     assetB: string,
     amountA: BigNumber | string,
@@ -1190,6 +1191,7 @@ export class Pool {
     switch (dapp) {
       case Dapp.UNISWAPV3:
       case Dapp.RAMSESCL:
+      case Dapp.SHADOWCL:
         dappAddress = nonfungiblePositionManagerAddress[this.network][dapp];
         break;
       case Dapp.VELODROMECL:
@@ -1255,6 +1257,7 @@ export class Pool {
     switch (dapp) {
       case Dapp.UNISWAPV3:
       case Dapp.RAMSESCL:
+      case Dapp.SHADOWCL:
         dappAddress = nonfungiblePositionManagerAddress[this.network][dapp];
         break;
       case Dapp.VELODROMECL:
@@ -1319,6 +1322,7 @@ export class Pool {
     switch (dapp) {
       case Dapp.UNISWAPV3:
       case Dapp.RAMSESCL:
+      case Dapp.SHADOWCL:
         contractAddress = nonfungiblePositionManagerAddress[this.network][dapp];
         txData = iNonfungiblePositionManager.encodeFunctionData(
           Transaction.COLLECT,
@@ -1389,13 +1393,13 @@ export class Pool {
     options: any = null,
     estimateGas = false
   ): Promise<any> {
+    const claimAddress =
+      dapp === Dapp.RAMSESCL
+        ? nonfungiblePositionManagerAddress[this.network][dapp]
+        : stakingAddress[this.network][dapp];
     const tx = await getPoolTxOrGasEstimate(
       this,
-      [
-        nonfungiblePositionManagerAddress[this.network][dapp],
-        getRewardsTxDta(tokenId, rewards),
-        options
-      ],
+      [claimAddress, getRewardsTxDta(tokenId, rewards), options],
       estimateGas
     );
     return tx;
