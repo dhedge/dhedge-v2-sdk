@@ -62,7 +62,8 @@ export const CONTRACT_ADDRESS = {
     VELODROME_CL_USDC_WETH_GAUGE: "",
     VELO: "",
     COMPOUNDV3_WETH: "",
-    TOROS: ""
+    TOROS: "",
+    UNIT: ""
   },
 
   [Network.OPTIMISM]: {
@@ -77,6 +78,7 @@ export const CONTRACT_ADDRESS = {
       nonfungiblePositionManager: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88"
     },
 
+    UNIT: "0x357CB23571EF7a3d6189b7FAcFC361eA71f7CAB5",
     WMATIC: "",
     //
     ARRAKIS_USDC_WETH_GAUGE: "",
@@ -101,6 +103,8 @@ export const CONTRACT_ADDRESS = {
       nonfungiblePositionManager: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88"
     },
 
+    UNIT: "",
+
     //
     ARRAKIS_USDC_WETH_GAUGE: "",
     ARRAKIS_USDC_WETH_LP: "",
@@ -117,6 +121,7 @@ export const CONTRACT_ADDRESS = {
     WETH: "0x4200000000000000000000000000000000000006",
     WBTC: "",
     SWETH: "",
+    UNIT: "0xb95fB324b8A2fAF8ec4f76e3dF46C718402736e2",
     uniswapV3: {
       nonfungiblePositionManager: ""
     },

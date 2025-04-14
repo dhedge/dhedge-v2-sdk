@@ -170,10 +170,11 @@ export const flatMoneyContractAddresses: Readonly<Partial<
   Record<
     Network,
     {
+      OrderExecution?: string;
       DelayedOrder: string;
       FlatcoinVault: string;
       StableModule: string;
-      RETH: string;
+      COLLATERAL: string;
     }
   >
 >> = {
@@ -181,6 +182,13 @@ export const flatMoneyContractAddresses: Readonly<Partial<
     DelayedOrder: "0x6D857e9D24a7566bB72a3FB0847A3E0e4E1c2879",
     FlatcoinVault: "0x95Fa1ddc9a78273f795e67AbE8f1Cd2Cd39831fF",
     StableModule: "0xb95fB324b8A2fAF8ec4f76e3dF46C718402736e2",
-    RETH: "0xb6fe221fe9eef5aba221c348ba20a1bf5e73624c"
+    COLLATERAL: "0xb6fe221fe9eef5aba221c348ba20a1bf5e73624c" // RETH
+  },
+  [Network.OPTIMISM]: {
+    OrderExecution: "0x7805CB7fb2C2e70FDdF92949065D9Ee1Fc2F72a8",
+    DelayedOrder: "0xd917A0C9B21Bb71DF1209d2c211Ad83004F01554", // OrderAnnouncementModule
+    FlatcoinVault: "0x86C7b9640302082B0dF78023F930d8612bFcaD3f",
+    COLLATERAL: "0x68f180fcCe6836688e9084f035309E29Bf0A2095", // WBTC
+    StableModule: "0x357CB23571EF7a3d6189b7FAcFC361eA71f7CAB5"
   }
 };

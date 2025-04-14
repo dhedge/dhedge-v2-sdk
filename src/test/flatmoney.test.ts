@@ -4,6 +4,7 @@ import { Dhedge, Pool } from "../entities";
 import { AssetEnabled, Network } from "../types";
 import {
   TestingRunParams,
+  runWithImpersonateAccount,
   setTokenAmount,
   testingHelper
 } from "./utils/testingHelper";
@@ -14,9 +15,7 @@ import DelayedOrderAbi from "../abi/flatmoney/DelayedOrder.json";
 import { allowanceDelta } from "./utils/token";
 import { getKeeperFee } from "../services/flatmoney/keeperFee";
 
-const RETH = "0xb6fe221fe9eef5aba221c348ba20a1bf5e73624c";
-const RETH_SLOT = 0;
-const UNIT = "0xb95fB324b8A2fAF8ec4f76e3dF46C718402736e2";
+const COLLATERAL_SLOT = 0; // same for RETH(base) and WBTC(optimism)
 // https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/master/contracts/token/ERC20/ERC20Upgradeable.sol#L31
 // https://eips.ethereum.org/EIPS/eip-7201
 const UNIT_SLOT =
@@ -31,16 +30,26 @@ const testFlatMoney = ({
   let dhedge: Dhedge;
   let pool: Pool;
   let delayOrderContract: Contract;
+  let COLLATERAL: string;
   jest.setTimeout(200000);
   describe(`flatmoney on ${network}`, () => {
     beforeAll(async () => {
+      await provider.send("evm_mine", []);
       dhedge = new Dhedge(wallet, network);
       pool = await dhedge.loadPool(TEST_POOL[network]);
+
+      await runWithImpersonateAccount(
+        { provider, account: await pool.managerLogic.manager() },
+        async ({ signer }) => {
+          await pool.managerLogic.connect(signer).setTrader(wallet.address);
+        }
+      );
 
       const flatMoneyContracts = flatMoneyContractAddresses[pool.network];
       if (!flatMoneyContracts) {
         throw new Error("testFlatMoney: network not supported");
       }
+      COLLATERAL = flatMoneyContracts.COLLATERAL;
       delayOrderContract = new Contract(
         flatMoneyContracts.DelayedOrder,
         DelayedOrderAbi,
@@ -57,14 +66,14 @@ const testFlatMoney = ({
       await setTokenAmount({
         amount: new BigNumber(100).times(1e18).toString(),
         provider,
-        tokenAddress: RETH,
-        slot: RETH_SLOT,
+        tokenAddress: COLLATERAL,
+        slot: COLLATERAL_SLOT,
         userAddress: pool.address
       });
       await setTokenAmount({
         amount: new BigNumber(100).times(1e18).toString(),
         provider,
-        tokenAddress: UNIT,
+        tokenAddress: CONTRACT_ADDRESS[network].UNIT,
         slot: UNIT_SLOT,
         userAddress: pool.address
       });
@@ -82,11 +91,11 @@ const testFlatMoney = ({
         { asset: CONTRACT_ADDRESS[network].USDC, isDeposit: true },
         { asset: CONTRACT_ADDRESS[network].WETH, isDeposit: true },
         {
-          asset: UNIT,
+          asset: CONTRACT_ADDRESS[network].UNIT,
           isDeposit: false
         },
         {
-          asset: RETH,
+          asset: COLLATERAL,
           isDeposit: false
         }
       ];
@@ -95,10 +104,14 @@ const testFlatMoney = ({
 
     it("mint UNIT", async () => {
       //approve
-      await pool.approveSpender(delayOrderContract.address, RETH, MAX_AMOUNT);
+      await pool.approveSpender(
+        delayOrderContract.address,
+        COLLATERAL,
+        MAX_AMOUNT
+      );
       const collateralAllowanceDelta = await allowanceDelta(
         pool.address,
-        RETH,
+        COLLATERAL,
         delayOrderContract.address,
         pool.signer
       );
@@ -129,7 +142,13 @@ const testFlatMoney = ({
     });
 
     it("redeem UNIT", async () => {
-      const withdrawAmountStr = new BigNumber(2).times(1e18).toString();
+      let withdrawAmountStr;
+      if (Network.OPTIMISM === network) {
+        withdrawAmountStr = new BigNumber(2).times(1e8).toString(); // smaller amount
+      } else {
+        withdrawAmountStr = new BigNumber(2).times(1e18).toString();
+      }
+
       const tx = await pool.redeemUnitViaFlatMoney(
         withdrawAmountStr,
         0.5,
