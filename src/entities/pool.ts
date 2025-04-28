@@ -63,7 +63,6 @@ import {
   getFuturesChangeMarginTxData
 } from "../services/futures";
 import { getFuturesCancelOrderTxData } from "../services/futures/trade";
-import { getZeroExTradeTxData } from "../services/zeroEx/zeroExTrade";
 import { getOneInchSwapTxData } from "../services/oneInch";
 import {
   getCreateVestTxData,
@@ -373,16 +372,6 @@ export class Pool {
   ): Promise<any> {
     let swapTxData: string;
     switch (dapp) {
-      case Dapp.ZEROEX:
-        swapTxData = await getZeroExTradeTxData(
-          this.network,
-          assetFrom,
-          assetTo,
-          amountIn,
-          slippage,
-          this.address
-        );
-        break;
       case Dapp.ONEINCH:
         ({ swapTxData } = await getOneInchSwapTxData(
           this,
