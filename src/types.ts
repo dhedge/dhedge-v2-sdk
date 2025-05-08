@@ -24,7 +24,6 @@ export enum Dapp {
   VELODROMEV2 = "velodromeV2",
   VELODROMECL = "velodromeCL",
   LYRA = "lyra",
-  ZEROEX = "0x",
   RAMSES = "ramses",
   AERODROME = "aerodrome",
   AERODROMECL = "aerodromeCL",
