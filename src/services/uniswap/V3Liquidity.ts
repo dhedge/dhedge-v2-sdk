@@ -19,6 +19,7 @@ import {
 } from "../../config";
 import INonfungiblePositionManager from "../../abi/INonfungiblePositionManager.json";
 import IVeldodromePositionManager from "../../abi/IVelodromeNonfungiblePositionManager.json";
+import IShadowNonfungiblePositionManager from "../../abi/IShadowNonfungiblePositionManager.json";
 import IRamsesPositionManager from "../../abi/IRamsesNonfungiblePositionManager.json";
 import IArrakisV1RouterStaking from "../../abi/IArrakisV1RouterStaking.json";
 import IPancakeMasterChef from "../../abi/IPancakeMasterChefV3.json";
@@ -77,7 +78,8 @@ export async function getUniswapV3MintTxData(
     | Dapp.VELODROMECL
     | Dapp.AERODROMECL
     | Dapp.RAMSESCL
-    | Dapp.PANCAKECL,
+    | Dapp.PANCAKECL
+    | Dapp.SHADOWCL,
   pool: Pool,
   assetA: string,
   assetB: string,
@@ -168,6 +170,12 @@ export async function getUniswapV3MintTxData(
     mintParams.push(0);
   }
 
+  if (dapp === Dapp.SHADOWCL) {
+    iNonfungiblePositionManager = new ethers.utils.Interface(
+      IShadowNonfungiblePositionManager
+    );
+  }
+
   return iNonfungiblePositionManager.encodeFunctionData(Transaction.MINT, [
     mintParams
   ]);
@@ -188,7 +196,9 @@ export async function getUniswapV3Liquidity(
   const iNonfungiblePositionManager = new ethers.Contract(
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     nonfungiblePositionManagerAddress[pool.network][dapp]!,
-    INonfungiblePositionManager.abi,
+    dapp === Dapp.SHADOWCL
+      ? IShadowNonfungiblePositionManager
+      : INonfungiblePositionManager.abi,
     pool.signer
   );
   const result = await iNonfungiblePositionManager.positions(tokenId);
@@ -208,7 +218,8 @@ export async function getIncreaseLiquidityTxData(
     dapp === Dapp.VELODROMECL ||
     dapp === Dapp.AERODROMECL ||
     dapp === Dapp.RAMSESCL ||
-    dapp === Dapp.PANCAKECL
+    dapp === Dapp.PANCAKECL ||
+    dapp === Dapp.SHADOWCL
   ) {
     const abi = new ethers.utils.Interface(INonfungiblePositionManager.abi);
     txData = abi.encodeFunctionData(Transaction.INCREASE_LIQUIDITY, [
@@ -245,7 +256,8 @@ export async function getDecreaseLiquidityTxData(
     dapp === Dapp.VELODROMECL ||
     dapp === Dapp.AERODROMECL ||
     dapp === Dapp.RAMSESCL ||
-    dapp === Dapp.PANCAKECL
+    dapp === Dapp.PANCAKECL ||
+    dapp === Dapp.SHADOWCL
   ) {
     const abi = new ethers.utils.Interface(INonfungiblePositionManager.abi);
     const liquidity = (await getUniswapV3Liquidity(dapp, tokenId, pool))
