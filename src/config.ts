@@ -97,7 +97,9 @@ export const stakingAddress: AddressDappNetworkMap = {
   [Network.BASE]: {
     [Dapp.PANCAKECL]: "0xC6A2Db661D5a5690172d8eB0a7DEA2d3008665A3"
   },
-  [Network.SONIC]: {}
+  [Network.SONIC]: {
+    [Dapp.SHADOWCL]: "0xe879d0E44e6873cf4ab71686055a4f6817685f02" //specific  for wS/USDC CL
+  }
 };
 
 export const aaveAddressProvider: AddressDappNetworkMap = {
