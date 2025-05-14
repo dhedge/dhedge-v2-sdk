@@ -42,7 +42,8 @@ export const TEST_POOL = {
   [Network.POLYGON]: "0x699fd4d6eadb216704c7e355cfa0a12f51813163",
   [Network.OPTIMISM]: "0x12573bfdf764ab9d52aca20e2827497a66829716",
   [Network.ARBITRUM]: "0x0b5f6591c8eb23e5a68102d3d39ebbb464ee5c14",
-  [Network.BASE]: "0x4842b42F68524383F609aa46eAfc18c1459cE3cD"
+  [Network.BASE]: "0x4842b42F68524383F609aa46eAfc18c1459cE3cD",
+  [Network.SONIC]: ""
 };
 
 export const CONTRACT_ADDRESS = {
@@ -151,7 +152,8 @@ export const CONTRACT_ADDRESS = {
     VELODROME_CL_USDC_WETH_GAUGE: "",
     VELO: "",
     COMPOUNDV3_WETH: "",
-    TOROS: ""
+    TOROS: "",
+    UNIT: ""
   }
 };
 
