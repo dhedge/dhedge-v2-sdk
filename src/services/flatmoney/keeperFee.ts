@@ -38,7 +38,7 @@ export const getKeeperFee = async (
   const keeperFeeContract = await getKeeperFeeContract(pool);
 
   const feeHistory = await (pool.signer
-    .provider as JsonRpcProvider).send("eth_feeHistory", [1, "latest"]);
+    .provider as JsonRpcProvider).send("eth_feeHistory", [1, "latest", []]);
 
   const gasPrice = Number(feeHistory.baseFeePerGas[0]);
 
