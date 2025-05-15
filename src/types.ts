@@ -31,7 +31,8 @@ export enum Dapp {
   PANCAKECL = "pancakeCL",
   COMPOUNDV3 = "compoundV3",
   ODOS = "odos",
-  SHADOWCL = "shadowCL"
+  SHADOWCL = "shadowCL",
+  PENDLE = "pendle"
 }
 
 export enum Transaction {

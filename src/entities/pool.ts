@@ -86,6 +86,7 @@ import {
   getPancakeUnStakeTxData,
 } from "../services/pancake/staking";
 import { getOdosSwapTxData } from "../services/odos";
+import { getPendleSwapTxData } from "../services/pendle";
 
 export class Pool {
   public readonly poolLogic: Contract;
@@ -415,6 +416,15 @@ export class Pool {
         break;
       case Dapp.ODOS:
         swapTxData = await getOdosSwapTxData(
+          this,
+          assetFrom,
+          assetTo,
+          amountIn,
+          slippage
+        );
+        break;
+      case Dapp.PENDLE:
+        swapTxData = await getPendleSwapTxData(
           this,
           assetFrom,
           assetTo,
