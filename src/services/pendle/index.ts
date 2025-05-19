@@ -18,7 +18,7 @@ export async function getPendleSwapTxData(
     tokenIn,
     tokenOut,
     amountIn: amountIn.toString(),
-    slippage
+    slippage,
   };
   const market = await getMarket(pool, tokenIn, tokenOut);
   try {
@@ -28,8 +28,6 @@ export async function getPendleSwapTxData(
       }/markets/${market}/swap`,
       { params }
     );
-
-    console.log("swapResult", swapResult.data);
 
     return swapResult.data.tx.data;
   } catch (e) {
@@ -61,7 +59,7 @@ export async function getMarket(
   }
 
   const allMarkets = marketResult.data.markets;
-  const markets = [tokenIn, tokenOut].map(token =>
+  const markets = [tokenIn, tokenOut].map((token) =>
     allMarkets.find(
       (market: any) => market.pt === `${networkId}-${token.toLocaleLowerCase()}`
     )
