@@ -3,6 +3,7 @@ import axios from "axios";
 import { ApiError, ethers } from "../..";
 import { networkChainIdMap } from "../../config";
 import { Pool } from "../../entities";
+import ActionMiscV3Abi from "../../abi/pendle/ActionMiscV3.json";
 
 const pendleBaseUrl = "https://api-v2.pendle.finance/core/v1";
 
@@ -13,12 +14,16 @@ export async function getPendleSwapTxData(
   amountIn: ethers.BigNumber | string,
   slippage: number
 ): Promise<string> {
+  const expiredMarket = await checkExitPostExpPT(pool, tokenIn, tokenOut);
+  if (expiredMarket) {
+    return getExitExpPTTxData(pool, tokenOut, amountIn, expiredMarket);
+  }
   const params = {
     receiver: pool.address,
     tokenIn,
     tokenOut,
     amountIn: amountIn.toString(),
-    slippage,
+    slippage
   };
   const market = await getMarket(pool, tokenIn, tokenOut);
   try {
@@ -59,7 +64,7 @@ export async function getMarket(
   }
 
   const allMarkets = marketResult.data.markets;
-  const markets = [tokenIn, tokenOut].map((token) =>
+  const markets = [tokenIn, tokenOut].map(token =>
     allMarkets.find(
       (market: any) => market.pt === `${networkId}-${token.toLocaleLowerCase()}`
     )
@@ -74,3 +79,63 @@ export async function getMarket(
     throw new Error("Can only trade PT assets");
   }
 }
+
+const checkExitPostExpPT = async (
+  pool: Pool,
+  tokenIn: string,
+  tokenOut: string
+): Promise<string | null> => {
+  const networkId = networkChainIdMap[pool.network];
+  let inactiveMarketResult;
+  try {
+    inactiveMarketResult = await axios.get(
+      `${pendleBaseUrl}/${networkId}/markets/inactive`
+    );
+  } catch (e) {
+    console.error("Error in Pendle API request:", e);
+    throw new ApiError("Pendle api request failed");
+  }
+  const allInactiveMarkets = inactiveMarketResult.data.markets;
+  const markets = [tokenIn, tokenOut].map(token =>
+    allInactiveMarkets.find(
+      (market: any) => market.pt === `${networkId}-${token.toLocaleLowerCase()}`
+    )
+  );
+  if (markets[0]) {
+    checkUnderlying(markets[0], tokenOut, networkId);
+    return markets[0].address;
+  } else if (markets[1]) {
+    throw new Error("Can not trade to expired PT asset");
+  } else {
+    return null;
+  }
+};
+
+const getExitExpPTTxData = (
+  pool: Pool,
+  tokenOut: string,
+  amountIn: ethers.BigNumber | string,
+  market: string
+) => {
+  const actionMiscV3 = new ethers.utils.Interface(ActionMiscV3Abi);
+  const txData = actionMiscV3.encodeFunctionData("exitPostExpToToken", [
+    pool.address, // receiver
+    market, // market
+    amountIn.toString(), // netPtIn
+    0, // netLpIn
+    [
+      tokenOut,
+      0, // minTokenOut
+      tokenOut, // tokenRedeemSy,
+      ethers.constants.AddressZero, //pendleSwap;
+      // swapData
+      [
+        0, // swapType
+        ethers.constants.AddressZero, // extRouter
+        ethers.constants.HashZero, // extCalldata
+        false // needScale
+      ]
+    ]
+  ]);
+  return txData;
+};

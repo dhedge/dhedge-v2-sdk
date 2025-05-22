@@ -6,6 +6,7 @@ import { Dapp, Network } from "../types";
 import { CONTRACT_ADDRESS, MAX_AMOUNT } from "./constants";
 import {
   TestingRunParams,
+  setTokenAmount,
   setUSDCAmount,
   testingHelper,
   wait
@@ -19,6 +20,7 @@ const testPendle = ({ wallet, network, provider }: TestingRunParams) => {
   const USDC = CONTRACT_ADDRESS[network].USDC;
   const weETH = "0x35751007a407ca6feffe80b3cb397736d2cf4dbe";
   const PTweETH = "0xb33808ea0e883138680ba29311a220a7377cdb92";
+  const PTweETH_matured = "0xe2b2d203577c7cb3d043e89ccf90b5e24d19b66f";
 
   let dhedge: Dhedge;
   let pool: Pool;
@@ -90,6 +92,36 @@ const testPendle = ({ wallet, network, provider }: TestingRunParams) => {
         pool.signer
       );
       expect(weEthBalanceDelta.gt(0));
+    });
+
+    it("exit matured PTweETH to weETH on Pendle", async () => {
+      await setTokenAmount({
+        amount: new BigNumber(1).times(1e18).toString(),
+        provider,
+        tokenAddress: PTweETH_matured,
+        slot: 0,
+        userAddress: pool.address
+      });
+      await pool.approve(Dapp.PENDLE, PTweETH_matured, MAX_AMOUNT);
+      const PTweEthBalance = await pool.utils.getBalance(
+        PTweETH_matured,
+        pool.address
+      );
+      await wait(3);
+      await pool.trade(
+        Dapp.PENDLE,
+        PTweETH_matured,
+        weETH,
+        PTweEthBalance,
+        0.5,
+        await getTxOptions(network)
+      );
+      const weEthBalanceDelta = await balanceDelta(
+        pool.address,
+        weETH,
+        pool.signer
+      );
+      expect(weEthBalanceDelta.eq(PTweEthBalance));
     });
   });
 };
