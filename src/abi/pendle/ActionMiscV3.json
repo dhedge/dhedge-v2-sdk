@@ -1,0 +1,122 @@
+[
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "receiver",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "market",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "netPtIn",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "netLpIn",
+                "type": "uint256"
+            },
+            {
+                "components": [
+                    {
+                        "internalType": "address",
+                        "name": "tokenOut",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "minTokenOut",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "tokenRedeemSy",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "pendleSwap",
+                        "type": "address"
+                    },
+                    {
+                        "components": [
+                            {
+                                "internalType": "enum SwapType",
+                                "name": "swapType",
+                                "type": "uint8"
+                            },
+                            {
+                                "internalType": "address",
+                                "name": "extRouter",
+                                "type": "address"
+                            },
+                            {
+                                "internalType": "bytes",
+                                "name": "extCalldata",
+                                "type": "bytes"
+                            },
+                            {
+                                "internalType": "bool",
+                                "name": "needScale",
+                                "type": "bool"
+                            }
+                        ],
+                        "internalType": "struct SwapData",
+                        "name": "swapData",
+                        "type": "tuple"
+                    }
+                ],
+                "internalType": "struct TokenOutput",
+                "name": "output",
+                "type": "tuple"
+            }
+        ],
+        "name": "exitPostExpToToken",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "totalTokenOut",
+                "type": "uint256"
+            },
+            {
+                "components": [
+                    {
+                        "internalType": "uint256",
+                        "name": "netPtFromRemove",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "netSyFromRemove",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "netPtRedeem",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "netSyFromRedeem",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "totalSyOut",
+                        "type": "uint256"
+                    }
+                ],
+                "internalType": "struct IPActionMiscV3.ExitPostExpReturnParams",
+                "name": "params",
+                "type": "tuple"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    }
+]
