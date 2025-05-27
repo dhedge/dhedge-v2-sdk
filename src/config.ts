@@ -204,5 +204,12 @@ export const flatMoneyContractAddresses: Readonly<Partial<
     FlatcoinVault: "0x86C7b9640302082B0dF78023F930d8612bFcaD3f",
     COLLATERAL: "0x68f180fcCe6836688e9084f035309E29Bf0A2095", // WBTC
     StableModule: "0x357CB23571EF7a3d6189b7FAcFC361eA71f7CAB5"
+  },
+  [Network.ARBITRUM]: {
+    OrderExecution: "0x7e50AD6E467D9FAFC3B4BFd003247cEaA2F17e5b",
+    DelayedOrder: "0x2326BB21B769D81E134C9b305ca156f989249fE7", // OrderAnnouncementModule
+    FlatcoinVault: "0x29fAD9d44C550e5D8081AB35763797B39d75b858",
+    COLLATERAL: "0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f", // WBTC
+    StableModule: "0xcD3657cB0E851b6a734c4D1e7FC2640Bcd9f6B2d"
   }
 };
