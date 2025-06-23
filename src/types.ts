@@ -6,7 +6,7 @@ export enum Network {
   OPTIMISM = "optimism",
   ARBITRUM = "arbitrum",
   BASE = "base",
-  SONIC = "sonic"
+  ETHEREUM = "ethereum"
 }
 
 export enum Dapp {

@@ -18,7 +18,7 @@ export const factoryAddress: AddressNetworkMap = {
   [Network.OPTIMISM]: "0x5e61a079A178f0E5784107a4963baAe0c5a680c6",
   [Network.ARBITRUM]: "0xfffb5fb14606eb3a548c113026355020ddf27535",
   [Network.BASE]: "0x49Afe3abCf66CF09Fab86cb1139D8811C8afe56F",
-  [Network.SONIC]: ""
+  [Network.ETHEREUM]: "0x96D33bCF84DdE326014248E2896F79bbb9c13D6d"
 };
 
 export const routerAddress: AddressDappNetworkMap = {
@@ -65,10 +65,11 @@ export const routerAddress: AddressDappNetworkMap = {
     [Dapp.ODOS]: "0x19cEeAd7105607Cd444F5ad10dd51356436095a1",
     [Dapp.PENDLE]: "0x888888888889758F76e7103c6CbF23ABbF58F946"
   },
-  [Network.SONIC]: {
-    [Dapp.AAVEV3]: "0x5362dBb1e601abF3a4c14c22ffEdA64042E5eAA3",
-    [Dapp.ODOS]: "0xaC041Df48dF9791B0654f1Dbbf2CC8450C5f2e9D",
-    [Dapp.PENDLE]: "0x888888888889758F76e7103c6CbF23ABbF58F946"
+  [Network.ETHEREUM]: {
+    [Dapp.AAVEV3]: "0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2",
+    [Dapp.ODOS]: "0xCf5540fFFCdC3d510B18bFcA6d2b9987b0772559",
+    [Dapp.PENDLE]: "0x888888888889758F76e7103c6CbF23ABbF58F946",
+    [Dapp.ONEINCH]: "0x111111125421ca6dc452d289314280a0f8842a65"
   }
 };
 
@@ -80,7 +81,7 @@ export const dappFactoryAddress: AddressDappNetworkMap = {
   [Network.OPTIMISM]: {},
   [Network.ARBITRUM]: {},
   [Network.BASE]: {},
-  [Network.SONIC]: {}
+  [Network.ETHEREUM]: {}
 };
 
 export const stakingAddress: AddressDappNetworkMap = {
@@ -101,9 +102,7 @@ export const stakingAddress: AddressDappNetworkMap = {
   [Network.BASE]: {
     [Dapp.PANCAKECL]: "0xC6A2Db661D5a5690172d8eB0a7DEA2d3008665A3"
   },
-  [Network.SONIC]: {
-    [Dapp.SHADOWCL]: "0xe879d0E44e6873cf4ab71686055a4f6817685f02" //specific  for wS/USDC CL
-  }
+  [Network.ETHEREUM]: {}
 };
 
 export const aaveAddressProvider: AddressDappNetworkMap = {
@@ -121,8 +120,8 @@ export const aaveAddressProvider: AddressDappNetworkMap = {
     // https://docs.aave.com/developers/deployed-contracts/v3-mainnet/base
     [Dapp.AAVEV3]: "0xe20fCBdBfFC4Dd138cE8b2E6FBb6CB49777ad64D"
   },
-  [Network.SONIC]: {
-    [Dapp.AAVEV3]: "0x5C2e738F6E27bCE0F7558051Bf90605dD6176900"
+  [Network.ETHEREUM]: {
+    [Dapp.AAVEV3]: "0x2f39d218133AFaB8F2B819B1066c7E434Ad94E9e"
   }
 };
 export const nonfungiblePositionManagerAddress: AddressDappNetworkMap = {
@@ -143,9 +142,7 @@ export const nonfungiblePositionManagerAddress: AddressDappNetworkMap = {
     [Dapp.AERODROMECL]: "0x827922686190790b37229fd06084350e74485b72",
     [Dapp.PANCAKECL]: "0x46A15B0b27311cedF172AB29E4f4766fbE7F4364"
   },
-  [Network.SONIC]: {
-    [Dapp.SHADOWCL]: "0x12e66c8f215ddd5d48d150c8f46ad0c6fb0f4406"
-  }
+  [Network.ETHEREUM]: {}
 };
 
 export const networkChainIdMap: NetworkChainIdMap = {
@@ -153,7 +150,7 @@ export const networkChainIdMap: NetworkChainIdMap = {
   [Network.OPTIMISM]: 10,
   [Network.ARBITRUM]: 42161,
   [Network.BASE]: 8453,
-  [Network.SONIC]: 146
+  [Network.ETHEREUM]: 1
 };
 
 export const balancerSubgraph: AddressNetworkMap = {
@@ -162,7 +159,7 @@ export const balancerSubgraph: AddressNetworkMap = {
   [Network.OPTIMISM]: "",
   [Network.ARBITRUM]: "",
   [Network.BASE]: "",
-  [Network.SONIC]: ""
+  [Network.ETHEREUM]: ""
 };
 
 export const multiCallAddress: AddressNetworkMap = {
@@ -170,7 +167,7 @@ export const multiCallAddress: AddressNetworkMap = {
   [Network.OPTIMISM]: "",
   [Network.ARBITRUM]: "",
   [Network.BASE]: "",
-  [Network.SONIC]: ""
+  [Network.ETHEREUM]: ""
 };
 
 export const lyraNetworkMap: LyraNetworkMap = {
