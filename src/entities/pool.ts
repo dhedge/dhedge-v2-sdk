@@ -19,7 +19,7 @@ import {
   nonfungiblePositionManagerAddress,
   routerAddress,
   stakingAddress,
-  SYNTHETIX_TRACKING_CODE,
+  SYNTHETIX_TRACKING_CODE
 } from "../config";
 import {
   Dapp,
@@ -30,60 +30,60 @@ import {
   LyraOptionMarket,
   LyraOptionType,
   LyraTradeType,
-  LyraPosition,
+  LyraPosition
 } from "../types";
 
 import { Utils } from "./utils";
 import {
   getDecreaseLiquidityTxData,
   getIncreaseLiquidityTxData,
-  getUniswapV3MintTxData,
+  getUniswapV3MintTxData
 } from "../services/uniswap/V3Liquidity";
 import { getUniswapV3SwapTxData } from "../services/uniswap/V3Trade";
 import {
   getCompleteWithdrawalTxData,
-  getEasySwapperTxData,
+  getEasySwapperTxData
 } from "../services/toros/easySwapper";
 import { getAaveV3ClaimTxData } from "../services/aave/incentives";
 import {
   getClOwner,
   getVelodromeAddLiquidityTxData,
-  getVelodromeRemoveLiquidityTxData,
+  getVelodromeRemoveLiquidityTxData
 } from "../services/velodrome/liquidity";
 import {
   getVelodromeClaimTxData,
   getVelodromeCLClaimTxData,
-  getVelodromeStakeTxData,
+  getVelodromeStakeTxData
 } from "../services/velodrome/staking";
 import { getLyraOptionTxData } from "../services/lyra/trade";
 import { getOptionPositions } from "../services/lyra/positions";
 import { getDeadline } from "../utils/deadline";
 import {
   getFuturesChangePositionTxData,
-  getFuturesChangeMarginTxData,
+  getFuturesChangeMarginTxData
 } from "../services/futures";
 import { getFuturesCancelOrderTxData } from "../services/futures/trade";
 import { getOneInchSwapTxData } from "../services/oneInch";
 import {
   getCreateVestTxData,
   getExitVestTxData,
-  getRewardsTxDta,
+  getRewardsTxDta
 } from "../services/ramses/vesting";
 import { getPoolTxOrGasEstimate } from "../utils/contract";
 import {
   cancelOrderViaFlatMoney,
   mintUnitViaFlatMoney,
-  redeemUnitViaFlatMoney,
+  redeemUnitViaFlatMoney
 } from "../services/flatmoney/stableLp";
 import {
   getCompoundV3LendTxData,
-  getCompoundV3WithdrawTxData,
+  getCompoundV3WithdrawTxData
 } from "../services/compound/lending";
 import { getCompoundV3ClaimTxData } from "../services/compound/rewards";
 import {
   getPancakeHarvestClaimTxData,
   getPancakeStakeTxData,
-  getPancakeUnStakeTxData,
+  getPancakeUnStakeTxData
 } from "../services/pancake/staking";
 import { getOdosSwapTxData } from "../services/odos";
 import { getPendleSwapTxData } from "../services/pendle";
@@ -131,7 +131,7 @@ export class Pool {
           asset: asset,
           isDeposit: isDeposit,
           balance: result[1][index],
-          rate: result[2][index],
+          rate: result[2][index]
         };
       }
     );
@@ -226,7 +226,7 @@ export class Pool {
     const iERC20 = new ethers.utils.Interface(IERC20.abi);
     const approveTxData = iERC20.encodeFunctionData("approve", [
       routerAddress[this.network][dapp],
-      amount,
+      amount
     ]);
     const tx = await getPoolTxOrGasEstimate(
       this,
@@ -255,7 +255,7 @@ export class Pool {
     const iERC20 = new ethers.utils.Interface(IERC20.abi);
     const approveTxData = iERC20.encodeFunctionData("approve", [
       stakingAddress[this.network][dapp],
-      amount,
+      amount
     ]);
     const tx = await getPoolTxOrGasEstimate(
       this,
@@ -283,7 +283,7 @@ export class Pool {
     const iERC20 = new ethers.utils.Interface(IERC20.abi);
     const approveTxData = iERC20.encodeFunctionData("approve", [
       nonfungiblePositionManagerAddress[this.network][Dapp.UNISWAPV3],
-      amount,
+      amount
     ]);
     const tx = await getPoolTxOrGasEstimate(
       this,
@@ -312,7 +312,7 @@ export class Pool {
     const iERC20 = new ethers.utils.Interface(IERC20.abi);
     const approveTxData = iERC20.encodeFunctionData("approve", [
       spender,
-      amount,
+      amount
     ]);
     const tx = await getPoolTxOrGasEstimate(
       this,
@@ -341,7 +341,7 @@ export class Pool {
     const iERC721 = new ethers.utils.Interface(IERC721.abi);
     const approveTxData = iERC721.encodeFunctionData("approve", [
       spender,
-      tokenId,
+      tokenId
     ]);
     const tx = await getPoolTxOrGasEstimate(
       this,
@@ -393,7 +393,7 @@ export class Pool {
         break;
       case Dapp.SYNTHETIX:
         const iSynthetix = new ethers.utils.Interface(ISynthetix.abi);
-        const assets = [assetFrom, assetTo].map((asset) =>
+        const assets = [assetFrom, assetTo].map(asset =>
           ethers.utils.formatBytes32String(asset)
         );
         const daoAddress = await this.factory.owner();
@@ -402,7 +402,7 @@ export class Pool {
           amountIn,
           assets[1],
           daoAddress,
-          SYNTHETIX_TRACKING_CODE,
+          SYNTHETIX_TRACKING_CODE
         ]);
         break;
       case Dapp.TOROS:
@@ -448,7 +448,7 @@ export class Pool {
           minAmountOut,
           [assetFrom, assetTo],
           this.address,
-          await getDeadline(this),
+          await getDeadline(this)
         ]);
     }
     const tx = await getPoolTxOrGasEstimate(
@@ -490,7 +490,7 @@ export class Pool {
         0,
         0,
         this.address,
-        await getDeadline(this),
+        await getDeadline(this)
       ]
     );
     const tx = await getPoolTxOrGasEstimate(
@@ -553,7 +553,7 @@ export class Pool {
     const stakeTxData = iMiniChefV2.encodeFunctionData(Transaction.DEPOSIT, [
       poolId,
       amount,
-      this.address,
+      this.address
     ]);
     const tx = await getPoolTxOrGasEstimate(
       this,
@@ -586,7 +586,7 @@ export class Pool {
           IBalancerRewardsGauge.abi
         );
         stakeTxData = rewardsGauge.encodeFunctionData("deposit(uint256)", [
-          amount,
+          amount
         ]);
         break;
       case Dapp.VELODROME:
@@ -638,7 +638,7 @@ export class Pool {
     const unStakeTxData = iMiniChefV2.encodeFunctionData(Transaction.WITHDRAW, [
       poolId,
       amount,
-      this.address,
+      this.address
     ]);
     const tx = await getPoolTxOrGasEstimate(
       this,
@@ -671,7 +671,7 @@ export class Pool {
       unstakeTxData = getPancakeUnStakeTxData(this, amount.toString());
     } else {
       unstakeTxData = rewardsGauge.encodeFunctionData("withdraw(uint256)", [
-        amount,
+        amount
       ]);
     }
     const tx = await getPoolTxOrGasEstimate(
@@ -705,7 +705,7 @@ export class Pool {
       asset,
       amount,
       this.address,
-      referralCode,
+      referralCode
     ]);
 
     const tx = await getPoolTxOrGasEstimate(
@@ -822,7 +822,7 @@ export class Pool {
       amount,
       2,
       referralCode,
-      this.address,
+      this.address
     ]);
     const tx = await getPoolTxOrGasEstimate(
       this,
@@ -853,7 +853,7 @@ export class Pool {
       asset,
       amount,
       2,
-      this.address,
+      this.address
     ]);
     const tx = await getPoolTxOrGasEstimate(
       this,
@@ -881,7 +881,7 @@ export class Pool {
     const poolId = await this.utils.getLpPoolId(dapp, asset);
     const harvestTxData = iMiniChefV2.encodeFunctionData(Transaction.HARVEST, [
       poolId,
-      this.address,
+      this.address
     ]);
     const tx = await getPoolTxOrGasEstimate(
       this,
@@ -904,12 +904,12 @@ export class Pool {
     estimateGas = false
   ): Promise<any> {
     const currentAssetsEnabled = await this.getComposition();
-    const currentAssets = currentAssetsEnabled.map((e) =>
+    const currentAssets = currentAssetsEnabled.map(e =>
       e.asset.toLocaleLowerCase()
     );
-    const newAssets = assets.map((e) => e.asset.toLocaleLowerCase());
-    const removedAssets = currentAssets.filter((e) => !newAssets.includes(e));
-    const changedAssets = assets.map((e) => [e.asset, e.isDeposit]);
+    const newAssets = assets.map(e => e.asset.toLocaleLowerCase());
+    const removedAssets = currentAssets.filter(e => !newAssets.includes(e));
+    const changedAssets = assets.map(e => [e.asset, e.isDeposit]);
 
     if (estimateGas) {
       return await this.managerLogic.estimateGas.changeAssets(
@@ -1066,7 +1066,7 @@ export class Pool {
       [
         stakingAddress[this.network][Dapp.AAVEV3] as string,
         claimTxData,
-        options,
+        options
       ],
       estimateGas
     );
@@ -1091,7 +1091,7 @@ export class Pool {
       [
         stakingAddress[this.network][Dapp.COMPOUNDV3] as string,
         claimTxData,
-        options,
+        options
       ],
       estimateGas
     );
@@ -1120,8 +1120,7 @@ export class Pool {
       | Dapp.VELODROMECL
       | Dapp.AERODROMECL
       | Dapp.RAMSESCL
-      | Dapp.PANCAKECL
-      | Dapp.SHADOWCL,
+      | Dapp.PANCAKECL,
     assetA: string,
     assetB: string,
     amountA: BigNumber | string,
@@ -1161,7 +1160,7 @@ export class Pool {
       [
         nonfungiblePositionManagerAddress[this.network][dapp],
         mintTxData,
-        options,
+        options
       ],
       estimateGas
     );
@@ -1190,7 +1189,6 @@ export class Pool {
     switch (dapp) {
       case Dapp.UNISWAPV3:
       case Dapp.RAMSESCL:
-      case Dapp.SHADOWCL:
         dappAddress = nonfungiblePositionManagerAddress[this.network][dapp];
         break;
       case Dapp.VELODROMECL:
@@ -1256,7 +1254,6 @@ export class Pool {
     switch (dapp) {
       case Dapp.UNISWAPV3:
       case Dapp.RAMSESCL:
-      case Dapp.SHADOWCL:
         dappAddress = nonfungiblePositionManagerAddress[this.network][dapp];
         break;
       case Dapp.VELODROMECL:
@@ -1321,7 +1318,6 @@ export class Pool {
     switch (dapp) {
       case Dapp.UNISWAPV3:
       case Dapp.RAMSESCL:
-      case Dapp.SHADOWCL:
         contractAddress = nonfungiblePositionManagerAddress[this.network][dapp];
         txData = iNonfungiblePositionManager.encodeFunctionData(
           Transaction.COLLECT,
@@ -1392,13 +1388,13 @@ export class Pool {
     options: any = null,
     estimateGas = false
   ): Promise<any> {
-    const claimAddress =
-      dapp === Dapp.SHADOWCL
-        ? stakingAddress[this.network][dapp] //specific  for wS/USDC CL
-        : nonfungiblePositionManagerAddress[this.network][dapp];
     const tx = await getPoolTxOrGasEstimate(
       this,
-      [claimAddress, getRewardsTxDta(tokenId, rewards), options],
+      [
+        nonfungiblePositionManagerAddress[this.network][dapp],
+        getRewardsTxDta(tokenId, rewards),
+        options
+      ],
       estimateGas
     );
     return tx;
@@ -1473,7 +1469,7 @@ export class Pool {
           amountB,
           isStable
         ),
-        options,
+        options
       ],
       estimateGas
     );
@@ -1509,7 +1505,7 @@ export class Pool {
           amount,
           isStable
         ),
-        options,
+        options
       ],
       estimateGas
     );
@@ -1548,7 +1544,7 @@ export class Pool {
           amountB,
           isStable
         ),
-        options,
+        options
       ],
       estimateGas
     );
@@ -1584,7 +1580,7 @@ export class Pool {
           amount,
           isStable
         ),
-        options,
+        options
       ],
       estimateGas
     );
@@ -1625,7 +1621,7 @@ export class Pool {
           amountB,
           isStable
         ),
-        options,
+        options
       ],
       estimateGas
     );
@@ -1663,7 +1659,7 @@ export class Pool {
           amount,
           isStable
         ),
-        options,
+        options
       ],
       estimateGas
     );

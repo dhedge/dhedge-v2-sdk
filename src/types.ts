@@ -31,7 +31,6 @@ export enum Dapp {
   PANCAKECL = "pancakeCL",
   COMPOUNDV3 = "compoundV3",
   ODOS = "odos",
-  SHADOWCL = "shadowCL",
   PENDLE = "pendle"
 }
 

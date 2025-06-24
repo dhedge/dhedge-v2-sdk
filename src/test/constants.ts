@@ -43,7 +43,7 @@ export const TEST_POOL = {
   [Network.OPTIMISM]: "0x12573bfdf764ab9d52aca20e2827497a66829716",
   [Network.ARBITRUM]: "0x0b5f6591c8eb23e5a68102d3d39ebbb464ee5c14",
   [Network.BASE]: "0x4842b42F68524383F609aa46eAfc18c1459cE3cD",
-  [Network.SONIC]: ""
+  [Network.ETHEREUM]: "0xe8e74f664d2d6a919a18b911990db0979789b6f7"
 };
 
 export const CONTRACT_ADDRESS = {
@@ -135,11 +135,11 @@ export const CONTRACT_ADDRESS = {
     COMPOUNDV3_WETH: "",
     TOROS: ""
   },
-  [Network.SONIC]: {
-    USDC: "0x29219dd400f2bf60e5a23d13be72b486d4038894",
+  [Network.ETHEREUM]: {
+    USDC: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
     USDT: "",
     SUSD: "",
-    WETH: "0x50c42deacd8fc9773493ed674b675be577f2634b",
+    WETH: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
     WBTC: "",
     SWETH: "",
     uniswapV3: {
@@ -164,7 +164,7 @@ export const USDC_BALANCEOF_SLOT = {
   [Network.ARBITRUM]: 9,
   [Network.POLYGON]: 0,
   [Network.BASE]: 9,
-  [Network.SONIC]: 9
+  [Network.ETHEREUM]: 9
 };
 
 export const WETH_BALANCEOF_SLOT = {
@@ -172,5 +172,5 @@ export const WETH_BALANCEOF_SLOT = {
   [Network.ARBITRUM]: 51,
   [Network.POLYGON]: 0,
   [Network.BASE]: 0,
-  [Network.SONIC]: 0
+  [Network.ETHEREUM]: 3
 };
