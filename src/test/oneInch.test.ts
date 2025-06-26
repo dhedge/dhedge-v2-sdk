@@ -34,6 +34,13 @@ const testOneInch = ({ wallet, network, provider }: TestingRunParams) => {
         "0x10000000000000000"
       ]);
       await provider.send("evm_mine", []);
+
+      const newAssets = [
+        { asset: USDC, isDeposit: true },
+        { asset: WETH, isDeposit: true }
+      ];
+
+      await pool.managerLogic.changeAssets(newAssets, []);
       // top up USDC
       await setUSDCAmount({
         amount: new BigNumber(2).times(1e6).toFixed(0),
@@ -104,10 +111,10 @@ const testOneInch = ({ wallet, network, provider }: TestingRunParams) => {
   });
 };
 
-testingHelper({
-  network: Network.OPTIMISM,
-  testingRun: testOneInch
-});
+// testingHelper({
+//   network: Network.OPTIMISM,
+//   testingRun: testOneInch
+// });
 
 // testingHelper({
 //   network: Network.POLYGON,
@@ -120,3 +127,8 @@ testingHelper({
 //   onFork: false,
 //   testingRun: testOneInch
 // });
+
+testingHelper({
+  network: Network.ETHEREUM,
+  testingRun: testOneInch
+});
