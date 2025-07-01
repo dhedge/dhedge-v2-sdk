@@ -732,7 +732,12 @@ export class Pool {
     options: any = null,
     estimateGas = false
   ): Promise<any> {
-    const supplyTxData = getCompoundV3LendTxData(asset, amount);
+    const supplyTxData = await getCompoundV3LendTxData(
+      this,
+      market,
+      asset,
+      amount
+    );
 
     const tx = await getPoolTxOrGasEstimate(
       this,
@@ -788,7 +793,12 @@ export class Pool {
     options: any = null,
     estimateGas = false
   ): Promise<any> {
-    const withdrawTxData = getCompoundV3WithdrawTxData(asset, amount);
+    const withdrawTxData = await getCompoundV3WithdrawTxData(
+      this,
+      market,
+      asset,
+      amount
+    );
 
     const tx = await getPoolTxOrGasEstimate(
       this,
