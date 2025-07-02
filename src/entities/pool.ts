@@ -717,8 +717,8 @@ export class Pool {
   }
 
   /**
-   * Lend asset to a Compound V3 style lending pool
-   * @param {string} market Address of market e.g cUSDCv3 address
+   * Lend asset to a Compound V3 or Fluid lending pool
+   * @param {string} market Address of cToken or fToken
    * @param {string} asset Asset
    * @param {BigNumber | string} amount Amount of asset to lend
    * @param {any} options Transaction options
@@ -732,7 +732,12 @@ export class Pool {
     options: any = null,
     estimateGas = false
   ): Promise<any> {
-    const supplyTxData = getCompoundV3LendTxData(asset, amount);
+    const supplyTxData = await getCompoundV3LendTxData(
+      this,
+      market,
+      asset,
+      amount
+    );
 
     const tx = await getPoolTxOrGasEstimate(
       this,
@@ -773,8 +778,8 @@ export class Pool {
   }
 
   /**
-   * Witdraw asset from a COmpound V3 style lending pool
-   * @param {string} market Address of market e.g cUSDCv3 address
+   * Witdraw asset from a Compound V3 or Fluid lending pool
+   * @param {string} market Address of cToken or fToken
    * @param {string} asset Asset
    * @param  {BigNumber | string} amount Amount of asset to withdraw
    * @param {any} options Transaction options
@@ -788,7 +793,12 @@ export class Pool {
     options: any = null,
     estimateGas = false
   ): Promise<any> {
-    const withdrawTxData = getCompoundV3WithdrawTxData(asset, amount);
+    const withdrawTxData = await getCompoundV3WithdrawTxData(
+      this,
+      market,
+      asset,
+      amount
+    );
 
     const tx = await getPoolTxOrGasEstimate(
       this,
