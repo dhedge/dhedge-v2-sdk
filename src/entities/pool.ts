@@ -221,17 +221,13 @@ export class Pool {
     asset: string,
     amount: BigNumber | string,
     options: any = null,
-    estimateGas = false,
-    returnTxData = false
+    estimateGas = false
   ): Promise<any> {
     const iERC20 = new ethers.utils.Interface(IERC20.abi);
     const approveTxData = iERC20.encodeFunctionData("approve", [
       routerAddress[this.network][dapp],
       amount
     ]);
-    if (returnTxData) {
-      return [asset, approveTxData];
-    }
     const tx = await getPoolTxOrGasEstimate(
       this,
       [asset, approveTxData, options],
