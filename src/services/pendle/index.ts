@@ -13,10 +13,13 @@ export async function getPendleSwapTxData(
   tokenOut: string,
   amountIn: ethers.BigNumber | string,
   slippage: number
-): Promise<string> {
+): Promise<{ swapTxData: string; minAmountOut: string | null }> {
   const expiredMarket = await checkExitPostExpPT(pool, tokenIn, tokenOut);
   if (expiredMarket) {
-    return getExitExpPTTxData(pool, tokenOut, amountIn, expiredMarket);
+    return {
+      swapTxData: getExitExpPTTxData(pool, tokenOut, amountIn, expiredMarket),
+      minAmountOut: null // No min amount out for expired PTs
+    };
   }
   const params = {
     receiver: pool.address,
@@ -33,8 +36,10 @@ export async function getPendleSwapTxData(
       }/markets/${market}/swap`,
       { params }
     );
-
-    return swapResult.data.tx.data;
+    return {
+      swapTxData: swapResult.data.tx.data,
+      minAmountOut: swapResult.data.data.amountOut
+    };
   } catch (e) {
     console.error("Error in Pendle API request:", e);
     throw new ApiError("Pendle api request failed");

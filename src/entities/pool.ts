@@ -372,9 +372,10 @@ export class Pool {
     estimateGas = false
   ): Promise<any> {
     let swapTxData: string;
+    let minAmountOut: string | null = null;
     switch (dapp) {
       case Dapp.ONEINCH:
-        ({ swapTxData } = await getOneInchSwapTxData(
+        ({ swapTxData, dstAmount: minAmountOut } = await getOneInchSwapTxData(
           this,
           assetFrom,
           assetTo,
@@ -415,28 +416,28 @@ export class Pool {
         );
         break;
       case Dapp.ODOS:
-        swapTxData = await getOdosSwapTxData(
+        ({ swapTxData, minAmountOut } = await getOdosSwapTxData(
           this,
           assetFrom,
           assetTo,
           amountIn,
           slippage
-        );
+        ));
         break;
       case Dapp.PENDLE:
-        swapTxData = await getPendleSwapTxData(
+        ({ swapTxData, minAmountOut } = await getPendleSwapTxData(
           this,
           assetFrom,
           assetTo,
           amountIn,
           slippage
-        );
+        ));
         break;
       default:
         const iUniswapV2Router = new ethers.utils.Interface(
           IUniswapV2Router.abi
         );
-        const minAmountOut = await this.utils.getMinAmountOut(
+        const calculatedMinAmountOut = await this.utils.getMinAmountOut(
           dapp,
           assetFrom,
           assetTo,
@@ -445,7 +446,7 @@ export class Pool {
         );
         swapTxData = iUniswapV2Router.encodeFunctionData(Transaction.SWAP, [
           amountIn,
-          minAmountOut,
+          calculatedMinAmountOut,
           [assetFrom, assetTo],
           this.address,
           await getDeadline(this)
@@ -453,7 +454,7 @@ export class Pool {
     }
     const tx = await getPoolTxOrGasEstimate(
       this,
-      [routerAddress[this.network][dapp], swapTxData, options],
+      [routerAddress[this.network][dapp], swapTxData, options, minAmountOut],
       estimateGas
     );
     return tx;

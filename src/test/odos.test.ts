@@ -63,7 +63,8 @@ const testOdos = ({ wallet, network, provider }: TestingRunParams) => {
         await getTxOptions(network),
         true
       );
-      expect(gasEstimate.gt(0));
+      expect(gasEstimate.gas.gt(0));
+      expect(gasEstimate.minAmountOut).not.toBeNull();
     });
 
     it("trades 2 USDC into WETH on Odos", async () => {
@@ -86,15 +87,15 @@ const testOdos = ({ wallet, network, provider }: TestingRunParams) => {
   });
 };
 
-// testingHelper({
-//   network: Network.OPTIMISM,
-//   testingRun: testOdos
-// });
-
 testingHelper({
-  network: Network.ARBITRUM,
+  network: Network.OPTIMISM,
   testingRun: testOdos
 });
+
+// testingHelper({
+//   network: Network.ARBITRUM,
+//   testingRun: testOdos
+// });
 
 // testingHelper({
 //   network: Network.POLYGON,
