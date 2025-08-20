@@ -131,7 +131,13 @@ export const getPoolTxOrGasEstimate = async (
       } catch (e) {
         gasEstimationError = e;
       }
-      return { gas, txData: args[1], to: args[0], gasEstimationError };
+      return {
+        gas,
+        txData: args[1],
+        to: args[0],
+        gasEstimationError,
+        minAmountOut: args[3] || null
+      };
     } else {
       return await pool.signer.sendTransaction({
         to: args[0],

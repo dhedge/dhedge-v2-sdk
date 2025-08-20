@@ -8,6 +8,7 @@ import ActionMiscV3Abi from "../../abi/pendle/ActionMiscV3.json";
 const pendleBaseUrl = "https://api-v2.pendle.finance/core/v1";
 
 export async function getPendleSwapTxData(
+  pendleRouterAddress: string,
   pool: Pool,
   tokenIn: string,
   tokenOut: string,
@@ -16,9 +17,16 @@ export async function getPendleSwapTxData(
 ): Promise<{ swapTxData: string; minAmountOut: string | null }> {
   const expiredMarket = await checkExitPostExpPT(pool, tokenIn, tokenOut);
   if (expiredMarket) {
+    const result = await getExitExpPTTxData(
+      pendleRouterAddress,
+      pool,
+      tokenOut,
+      amountIn,
+      expiredMarket
+    );
     return {
-      swapTxData: getExitExpPTTxData(pool, tokenOut, amountIn, expiredMarket),
-      minAmountOut: null // No min amount out for expired PTs
+      swapTxData: result.txData,
+      minAmountOut: result.minAmountOut
     };
   }
   const params = {
@@ -116,12 +124,14 @@ const checkExitPostExpPT = async (
   }
 };
 
-const getExitExpPTTxData = (
+const getExitExpPTTxData = async (
+  pendleRouterAddress: string,
   pool: Pool,
   tokenOut: string,
   amountIn: ethers.BigNumber | string,
   market: string
-) => {
+): Promise<{ txData: string; minAmountOut: string | null }> => {
+  let minAmountOut = null;
   const actionMiscV3 = new ethers.utils.Interface(ActionMiscV3Abi);
   const txData = actionMiscV3.encodeFunctionData("exitPostExpToToken", [
     pool.address, // receiver
@@ -142,5 +152,33 @@ const getExitExpPTTxData = (
       ]
     ]
   ]);
-  return txData;
+
+  // Get the contract instance
+  const actionMiscV3Contract = new ethers.Contract(
+    pendleRouterAddress,
+    ActionMiscV3Abi,
+    pool.signer
+  );
+
+  try {
+    // Use callStatic to simulate the transaction
+    const result = await actionMiscV3Contract.callStatic.exitPostExpToToken(
+      pool.address,
+      market,
+      amountIn.toString(),
+      0,
+      [
+        tokenOut,
+        0,
+        tokenOut,
+        ethers.constants.AddressZero,
+        [0, ethers.constants.AddressZero, ethers.constants.HashZero, false]
+      ],
+      { from: pool.address }
+    );
+    minAmountOut = result.totalTokenOut.toString();
+  } catch (error) {
+    console.error("exitPostExpToToken call failed:", error);
+  }
+  return { txData, minAmountOut };
 };
