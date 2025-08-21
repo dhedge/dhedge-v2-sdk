@@ -8,8 +8,7 @@ import {
   TestingRunParams,
   setTokenAmount,
   setUSDCAmount,
-  testingHelper,
-  wait
+  testingHelper
 } from "./utils/testingHelper";
 
 import { getTxOptions } from "./txOptions";
@@ -107,7 +106,6 @@ const testPendle = ({ wallet, network, provider }: TestingRunParams) => {
         PTweETH_matured,
         pool.address
       );
-      await wait(3);
       await pool.trade(
         Dapp.PENDLE,
         PTweETH_matured,
@@ -137,7 +135,6 @@ const testPendle = ({ wallet, network, provider }: TestingRunParams) => {
         PTweETH_matured,
         pool.address
       );
-      await wait(3);
       const result = await pool.trade(
         Dapp.PENDLE,
         PTweETH_matured,

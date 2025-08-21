@@ -426,8 +426,6 @@ export class Pool {
         break;
       case Dapp.PENDLE:
         ({ swapTxData, minAmountOut } = await getPendleSwapTxData(
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          routerAddress[this.network][dapp]!,
           this,
           assetFrom,
           assetTo,
