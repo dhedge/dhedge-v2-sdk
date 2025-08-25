@@ -36,7 +36,7 @@ export async function getPendleSwapTxData(
     tokenIn,
     tokenOut,
     amountIn: amountIn.toString(),
-    slippage
+    slippage: slippage / 100
   };
   const market = await getMarket(pool, tokenIn, tokenOut);
   try {
