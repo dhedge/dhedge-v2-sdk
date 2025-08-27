@@ -71,24 +71,22 @@ const testOneInch = ({ wallet, network, provider }: TestingRunParams) => {
         await getTxOptions(network),
         true
       );
-      expect(gasEstimate.gt(0));
+      expect(gasEstimate.gas.gt(0));
+      expect(gasEstimate.minAmountOut).not.toBeNull();
     });
 
     it("gets error on gas estimation for 200 USDC into WETH on 1Inch", async () => {
       await wait(1);
-      let gasEstimate = null;
-      try {
-        gasEstimate = await pool.trade(
-          Dapp.ONEINCH,
-          USDC,
-          WETH,
-          "200000000",
-          1,
-          await getTxOptions(network),
-          true
-        );
-      } catch (err) {}
-      expect(gasEstimate).toBeNull();
+      const gasEstimate = await pool.trade(
+        Dapp.ONEINCH,
+        USDC,
+        WETH,
+        "200000000",
+        1,
+        await getTxOptions(network),
+        true
+      );
+      expect(gasEstimate.gasEstimationError).not.toBeNull();
     });
 
     it("trades 2 USDC into WETH on 1Inch", async () => {
@@ -111,10 +109,10 @@ const testOneInch = ({ wallet, network, provider }: TestingRunParams) => {
   });
 };
 
-// testingHelper({
-//   network: Network.OPTIMISM,
-//   testingRun: testOneInch
-// });
+testingHelper({
+  network: Network.OPTIMISM,
+  testingRun: testOneInch
+});
 
 // testingHelper({
 //   network: Network.POLYGON,
@@ -128,7 +126,7 @@ const testOneInch = ({ wallet, network, provider }: TestingRunParams) => {
 //   testingRun: testOneInch
 // });
 
-testingHelper({
-  network: Network.ETHEREUM,
-  testingRun: testOneInch
-});
+// testingHelper({
+//   network: Network.ETHEREUM,
+//   testingRun: testOneInch
+// });

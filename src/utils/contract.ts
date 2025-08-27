@@ -101,17 +101,43 @@ export const getPoolTxOrGasEstimate = async (
 ): Promise<any> => {
   if (pool.isDhedge) {
     if (estimateGas) {
-      return await pool.poolLogic.estimateGas.execTransaction(
-        args[0],
-        args[1],
-        args[2]
-      );
+      let gas = null;
+      let gasEstimationError = null;
+      try {
+        gas = await pool.poolLogic.estimateGas.execTransaction(
+          args[0],
+          args[1],
+          args[2]
+        );
+      } catch (e) {
+        gasEstimationError = e;
+      }
+      return {
+        gas,
+        txData: args[1],
+        to: args[0],
+        gasEstimationError,
+        minAmountOut: args[3] || null
+      };
     } else {
       return await pool.poolLogic.execTransaction(args[0], args[1], args[2]);
     }
   } else {
     if (estimateGas) {
-      return await pool.signer.estimateGas({ to: args[0], data: args[1] });
+      let gas = null;
+      let gasEstimationError = null;
+      try {
+        gas = await pool.signer.estimateGas({ to: args[0], data: args[1] });
+      } catch (e) {
+        gasEstimationError = e;
+      }
+      return {
+        gas,
+        txData: args[1],
+        to: args[0],
+        gasEstimationError,
+        minAmountOut: args[3] || null
+      };
     } else {
       return await pool.signer.sendTransaction({
         to: args[0],

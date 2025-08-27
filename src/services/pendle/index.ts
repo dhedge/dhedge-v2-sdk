@@ -4,6 +4,9 @@ import { ApiError, ethers } from "../..";
 import { networkChainIdMap } from "../../config";
 import { Pool } from "../../entities";
 import ActionMiscV3Abi from "../../abi/pendle/ActionMiscV3.json";
+import PTAbi from "../../abi/pendle/PT.json";
+import SYAbi from "../../abi/pendle/SY.json";
+import BigNumber from "bignumber.js";
 
 const pendleBaseUrl = "https://api-v2.pendle.finance/core/v1";
 
@@ -13,17 +16,27 @@ export async function getPendleSwapTxData(
   tokenOut: string,
   amountIn: ethers.BigNumber | string,
   slippage: number
-): Promise<string> {
+): Promise<{ swapTxData: string; minAmountOut: string | null }> {
   const expiredMarket = await checkExitPostExpPT(pool, tokenIn, tokenOut);
   if (expiredMarket) {
-    return getExitExpPTTxData(pool, tokenOut, amountIn, expiredMarket);
+    const result = await getExitExpPTTxData(
+      pool,
+      tokenIn,
+      tokenOut,
+      amountIn,
+      expiredMarket
+    );
+    return {
+      swapTxData: result.txData,
+      minAmountOut: result.minAmountOut
+    };
   }
   const params = {
     receiver: pool.address,
     tokenIn,
     tokenOut,
     amountIn: amountIn.toString(),
-    slippage
+    slippage: slippage / 100
   };
   const market = await getMarket(pool, tokenIn, tokenOut);
   try {
@@ -33,8 +46,10 @@ export async function getPendleSwapTxData(
       }/markets/${market}/swap`,
       { params }
     );
-
-    return swapResult.data.tx.data;
+    return {
+      swapTxData: swapResult.data.tx.data,
+      minAmountOut: swapResult.data.data.amountOut
+    };
   } catch (e) {
     console.error("Error in Pendle API request:", e);
     throw new ApiError("Pendle api request failed");
@@ -111,12 +126,13 @@ const checkExitPostExpPT = async (
   }
 };
 
-const getExitExpPTTxData = (
+const getExitExpPTTxData = async (
   pool: Pool,
+  tokenIn: string,
   tokenOut: string,
   amountIn: ethers.BigNumber | string,
   market: string
-) => {
+): Promise<{ txData: string; minAmountOut: string | null }> => {
   const actionMiscV3 = new ethers.utils.Interface(ActionMiscV3Abi);
   const txData = actionMiscV3.encodeFunctionData("exitPostExpToToken", [
     pool.address, // receiver
@@ -137,5 +153,24 @@ const getExitExpPTTxData = (
       ]
     ]
   ]);
-  return txData;
+
+  // Get the PT contract instance
+  const PTcontract = new ethers.Contract(tokenIn, PTAbi, pool.signer);
+  // Get the SY contract instance
+  const SYcontract = new ethers.Contract(
+    await PTcontract.SY(),
+    SYAbi,
+    pool.signer
+  );
+
+  const exchangeRate = await SYcontract.exchangeRate();
+  const minAmountOut = new BigNumber(amountIn.toString())
+    .times(1e18)
+    .div(exchangeRate.toString())
+    .decimalPlaces(0, BigNumber.ROUND_DOWN)
+    .toFixed(0);
+  return {
+    txData,
+    minAmountOut
+  };
 };

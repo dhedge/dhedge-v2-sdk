@@ -12,7 +12,7 @@ export async function getOdosSwapTxData(
   assetTo: string,
   amountIn: ethers.BigNumber | string,
   slippage: number
-): Promise<string> {
+): Promise<{ swapTxData: string; minAmountOut: string }> {
   let referralCode = 0; //  Defaults to 0 for unregistered activity.
   if (
     process.env.ODOS_REFERAL_CODE &&
@@ -53,7 +53,10 @@ export async function getOdosSwapTxData(
       `${odosBaseUrl}/assemble`,
       assembleParams
     );
-    return assembleResult.data.transaction.data;
+    return {
+      swapTxData: assembleResult.data.transaction.data,
+      minAmountOut: assembleResult.data.outputTokens[0].amount
+    };
   } catch (e) {
     console.error("Error in Odos API request:", e);
     throw new ApiError("Swap api request of Odos failed");
