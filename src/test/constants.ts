@@ -89,7 +89,7 @@ export const CONTRACT_ADDRESS = {
     VELO: "0x9560e827aF36c94D2Ac33a39bCE1Fe78631088Db",
     COMPOUNDV3_WETH: "",
     FLUID_WETH: "",
-    TOROS: "0x49bf093277bf4dde49c48c6aa55a3bda3eedef68" //USDmny
+    TOROS: "0xcacb5a722a36cff6baeb359e21c098a4acbffdfa" //ETHBEAR1X
   },
   [Network.ARBITRUM]: {
     USDC: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",

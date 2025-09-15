@@ -1,12 +1,15 @@
 import { ethers } from "ethers";
 import { Dapp, Pool } from "../..";
 
-import IDhedgeEasySwapper from "../../abi/IDhedgeEasySwapper.json";
+import IEasySwapperV2 from "../../abi/IEasySwapperV2.json";
 import { routerAddress } from "../../config";
-import { getChainlinkPriceInUsd } from "../chainLink/price";
+
 import { isPool, loadPool } from "./pool";
-import { getOneInchSwapTxData } from "../oneInch";
-import { wait } from "../../test/utils/testingHelper";
+
+import { getInitWithdrawalTxData } from "./initWithdrawal";
+
+export const LOW_USD_VALUE_FOR_WITHDRAWAL = 1; // 1 USD minimum value for withdrawal
+export const SLIPPAGE_FOR_LOW_VALUE_SWAP = 500;
 
 export async function getPoolDepositAsset(
   pool: Pool,
@@ -39,30 +42,11 @@ export async function getEasySwapperDepositQuote(
 ): Promise<ethers.BigNumber> {
   const easySwapper = new ethers.Contract(
     routerAddress[pool.network][Dapp.TOROS] as string,
-    IDhedgeEasySwapper,
+    IEasySwapperV2,
     pool.signer
   );
 
   return await easySwapper.depositQuote(torosAsset, investAsset, amountIn);
-}
-
-export async function getEasySwapperWithdrawalQuote(
-  pool: Pool,
-  torosAsset: string,
-  investAsset: string,
-  amountIn: ethers.BigNumber
-): Promise<ethers.BigNumber> {
-  const [torosTokenPrice, assetPrice, assetDecimals] = await Promise.all([
-    getTorosPoolTokenPrice(pool, torosAsset),
-    getChainlinkPriceInUsd(pool, investAsset),
-    pool.utils.getDecimals(investAsset)
-  ]);
-
-  return amountIn
-    .mul(torosTokenPrice)
-    .div(assetPrice)
-    .div(1e10)
-    .div(10 ** (18 - assetDecimals));
 }
 
 export async function getEasySwapperTxData(
@@ -77,13 +61,15 @@ export async function getEasySwapperTxData(
   const [torosAsset, investAsset] = isWithdrawal
     ? [assetFrom, assetTo]
     : [assetTo, assetFrom];
-  const iDhedgeEasySwapper = new ethers.utils.Interface(IDhedgeEasySwapper);
+  const iEasySwapperV2 = new ethers.utils.Interface(IEasySwapperV2);
   if (isWithdrawal) {
-    return iDhedgeEasySwapper.encodeFunctionData("initWithdrawal", [
+    return getInitWithdrawalTxData(
+      pool,
       torosAsset,
-      amountIn,
-      slippage * 100
-    ]);
+      amountIn.toString(),
+      slippage * 100,
+      false
+    );
   } else {
     const depositAsset = await getPoolDepositAsset(
       pool,
@@ -99,65 +85,11 @@ export async function getEasySwapperTxData(
       investAsset,
       amountIn
     );
-    return iDhedgeEasySwapper.encodeFunctionData("depositWithCustomCooldown", [
+    return iEasySwapperV2.encodeFunctionData("depositWithCustomCooldown", [
       torosAsset,
       depositAsset,
       amountIn,
       minAmountOut.mul(10000 - slippage * 100).div(10000)
     ]);
   }
-}
-
-export async function getCompleteWithdrawalTxData(
-  pool: Pool,
-  destToken: string,
-  slippage: number
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): Promise<string> {
-  const easySwapper = new ethers.Contract(
-    routerAddress[pool.network][Dapp.TOROS] as string,
-    IDhedgeEasySwapper,
-    pool.signer
-  );
-  const trackedAssets: {
-    token: string;
-    balance: ethers.BigNumber;
-  }[] = await easySwapper.getTrackedAssets(pool.address);
-  const trackedAssetsExcludingDestToken = trackedAssets.filter(
-    ({ token }) => token.toLowerCase() !== destToken.toLowerCase()
-  );
-
-  const srcData = [];
-  let minDestAmount = ethers.BigNumber.from(0);
-  for (const { token, balance } of trackedAssetsExcludingDestToken) {
-    const { swapTxData, dstAmount } = await getOneInchSwapTxData(
-      pool,
-      token,
-      destToken,
-      balance,
-      slippage,
-      true
-    );
-    srcData.push({
-      token,
-      amount: balance,
-      aggregatorData: {
-        routerKey: ethers.utils.formatBytes32String("ONE_INCH"),
-        swapData: swapTxData
-      }
-    });
-    minDestAmount = minDestAmount.add(dstAmount);
-    await wait(2);
-  }
-
-  return easySwapper.interface.encodeFunctionData("completeWithdrawal", [
-    {
-      srcData,
-      destData: {
-        destToken,
-        minDestAmount
-      }
-    },
-    minDestAmount.mul(10000 - slippage * 100).div(10000)
-  ]);
 }
