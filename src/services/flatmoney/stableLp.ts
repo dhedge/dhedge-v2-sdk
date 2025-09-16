@@ -142,10 +142,23 @@ export async function cancelOrderViaFlatMoney(
   }
   // use trader address to cancel order
   if (estimateGas) {
-    return pool.signer.estimateGas({
+    let gas: ethers.BigNumber | null = null;
+    let gasEstimationError: null | string = null;
+    try {
+      gas = await pool.signer.estimateGas({
+        to: toAddress,
+        data: cancelOrderTxData
+      });
+    } catch (e) {
+      gasEstimationError = e as string;
+    }
+    return {
+      gas,
+      txData: cancelOrderTxData,
       to: toAddress,
-      data: cancelOrderTxData
-    });
+      gasEstimationError,
+      minAmountOut: null
+    };
   } else {
     const tx = await pool.signer.sendTransaction({
       to: toAddress,
