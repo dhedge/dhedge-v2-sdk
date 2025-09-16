@@ -57,7 +57,7 @@ const testToros = ({ wallet, network, provider }: TestingRunParams) => {
 
     it("trades USDC balance into Toros Token", async () => {
       const usdcBalance = await pool.utils.getBalance(USDC, pool.address);
-      await pool.trade(Dapp.TOROS, USDC, TOROS, usdcBalance, 1);
+      await pool.trade(Dapp.TOROS, USDC, TOROS, usdcBalance, 1.5);
       const torosBalanceDelta = await balanceDelta(
         pool.address,
         TOROS,
@@ -71,7 +71,7 @@ const testToros = ({ wallet, network, provider }: TestingRunParams) => {
       await provider.send("evm_mine", []);
       const torosBalance = await pool.utils.getBalance(TOROS, pool.address);
       await pool.approve(Dapp.TOROS, TOROS, MAX_AMOUNT);
-      await pool.trade(Dapp.TOROS, TOROS, USDC, torosBalance, 1);
+      await pool.trade(Dapp.TOROS, TOROS, USDC, torosBalance, 1.5);
       const torosBalanceDelta = await balanceDelta(
         pool.address,
         TOROS,
@@ -81,7 +81,7 @@ const testToros = ({ wallet, network, provider }: TestingRunParams) => {
     });
 
     it("complete withdrawal from Toros asset", async () => {
-      await pool.completeTorosWithdrawal(USDC, 1);
+      await pool.completeTorosWithdrawal(USDC, 1.5);
       const usdcBalanceDelta = await balanceDelta(
         pool.address,
         USDC,
