@@ -2,6 +2,8 @@ import axios from "axios";
 import BigNumber from "bignumber.js";
 import { odosBaseUrl } from "../odos";
 
+export const SWAPPER_ADDERSS = "0x4F754e0F0924afD74980886b0B479Fa1D7C58D0D";
+
 export interface SwapParams {
   srcAsset: string; // Source asset address
   srcAmount: string; // Amount to swap (use string for big numbers)

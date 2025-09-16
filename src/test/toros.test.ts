@@ -78,16 +78,16 @@ const testToros = ({ wallet, network, provider }: TestingRunParams) => {
       expect(torosBalanceDelta.lt(0));
     });
 
-    // it("complete withdrawal from Toros asset", async () => {
-    //   await pool.completeTorosWithdrawal(USDC, 1);
-    //   const usdcBalanceDelta = await balanceDelta(
-    //     pool.address,
-    //     USDC,
-    //     pool.signer
-    //   );
-    //   expect(usdcBalanceDelta.gt(0));
-    //   console.log("USDC balance delta", usdcBalanceDelta.toString());
-    // });
+    it("complete withdrawal from Toros asset", async () => {
+      await pool.completeTorosWithdrawal(USDC, 1);
+      const usdcBalanceDelta = await balanceDelta(
+        pool.address,
+        USDC,
+        pool.signer
+      );
+      expect(usdcBalanceDelta.gt(0));
+      console.log("USDC balance delta", usdcBalanceDelta.toString());
+    });
   });
 };
 

@@ -10,7 +10,7 @@ import {
   SLIPPAGE_FOR_LOW_VALUE_SWAP
 } from "./easySwapper";
 import { retry } from "./retry";
-import { getSwapDataViaOdos } from "./swapData";
+import { getSwapDataViaOdos, SWAPPER_ADDERSS } from "./swapData";
 
 export interface TrackedAsset {
   token: string;
@@ -38,8 +38,8 @@ const getSwapWithdrawData = async (
           srcAmount: balance.toString(),
           dstAsset: receiveToken,
           chainId: networkChainIdMap[pool.network],
-          from: routerAddress[pool.network][Dapp.TOROS] as string,
-          receiver: routerAddress[pool.network][Dapp.TOROS] as string,
+          from: SWAPPER_ADDERSS,
+          receiver: SWAPPER_ADDERSS,
           slippage
         });
       },
