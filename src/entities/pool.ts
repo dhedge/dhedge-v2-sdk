@@ -1949,7 +1949,7 @@ export class Pool {
     const txData = await getCompleteWithdrawalTxData(
       this,
       destinationToken,
-      slippage,
+      slippage * 100,
       false
     );
     const tx = await getPoolTxOrGasEstimate(

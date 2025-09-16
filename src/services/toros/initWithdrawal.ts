@@ -5,7 +5,7 @@ import { retry } from "./retry";
 import AaveLendingPoolAssetGuardAbi from "../../abi/IAaveLendingPoolAssetGuard.json";
 import IEasySwapperV2 from "../../abi/IEasySwapperV2.json";
 import { loadPool } from "./pool";
-import { getSwapDataViaOdos } from "./swapData";
+import { getSwapDataViaOdos, SWAPPER_ADDERSS } from "./swapData";
 const AAVE_WITHDRAW_ONCHAIN_SWAP_SLIPPAGE = 150; // 1.5% slippage for onchain swap in Aave withdrawal
 
 const getCalculateSwapDataParams = async (
@@ -65,8 +65,8 @@ const getAaveAssetWithdrawData = async (
           srcAmount: amount.toString(),
           dstAsset: dstData.asset,
           chainId: networkChainIdMap[pool.network],
-          from: routerAddress[pool.network][Dapp.TOROS] as string,
-          receiver: routerAddress[pool.network][Dapp.TOROS] as string,
+          from: SWAPPER_ADDERSS,
+          receiver: SWAPPER_ADDERSS,
           slippage
         });
       },
