@@ -32,8 +32,6 @@ const getCalculateSwapDataParams = async (
     slippage
   );
 
-  console.log("swapDataParams from asset guard", swapDataParams);
-
   return {
     offchainSwapNeeded: swapDataParams.srcData.length !== 0,
     swapDataParams
@@ -50,16 +48,8 @@ const getAaveAssetWithdrawData = async (
   const srcDataToEncode: unknown[] = [];
   const routerKey = ethers.utils.formatBytes32String("ODOS_V2");
   for (const { asset, amount } of srcData) {
-    console.log("src");
     const swapData = await retry({
       fn: () => {
-        console.log(
-          "Fetching Odos swap data...",
-          asset,
-          amount.toString(),
-          dstData.asset,
-          slippage
-        );
         return getSwapDataViaOdos({
           srcAsset: asset,
           srcAmount: amount.toString(),
@@ -74,9 +64,6 @@ const getAaveAssetWithdrawData = async (
       maxRetries: 7
     });
     srcDataToEncode.push([asset, amount, [routerKey, swapData]]);
-
-    console.log("swapData from Odos", swapData);
-    console.log("routerKey", routerKey);
   }
   const coder = ethers.utils.defaultAbiCoder;
 
@@ -170,7 +157,6 @@ export const getInitWithdrawalTxData = async (
     slippage,
     useOnChainSwap
   );
-  console.log("complexAssetsData", complexAssetsData);
   const iEasySwapperV2 = new ethers.utils.Interface(IEasySwapperV2);
   return iEasySwapperV2.encodeFunctionData("initWithdrawal", [
     torosAsset,

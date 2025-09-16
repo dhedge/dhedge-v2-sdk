@@ -1,16 +1,19 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
+import BigNumber from "bignumber.js";
 import { Dhedge, Pool } from "..";
+import { routerAddress } from "../config";
 
 import { Dapp, Network } from "../types";
 import { CONTRACT_ADDRESS, MAX_AMOUNT, TEST_POOL } from "./constants";
 import {
   setChainlinkTimeout,
+  setUSDCAmount,
   testingHelper,
   TestingRunParams
 } from "./utils/testingHelper";
 
-import { balanceDelta } from "./utils/token";
+import { allowanceDelta, balanceDelta } from "./utils/token";
 
 const testToros = ({ wallet, network, provider }: TestingRunParams) => {
   const USDC = CONTRACT_ADDRESS[network].USDC;
@@ -31,43 +34,42 @@ const testToros = ({ wallet, network, provider }: TestingRunParams) => {
         "0x10000000000000000"
       ]);
       await provider.send("evm_mine", []);
-      // // top up USDC
-      // const amount = new BigNumber(100).times(1e6).toFixed(0);
-      // await setUSDCAmount({
-      //   amount,
-      //   userAddress: pool.address,
-      //   network,
-      //   provider
-      // });
+      // top up USDC
+      const amount = new BigNumber(100).times(1e6).toFixed(0);
+      await setUSDCAmount({
+        amount,
+        userAddress: pool.address,
+        network,
+        provider
+      });
     });
 
-    // it("approves unlimited USDC on Toros", async () => {
-    //   await pool.approve(Dapp.TOROS, USDC, MAX_AMOUNT);
-    //   const usdcAllowanceDelta = await allowanceDelta(
-    //     pool.address,
-    //     USDC,
-    //     routerAddress[network].toros!,
-    //     pool.signer
-    //   );
-    //   await expect(usdcAllowanceDelta.gt(0));
-    // });
+    it("approves unlimited USDC on Toros", async () => {
+      await pool.approve(Dapp.TOROS, USDC, MAX_AMOUNT);
+      const usdcAllowanceDelta = await allowanceDelta(
+        pool.address,
+        USDC,
+        routerAddress[network].toros!,
+        pool.signer
+      );
+      await expect(usdcAllowanceDelta.gt(0));
+    });
 
-    // it("trades USDC balance into Toros Token", async () => {
-    //   const usdcBalance = await pool.utils.getBalance(USDC, pool.address);
-    //   await pool.trade(Dapp.TOROS, USDC, TOROS, usdcBalance, 1);
-    //   const torosBalanceDelta = await balanceDelta(
-    //     pool.address,
-    //     TOROS,
-    //     pool.signer
-    //   );
-    //   expect(torosBalanceDelta.gt(0));
-    // });
+    it("trades USDC balance into Toros Token", async () => {
+      const usdcBalance = await pool.utils.getBalance(USDC, pool.address);
+      await pool.trade(Dapp.TOROS, USDC, TOROS, usdcBalance, 1);
+      const torosBalanceDelta = await balanceDelta(
+        pool.address,
+        TOROS,
+        pool.signer
+      );
+      expect(torosBalanceDelta.gt(0));
+    });
 
     it("init Toros Token for withdrawal", async () => {
-      // await provider.send("evm_increaseTime", [86400]);
-      // await provider.send("evm_mine", []);
+      await provider.send("evm_increaseTime", [86400]);
+      await provider.send("evm_mine", []);
       const torosBalance = await pool.utils.getBalance(TOROS, pool.address);
-      console.log("torosBalance", torosBalance.toString());
       await pool.approve(Dapp.TOROS, TOROS, MAX_AMOUNT);
       await pool.trade(Dapp.TOROS, TOROS, USDC, torosBalance, 1);
       const torosBalanceDelta = await balanceDelta(
@@ -86,7 +88,6 @@ const testToros = ({ wallet, network, provider }: TestingRunParams) => {
         pool.signer
       );
       expect(usdcBalanceDelta.gt(0));
-      console.log("USDC balance delta", usdcBalanceDelta.toString());
     });
   });
 };

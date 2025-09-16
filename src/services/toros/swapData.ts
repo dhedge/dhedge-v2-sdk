@@ -53,8 +53,6 @@ export const getSwapDataViaOdos = async ({
       quoteParams
     );
 
-    console.log("quoteResult from Odos", quoteResult.data);
-
     const assembleParams = {
       pathId: quoteResult.data.pathId,
       userAddr: from
