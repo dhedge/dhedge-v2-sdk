@@ -40,10 +40,7 @@ import {
   getUniswapV3MintTxData
 } from "../services/uniswap/V3Liquidity";
 import { getUniswapV3SwapTxData } from "../services/uniswap/V3Trade";
-import {
-  getCompleteWithdrawalTxData,
-  getEasySwapperTxData
-} from "../services/toros/easySwapper";
+import { getEasySwapperTxData } from "../services/toros/easySwapper";
 import { getAaveV3ClaimTxData } from "../services/aave/incentives";
 import {
   getClOwner,
@@ -87,6 +84,7 @@ import {
 } from "../services/pancake/staking";
 import { getOdosSwapTxData } from "../services/odos";
 import { getPendleSwapTxData } from "../services/pendle";
+import { getCompleteWithdrawalTxData } from "../services/toros/completeWithdrawal";
 
 export class Pool {
   public readonly poolLogic: Contract;
@@ -1951,7 +1949,8 @@ export class Pool {
     const txData = await getCompleteWithdrawalTxData(
       this,
       destinationToken,
-      slippage
+      slippage * 100,
+      false
     );
     const tx = await getPoolTxOrGasEstimate(
       this,

@@ -4,7 +4,7 @@ import { ApiError, ethers } from "../..";
 import { networkChainIdMap } from "../../config";
 import { Pool } from "../../entities";
 
-const odosBaseUrl = "https://api.odos.xyz/sor";
+export const odosBaseUrl = "https://api.odos.xyz/sor";
 
 export async function getOdosSwapTxData(
   pool: Pool,

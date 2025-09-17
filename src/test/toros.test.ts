@@ -1,18 +1,19 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
+import BigNumber from "bignumber.js";
 import { Dhedge, Pool } from "..";
 import { routerAddress } from "../config";
 
 import { Dapp, Network } from "../types";
 import { CONTRACT_ADDRESS, MAX_AMOUNT, TEST_POOL } from "./constants";
 import {
-  TestingRunParams,
   setChainlinkTimeout,
   setUSDCAmount,
-  testingHelper
+  testingHelper,
+  TestingRunParams
 } from "./utils/testingHelper";
+
 import { allowanceDelta, balanceDelta } from "./utils/token";
-import BigNumber from "bignumber.js";
 
 const testToros = ({ wallet, network, provider }: TestingRunParams) => {
   const USDC = CONTRACT_ADDRESS[network].USDC;
@@ -34,7 +35,7 @@ const testToros = ({ wallet, network, provider }: TestingRunParams) => {
       ]);
       await provider.send("evm_mine", []);
       // top up USDC
-      const amount = new BigNumber(1000).times(1e6).toFixed(0);
+      const amount = new BigNumber(100).times(1e6).toFixed(0);
       await setUSDCAmount({
         amount,
         userAddress: pool.address,
@@ -56,7 +57,7 @@ const testToros = ({ wallet, network, provider }: TestingRunParams) => {
 
     it("trades USDC balance into Toros Token", async () => {
       const usdcBalance = await pool.utils.getBalance(USDC, pool.address);
-      await pool.trade(Dapp.TOROS, USDC, TOROS, usdcBalance, 1);
+      await pool.trade(Dapp.TOROS, USDC, TOROS, usdcBalance, 1.5);
       const torosBalanceDelta = await balanceDelta(
         pool.address,
         TOROS,
@@ -70,7 +71,7 @@ const testToros = ({ wallet, network, provider }: TestingRunParams) => {
       await provider.send("evm_mine", []);
       const torosBalance = await pool.utils.getBalance(TOROS, pool.address);
       await pool.approve(Dapp.TOROS, TOROS, MAX_AMOUNT);
-      await pool.trade(Dapp.TOROS, TOROS, USDC, torosBalance, 1);
+      await pool.trade(Dapp.TOROS, TOROS, USDC, torosBalance, 1.5);
       const torosBalanceDelta = await balanceDelta(
         pool.address,
         TOROS,
@@ -80,7 +81,7 @@ const testToros = ({ wallet, network, provider }: TestingRunParams) => {
     });
 
     it("complete withdrawal from Toros asset", async () => {
-      await pool.completeTorosWithdrawal(USDC, 1);
+      await pool.completeTorosWithdrawal(USDC, 1.5);
       const usdcBalanceDelta = await balanceDelta(
         pool.address,
         USDC,
@@ -93,5 +94,6 @@ const testToros = ({ wallet, network, provider }: TestingRunParams) => {
 
 testingHelper({
   network: Network.OPTIMISM,
-  testingRun: testToros
+  testingRun: testToros,
+  onFork: true
 });
