@@ -30,7 +30,8 @@ import {
   LyraOptionMarket,
   LyraOptionType,
   LyraTradeType,
-  LyraPosition
+  LyraPosition,
+  SDKOptions
 } from "../types";
 
 import { Utils } from "./utils";
@@ -211,7 +212,7 @@ export class Pool {
    * @param {string} asset Address of asset
    * @param {BigNumber | string} Amount to be approved
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async approve(
@@ -219,7 +220,9 @@ export class Pool {
     asset: string,
     amount: BigNumber | string,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const iERC20 = new ethers.utils.Interface(IERC20.abi);
     const approveTxData = iERC20.encodeFunctionData("approve", [
@@ -229,7 +232,7 @@ export class Pool {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [asset, approveTxData, options],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -240,7 +243,7 @@ export class Pool {
    * @param {string} asset Address of liquidity pool token
    * @param {BigNumber | string} amount Aamount to be approved
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async approveStaking(
@@ -248,7 +251,9 @@ export class Pool {
     asset: string,
     amount: BigNumber | string,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const iERC20 = new ethers.utils.Interface(IERC20.abi);
     const approveTxData = iERC20.encodeFunctionData("approve", [
@@ -258,7 +263,7 @@ export class Pool {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [asset, approveTxData, options],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -269,14 +274,16 @@ export class Pool {
    * @param {string} asset Address of liquidity pool token
    * @param {BigNumber | string} amount Aamount to be approved
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async approveUniswapV3Liquidity(
     asset: string,
     amount: BigNumber | string,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const iERC20 = new ethers.utils.Interface(IERC20.abi);
     const approveTxData = iERC20.encodeFunctionData("approve", [
@@ -286,7 +293,7 @@ export class Pool {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [asset, approveTxData, options],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -297,7 +304,7 @@ export class Pool {
    * @param {string} asset Address of asset
    * @param {BigNumber | string} amount to be approved
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async approveSpender(
@@ -305,7 +312,9 @@ export class Pool {
     asset: string,
     amount: BigNumber | string,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const iERC20 = new ethers.utils.Interface(IERC20.abi);
     const approveTxData = iERC20.encodeFunctionData("approve", [
@@ -315,7 +324,7 @@ export class Pool {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [asset, approveTxData, options],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -326,7 +335,7 @@ export class Pool {
    * @param {string} asset Address of asset
    * @param {string} tokenId NFT id
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async approveSpenderNFT(
@@ -334,7 +343,9 @@ export class Pool {
     asset: string,
     tokenId: string,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const iERC721 = new ethers.utils.Interface(IERC721.abi);
     const approveTxData = iERC721.encodeFunctionData("approve", [
@@ -344,7 +355,7 @@ export class Pool {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [asset, approveTxData, options],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -357,7 +368,7 @@ export class Pool {
    * @param {BigNumber | string} amountIn Amount
    * @param {number} slippage Slippage tolerance in %
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async trade(
@@ -367,7 +378,9 @@ export class Pool {
     amountIn: BigNumber | string,
     slippage = 0.5,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     let swapTxData: string;
     let minAmountOut: string | null = null;
@@ -453,7 +466,7 @@ export class Pool {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [routerAddress[this.network][dapp], swapTxData, options, minAmountOut],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -466,7 +479,7 @@ export class Pool {
    * @param {BigNumber | string} amountA Amount first asset
    * @param {BigNumber | string} amountB Amount second asset
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async addLiquidity(
@@ -476,7 +489,9 @@ export class Pool {
     amountA: BigNumber | string,
     amountB: BigNumber | string,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const iUniswapV2Router = new ethers.utils.Interface(IUniswapV2Router.abi);
     const addLiquidityTxData = iUniswapV2Router.encodeFunctionData(
@@ -495,7 +510,7 @@ export class Pool {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [routerAddress[this.network][dapp], addLiquidityTxData, options],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -507,7 +522,7 @@ export class Pool {
    * @param {string} assetB Second asset
    * @param {BigNumber | string} amount Amount of liquidity pool tokens
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async removeLiquidity(
@@ -516,7 +531,9 @@ export class Pool {
     assetB: string,
     amount: string | BigNumber,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const iUniswapV2Router = new ethers.utils.Interface(IUniswapV2Router.abi);
     const removeLiquidityTxData = iUniswapV2Router.encodeFunctionData(
@@ -526,7 +543,7 @@ export class Pool {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [routerAddress[this.network][dapp], removeLiquidityTxData, options],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -537,7 +554,7 @@ export class Pool {
    * @param {string} asset Liquidity pool token
    * @param {BigNumber | string} amount Amount of liquidity pool tokens
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async stake(
@@ -545,7 +562,9 @@ export class Pool {
     asset: string,
     amount: BigNumber | string,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const iMiniChefV2 = new ethers.utils.Interface(IMiniChefV2.abi);
     const poolId = await this.utils.getLpPoolId(dapp, asset);
@@ -557,7 +576,7 @@ export class Pool {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [stakingAddress[this.network][dapp], stakeTxData, options],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -568,7 +587,7 @@ export class Pool {
    * @param {string} gauge Gauge contract address
    * @param {BigNumber | string} amount Amount of liquidity pool tokens or token ID for Velodrome CL
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async stakeInGauge(
@@ -576,7 +595,9 @@ export class Pool {
     gauge: string,
     amount: BigNumber | string,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     let stakeTxData;
     switch (dapp) {
@@ -611,7 +632,7 @@ export class Pool {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [txTo, stakeTxData, options],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -622,7 +643,7 @@ export class Pool {
    * @param {string} asset Liquidity pool token
    * @param  {BigNumber | string} amount Amount of liquidity pool tokens
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async unStake(
@@ -630,7 +651,9 @@ export class Pool {
     asset: string,
     amount: BigNumber | string,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const iMiniChefV2 = new ethers.utils.Interface(IMiniChefV2.abi);
     const poolId = await this.utils.getLpPoolId(dapp, asset);
@@ -642,7 +665,7 @@ export class Pool {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [stakingAddress[this.network][dapp], unStakeTxData, options],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -652,14 +675,16 @@ export class Pool {
    * @param {string} gauge Gauge contract address
    * @param {BigNumber | string} amount Amount of liquidity pool tokens or CL token ID
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async unstakeFromGauge(
     gauge: string,
     amount: BigNumber | string,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     let unstakeTxData;
     const rewardsGauge = new ethers.utils.Interface(IBalancerRewardsGauge.abi);
@@ -676,7 +701,7 @@ export class Pool {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [gauge, unstakeTxData, options],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -688,7 +713,7 @@ export class Pool {
    * @param {BigNumber | string} amount Amount of asset to lend
    * @param {number} referralCode Code from Aave referral program
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async lend(
@@ -697,7 +722,9 @@ export class Pool {
     amount: BigNumber | string,
     referralCode = 0,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const iLendingPool = new ethers.utils.Interface(ILendingPool.abi);
     const depositTxData = iLendingPool.encodeFunctionData(Transaction.DEPOSIT, [
@@ -710,7 +737,7 @@ export class Pool {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [routerAddress[this.network][dapp], depositTxData, options],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -721,7 +748,7 @@ export class Pool {
    * @param {string} asset Asset
    * @param {BigNumber | string} amount Amount of asset to lend
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async lendCompoundV3(
@@ -729,7 +756,9 @@ export class Pool {
     asset: string,
     amount: BigNumber | string,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const supplyTxData = await getCompoundV3LendTxData(
       this,
@@ -741,7 +770,7 @@ export class Pool {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [market, supplyTxData, options],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -752,7 +781,7 @@ export class Pool {
    * @param {string} asset Asset
    * @param  {BigNumber | string} amount Amount of asset to lend
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async withdrawDeposit(
@@ -760,7 +789,9 @@ export class Pool {
     asset: string,
     amount: BigNumber | string,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const iLendingPool = new ethers.utils.Interface(ILendingPool.abi);
     const withdrawTxData = iLendingPool.encodeFunctionData(
@@ -771,7 +802,7 @@ export class Pool {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [routerAddress[this.network][dapp], withdrawTxData, options],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -782,7 +813,7 @@ export class Pool {
    * @param {string} asset Asset
    * @param  {BigNumber | string} amount Amount of asset to withdraw
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async withdrawCompoundV3(
@@ -790,7 +821,9 @@ export class Pool {
     asset: string,
     amount: BigNumber | string,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const withdrawTxData = await getCompoundV3WithdrawTxData(
       this,
@@ -802,7 +835,7 @@ export class Pool {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [market, withdrawTxData, options],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -814,7 +847,7 @@ export class Pool {
    * @param  {BigNumber | string} amount Amount of asset to lend
    * @param {number} referralCode Code from Aave referral program
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async borrow(
@@ -823,7 +856,9 @@ export class Pool {
     amount: BigNumber | string,
     referralCode = 0,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const iLendingPool = new ethers.utils.Interface(ILendingPool.abi);
     const borrowTxData = iLendingPool.encodeFunctionData(Transaction.BORROW, [
@@ -836,7 +871,7 @@ export class Pool {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [routerAddress[this.network][dapp], borrowTxData, options],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -847,7 +882,7 @@ export class Pool {
    * @param {string} asset Asset
    * @param  {BigNumber | string} amount Amount of asset to lend
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async repay(
@@ -855,7 +890,9 @@ export class Pool {
     asset: string,
     amount: BigNumber | string,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const iLendingPool = new ethers.utils.Interface(ILendingPool.abi);
     const repayTxData = iLendingPool.encodeFunctionData(Transaction.REPAY, [
@@ -867,7 +904,7 @@ export class Pool {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [routerAddress[this.network][dapp], repayTxData, options],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -877,14 +914,16 @@ export class Pool {
    * @param {Dapp} dapp Platform like Sushiswap or Uniswap
    * @param {string} asset Liquidity pool token
    * @param {any} options Transaction option
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async harvestRewards(
     dapp: Dapp,
     asset: string,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const iMiniChefV2 = new ethers.utils.Interface(IMiniChefV2.abi);
     const poolId = await this.utils.getLpPoolId(dapp, asset);
@@ -895,7 +934,7 @@ export class Pool {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [stakingAddress[this.network][dapp], harvestTxData, options],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -960,7 +999,7 @@ export class Pool {
    * @param {string[] | } assetsIn Array of balancer pool assets
    * @param {BigNumber[] | string[]} amountsIn Array of maximum amounts to provide to pool
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async joinBalancerPool(
@@ -968,7 +1007,9 @@ export class Pool {
     assets: string[],
     amountsIn: string[] | BigNumber[],
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const joinPoolTxData = this.utils.getBalancerJoinPoolTx(
       this,
@@ -979,7 +1020,7 @@ export class Pool {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [routerAddress[this.network][Dapp.BALANCER], joinPoolTxData, options],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -991,7 +1032,7 @@ export class Pool {
    * @param {BigNumber | string } amount Amount of pool tokens to withdraw
    * @param { null | number } singleExitAssetIndex Index of asset to withdraw to
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async exitBalancerPool(
@@ -1000,7 +1041,9 @@ export class Pool {
     amount: string | BigNumber,
     singleExitAssetIndex: number | null = null,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const exitPoolTxData = this.utils.getBalancerExitPoolTx(
       this,
@@ -1012,7 +1055,7 @@ export class Pool {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [routerAddress[this.network][Dapp.BALANCER], exitPoolTxData, options],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -1021,13 +1064,15 @@ export class Pool {
    * Claim rewards from Aave platform
    * @param {string[]} assets Aave tokens (deposit/debt) hold by pool
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async harvestAaveRewards(
     assets: string[],
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const aaveIncentivesAddress = stakingAddress[this.network][
       Dapp.AAVE
@@ -1050,7 +1095,7 @@ export class Pool {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [aaveIncentivesAddress, claimTxData, options],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -1060,14 +1105,16 @@ export class Pool {
    * @param {string[]} assets Assets invested in Aave
    * @param {string} rewardAssets Reward token address
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async harvestAaveV3Rewards(
     assets: string[],
     rewardAsset: string,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const claimTxData = await getAaveV3ClaimTxData(this, assets, rewardAsset);
     const tx = await getPoolTxOrGasEstimate(
@@ -1077,7 +1124,7 @@ export class Pool {
         claimTxData,
         options
       ],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -1086,13 +1133,15 @@ export class Pool {
    * Claim rewards from CompoundV3
    * @param {string} asset Compound lending asset
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async harvestCompoundV3Rewards(
     asset: string,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const claimTxData = await getCompoundV3ClaimTxData(this, asset);
     const tx = await getPoolTxOrGasEstimate(
@@ -1102,7 +1151,7 @@ export class Pool {
         claimTxData,
         options
       ],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -1120,7 +1169,7 @@ export class Pool {
    * @param { number } maxTick Upper tick range
    * @param { number } feeAmountOrTickSpacing Fee tier UniswapV3 or tick spacing VelodromeCL
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async addLiquidityUniswapV3(
@@ -1140,7 +1189,9 @@ export class Pool {
     maxTick: number | null,
     feeAmountOrTickSpacing: number,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     if (
       (minPrice === null || maxPrice === null) &&
@@ -1171,7 +1222,7 @@ export class Pool {
         mintTxData,
         options
       ],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -1182,7 +1233,7 @@ export class Pool {
    * @param {string} tokenId Token Id of UniswapV3 position
    * @param {number} amount Amount in percent of assets to be removed
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async decreaseLiquidity(
@@ -1190,7 +1241,9 @@ export class Pool {
     tokenId: string,
     amount = 100,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     let dappAddress;
     let isStaked = false;
@@ -1234,7 +1287,7 @@ export class Pool {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [dappAddress, txData, options],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -1246,7 +1299,7 @@ export class Pool {
    * @param {BigNumber | string} amountA Amount first asset
    * @param {BigNumber | string} amountB Amount second asset
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async increaseLiquidity(
@@ -1255,7 +1308,9 @@ export class Pool {
     amountA: BigNumber | string,
     amountB: BigNumber | string,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     let dappAddress;
     let isStaked = false;
@@ -1300,7 +1355,7 @@ export class Pool {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [dappAddress, txData, options],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -1310,14 +1365,16 @@ export class Pool {
    * @param {Dapp} dapp Platform either UniswapV3 or Arrakis
    * @param {string} tokenId Token Id of UniswapV3 or Gauge address
    * @param {any} options Transaction option
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async claimFees(
     dapp: Dapp,
     tokenId: string,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     let txData;
     let contractAddress;
@@ -1376,7 +1433,7 @@ export class Pool {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [contractAddress, txData, options],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -1387,7 +1444,7 @@ export class Pool {
    * @param {string} tokenId Token Id
    * @param {string[]} rewards Reward tokens
    * @param {any} options Transaction option
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async getRewards(
@@ -1395,7 +1452,9 @@ export class Pool {
     tokenId: string,
     rewards: string[],
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const tx = await getPoolTxOrGasEstimate(
       this,
@@ -1404,7 +1463,7 @@ export class Pool {
         getRewardsTxDta(tokenId, rewards),
         options
       ],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -1418,7 +1477,7 @@ export class Pool {
    * @param { FeeAmount } feeAmount Fee tier (Low 0.05%, Medium 0.3%, High 1%)
    * @param {number} slippage Slippage tolerance in %
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async tradeUniswapV3(
@@ -1428,7 +1487,9 @@ export class Pool {
     feeAmount: number,
     slippage = 0.5,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const swapxData = await getUniswapV3SwapTxData(
       this,
@@ -1441,7 +1502,7 @@ export class Pool {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [routerAddress[this.network][Dapp.UNISWAPV3], swapxData, options],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -1454,7 +1515,7 @@ export class Pool {
    * @param {BigNumber | string} amountB Amount second asset
    * @param { boolean } isStable Is stable pool
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async addLiquidityVelodrome(
@@ -1464,7 +1525,9 @@ export class Pool {
     amountB: BigNumber | string,
     isStable: boolean,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const tx = await getPoolTxOrGasEstimate(
       this,
@@ -1480,7 +1543,7 @@ export class Pool {
         ),
         options
       ],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -1492,7 +1555,7 @@ export class Pool {
    * @param {BigNumber | string} amount Amount of LP tokens
    * @param { boolean } isStable Is stable pool
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async removeLiquidityVelodrome(
@@ -1501,7 +1564,9 @@ export class Pool {
     amount: BigNumber | string,
     isStable: boolean,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const tx = await getPoolTxOrGasEstimate(
       this,
@@ -1516,7 +1581,7 @@ export class Pool {
         ),
         options
       ],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -1529,7 +1594,7 @@ export class Pool {
    * @param {BigNumber | string} amountB Amount second asset
    * @param { boolean } isStable Is stable pool
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async addLiquidityVelodromeV2(
@@ -1539,7 +1604,9 @@ export class Pool {
     amountB: BigNumber | string,
     isStable: boolean,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const tx = await getPoolTxOrGasEstimate(
       this,
@@ -1555,7 +1622,7 @@ export class Pool {
         ),
         options
       ],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -1567,7 +1634,7 @@ export class Pool {
    * @param {BigNumber | string} amount Amount of LP tokens
    * @param { boolean } isStable Is stable pool
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async removeLiquidityVelodromeV2(
@@ -1576,7 +1643,9 @@ export class Pool {
     amount: BigNumber | string,
     isStable: boolean,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const tx = await getPoolTxOrGasEstimate(
       this,
@@ -1591,7 +1660,7 @@ export class Pool {
         ),
         options
       ],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -1605,7 +1674,7 @@ export class Pool {
    * @param {BigNumber | string} amountB Amount second asset
    * @param { boolean } isStable Is stable pool
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async addLiquidityV2(
@@ -1616,7 +1685,9 @@ export class Pool {
     amountB: BigNumber | string,
     isStable: boolean,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const tx = await getPoolTxOrGasEstimate(
       this,
@@ -1632,7 +1703,7 @@ export class Pool {
         ),
         options
       ],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -1645,7 +1716,7 @@ export class Pool {
    * @param {BigNumber | string} amount Amount of LP tokens
    * @param { boolean } isStable Is stable pool
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async removeLiquidityV2(
@@ -1655,7 +1726,9 @@ export class Pool {
     amount: BigNumber | string,
     isStable: boolean,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const tx = await getPoolTxOrGasEstimate(
       this,
@@ -1670,7 +1743,7 @@ export class Pool {
         ),
         options
       ],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -1687,7 +1760,7 @@ export class Pool {
    * @param {BigNumber | string } collateralChangeAmount Collateral amount to add when shorting options and to remove when covering shorts
    * @param {boolean} isCoveredCall Selling covered call options
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async tradeLyraOption(
@@ -1701,7 +1774,9 @@ export class Pool {
     collateralChangeAmount: BigNumber | string = "0",
     isCoveredCall = false,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const swapxData = await getLyraOptionTxData(
       this,
@@ -1718,7 +1793,7 @@ export class Pool {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [routerAddress[this.network][Dapp.LYRA], swapxData, options],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -1736,19 +1811,21 @@ export class Pool {
    * @param {string} market Address of futures market
    * @param {BigNumber | string } changeAmount Amount to increase/decrease margin
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async changeFuturesMargin(
     market: string,
     changeAmount: BigNumber | string,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [market, getFuturesChangeMarginTxData(changeAmount), options],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -1758,14 +1835,16 @@ export class Pool {
    * @param {string} market Address of futures market
    * @param {BigNumber | string } changeAmount Negative for short, positive for long
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async changeFuturesPosition(
     market: string,
     changeAmount: BigNumber | string,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const txData = await getFuturesChangePositionTxData(
       changeAmount,
@@ -1775,7 +1854,7 @@ export class Pool {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [market, txData, options],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -1784,19 +1863,21 @@ export class Pool {
    *
    * @param {string} market Address of futures market
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async cancelFuturesOrder(
     market: string,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const txData = await getFuturesCancelOrderTxData(this);
     const tx = await getPoolTxOrGasEstimate(
       this,
       [market, txData, options],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -1829,20 +1910,22 @@ export class Pool {
    * @param {string} tokenAddress Address of the token to vest
    * @param {BigNumber | string } changeAmount Negative for short, positive for long
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async vestTokens(
     tokenAddress: string,
     amount: BigNumber | string,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const txData = await getCreateVestTxData(amount);
     const tx = await getPoolTxOrGasEstimate(
       this,
       [tokenAddress, txData, options],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -1852,20 +1935,22 @@ export class Pool {
    * @param {string} tokenAddress Address of the token to vest
    * @param {number } id position Id of the vested tokens
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async exitVestedToken(
     tokenAddress: string,
     id: number,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const txData = await getExitVestTxData(id);
     const tx = await getPoolTxOrGasEstimate(
       this,
       [tokenAddress, txData, options],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -1876,7 +1961,7 @@ export class Pool {
    * @param { number } slippage slippage, 0.5 represents 0.5%
    * @param { number | null } maxKeeperFeeInUsd 5 represents $5; null will skip the maxKeeperFee check
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async mintUnitViaFlatMoney(
@@ -1884,7 +1969,9 @@ export class Pool {
     slippage = 0.5,
     maxKeeperFeeInUsd: number | null,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const tx = await mintUnitViaFlatMoney(
       this,
@@ -1892,7 +1979,7 @@ export class Pool {
       slippage,
       maxKeeperFeeInUsd,
       options,
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -1903,7 +1990,7 @@ export class Pool {
    * @param { number } slippage slippage, 0.5 represents 0.5%
    * @param { number | null } maxKeeperFeeInUsd 5 represents $5; null will skip the maxKeeperFee check
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async redeemUnitViaFlatMoney(
@@ -1911,7 +1998,9 @@ export class Pool {
     slippage = 0.5,
     maxKeeperFeeInUsd: number | null,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const tx = await redeemUnitViaFlatMoney(
       this,
@@ -1919,7 +2008,7 @@ export class Pool {
       slippage,
       maxKeeperFeeInUsd,
       options,
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
@@ -1937,14 +2026,16 @@ export class Pool {
    * @param {string} destinationToken Address of destination asset
    * @param {number} slippage Slippage tolerance in %
    * @param {any} options Transaction options
-   * @param {boolean} estimateGas Simulate/estimate gas
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
   async completeTorosWithdrawal(
     destinationToken: string,
     slippage = 0.5,
     options: any = null,
-    estimateGas = false
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
   ): Promise<any> {
     const txData = await getCompleteWithdrawalTxData(
       this,
@@ -1955,7 +2046,7 @@ export class Pool {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [routerAddress[this.network].toros, txData, options],
-      estimateGas
+      sdkOptions
     );
     return tx;
   }
