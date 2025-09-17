@@ -101,3 +101,11 @@ export type LyraPosition = {
   collateral: BigNumber;
   state: number;
 };
+
+export type SDKOptions =
+  | {
+      estimateGas: boolean;
+      onlyGetTxData?: boolean;
+      useTraderAddressAsFrom?: boolean;
+    }
+  | boolean; // shorthand for { estimateGas: true/false }; for backward compatibility
