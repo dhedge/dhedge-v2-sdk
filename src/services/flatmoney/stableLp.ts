@@ -1,11 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import BigNumber from "bignumber.js";
-import { Pool, ethers } from "../..";
+import { Pool, SDKOptions, ethers } from "../..";
 import DelayedOrderAbi from "../../abi/flatmoney/DelayedOrder.json";
 import IOrderExecutionModuleAbi from "../../abi/flatmoney/v2/IOrderExecutionModule.json";
 import { flatMoneyContractAddresses } from "../../config";
-import { getPoolTxOrGasEstimate } from "../../utils/contract";
+import {
+  getPoolTxOrGasEstimate,
+  isSdkOptionsBoolean
+} from "../../utils/contract";
 import { getStableDepositQuote, getStableWithdrawQuote } from "./stableModule";
 import { getKeeperFee } from "./keeperFee";
 
@@ -55,7 +58,9 @@ export async function mintUnitViaFlatMoney(
   slippage: number, // 0.5 means 0.5%
   maxKeeperFeeInUsd: number | null,
   options: any = null,
-  estimateGas = false
+  sdkOptions: SDKOptions = {
+    estimateGas: false
+  }
 ): Promise<any> {
   const flatMoneyContracts = flatMoneyContractAddresses[pool.network];
   if (!flatMoneyContracts) {
@@ -85,7 +90,7 @@ export async function mintUnitViaFlatMoney(
   const tx = await getPoolTxOrGasEstimate(
     pool,
     [flatMoneyContracts.DelayedOrder, mintUnitTxData, options],
-    estimateGas
+    sdkOptions
   );
   return tx;
 }
@@ -96,7 +101,9 @@ export async function redeemUnitViaFlatMoney(
   slippage: number, // 0.5 means 0.5%
   maxKeeperFeeInUsd: number | null,
   options: any = null,
-  estimateGas = false
+  sdkOptions: SDKOptions = {
+    estimateGas: false
+  }
 ): Promise<any> {
   const flatMoneyContracts = flatMoneyContractAddresses[pool.network];
   if (!flatMoneyContracts) {
@@ -118,7 +125,7 @@ export async function redeemUnitViaFlatMoney(
   const tx = await getPoolTxOrGasEstimate(
     pool,
     [flatMoneyContracts.DelayedOrder, redeemUnitTxData, options],
-    estimateGas
+    sdkOptions
   );
   return tx;
 }
@@ -126,7 +133,9 @@ export async function redeemUnitViaFlatMoney(
 export async function cancelOrderViaFlatMoney(
   pool: Pool,
   options: any = null,
-  estimateGas = false
+  sdkOptions: SDKOptions = {
+    estimateGas: false
+  }
 ): Promise<any> {
   const flatMoneyContracts = flatMoneyContractAddresses[pool.network];
   if (!flatMoneyContracts) {
@@ -140,31 +149,15 @@ export async function cancelOrderViaFlatMoney(
     toAddress = flatMoneyContracts.OrderExecution;
     cancelOrderTxData = await getCancelExistingOrderTxDataForV2(pool.address);
   }
-  // use trader address to cancel order
-  if (estimateGas) {
-    let gas: ethers.BigNumber | null = null;
-    let gasEstimationError: null | string = null;
-    try {
-      gas = await pool.signer.estimateGas({
-        to: toAddress,
-        data: cancelOrderTxData
-      });
-    } catch (e) {
-      gasEstimationError = e as string;
+  const tx = await getPoolTxOrGasEstimate(
+    pool,
+    [toAddress, cancelOrderTxData, options],
+    {
+      ...(isSdkOptionsBoolean(sdkOptions)
+        ? { estimateGas: sdkOptions }
+        : sdkOptions),
+      useTraderAddressAsFrom: true
     }
-    return {
-      gas,
-      txData: cancelOrderTxData,
-      to: toAddress,
-      gasEstimationError,
-      minAmountOut: null
-    };
-  } else {
-    const tx = await pool.signer.sendTransaction({
-      to: toAddress,
-      data: cancelOrderTxData,
-      ...options
-    });
-    return tx;
-  }
+  );
+  return tx;
 }

@@ -3,7 +3,7 @@
 import set from "lodash/set";
 import { Interface } from "@ethersproject/abi";
 import { multiCallAddress } from "../config";
-import { ethers, Network, Pool } from "..";
+import { ethers, Network, Pool, SDKOptions } from "..";
 
 export async function call(
   provider: ethers.Signer,
@@ -94,56 +94,84 @@ export class Multicaller {
   }
 }
 
+const getGasEstimateData = async (
+  estimateFunc: ethers.ContractFunction<ethers.BigNumber>,
+  txInfoData: { to: string; txData: string; minAmountOut: any },
+  txOptions: any = {}
+) => {
+  let gas = null;
+  let gasEstimationError = null;
+  try {
+    gas = await estimateFunc(txInfoData.to, txInfoData.txData, txOptions);
+  } catch (e) {
+    gasEstimationError = e;
+  }
+  return {
+    gas,
+    gasEstimationError,
+    ...txInfoData
+  };
+};
+
+export const isSdkOptionsBoolean = (
+  sdkOptions: SDKOptions
+): sdkOptions is boolean => {
+  return typeof sdkOptions === "boolean";
+};
+
 export const getPoolTxOrGasEstimate = async (
   pool: Pool,
   args: any[],
-  estimateGas: boolean
+  sdkOptions: SDKOptions
 ): Promise<any> => {
-  if (pool.isDhedge) {
-    if (estimateGas) {
-      let gas = null;
-      let gasEstimationError = null;
-      try {
-        gas = await pool.poolLogic.estimateGas.execTransaction(
-          args[0],
-          args[1],
-          args[2]
-        );
-      } catch (e) {
-        gasEstimationError = e;
-      }
-      return {
-        gas,
-        txData: args[1],
-        to: args[0],
-        gasEstimationError,
-        minAmountOut: args[3] || null
-      };
-    } else {
-      return await pool.poolLogic.execTransaction(args[0], args[1], args[2]);
-    }
-  } else {
-    if (estimateGas) {
-      let gas = null;
-      let gasEstimationError = null;
-      try {
-        gas = await pool.signer.estimateGas({ to: args[0], data: args[1] });
-      } catch (e) {
-        gasEstimationError = e;
-      }
-      return {
-        gas,
-        txData: args[1],
-        to: args[0],
-        gasEstimationError,
-        minAmountOut: args[3] || null
-      };
+  const txInfoData = {
+    txData: args[1],
+    to: args[0],
+    minAmountOut: args[3] || null
+  };
+
+  if (!isSdkOptionsBoolean(sdkOptions) && sdkOptions.onlyGetTxData) {
+    return txInfoData;
+  }
+
+  const txOptions = args[2];
+
+  if (
+    !pool.isDhedge ||
+    (!isSdkOptionsBoolean(sdkOptions) && sdkOptions.useTraderAddressAsFrom)
+  ) {
+    if (
+      sdkOptions === true ||
+      (!isSdkOptionsBoolean(sdkOptions) && sdkOptions.estimateGas)
+    ) {
+      return await getGasEstimateData(
+        pool.signer.estimateGas,
+        txInfoData,
+        txOptions
+      );
     } else {
       return await pool.signer.sendTransaction({
-        to: args[0],
-        data: args[1],
-        ...args[2]
+        to: txInfoData.to,
+        data: txInfoData.txData,
+        ...txOptions
       });
+    }
+  } else {
+    if (
+      sdkOptions === true ||
+      (!isSdkOptionsBoolean(sdkOptions) && sdkOptions.estimateGas)
+    ) {
+      return await getGasEstimateData(
+        pool.poolLogic.estimateGas.execTransaction,
+        txInfoData,
+        txOptions
+      );
+    } else {
+      return await pool.poolLogic.execTransaction(
+        txInfoData.to,
+        txInfoData.txData,
+        txOptions
+      );
     }
   }
 };
