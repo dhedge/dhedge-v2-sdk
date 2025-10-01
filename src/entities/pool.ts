@@ -994,6 +994,28 @@ export class Pool {
   }
 
   /**
+   * Sets a pool private or public
+   * @param {boolean} _private True for private, false for public
+   * @param {any} options Transaction options
+   * @param {boolean} estimateGas Simulate/estimate gas
+   * @returns {Promise<any>} Transaction
+   */
+  async setPrivate(
+    _private: boolean,
+    options: any = null,
+    estimateGas = false
+  ): Promise<any> {
+    if (estimateGas) {
+      return await this.managerLogic.estimateGas.setPoolPrivate(
+        _private,
+        options
+      );
+    }
+    const tx = await this.managerLogic.setPoolPrivate(_private, options);
+    return tx;
+  }
+
+  /**
    * Invest into a Balancer pool
    * @param {string} poolId Balancer pool id
    * @param {string[] | } assetsIn Array of balancer pool assets
