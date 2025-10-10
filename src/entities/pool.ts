@@ -86,6 +86,12 @@ import {
 import { getOdosSwapTxData } from "../services/odos";
 import { getPendleSwapTxData } from "../services/pendle";
 import { getCompleteWithdrawalTxData } from "../services/toros/completeWithdrawal";
+import {
+  getDytmBorrowTxData,
+  getDytmDepositTxData,
+  getDytmRepayTxData,
+  getDytmWithdrawTxData
+} from "../services/dytm";
 
 export class Pool {
   public readonly poolLogic: Contract;
@@ -726,13 +732,18 @@ export class Pool {
       estimateGas: false
     }
   ): Promise<any> {
-    const iLendingPool = new ethers.utils.Interface(ILendingPool.abi);
-    const depositTxData = iLendingPool.encodeFunctionData(Transaction.DEPOSIT, [
-      asset,
-      amount,
-      this.address,
-      referralCode
-    ]);
+    let depositTxData: string;
+    if (dapp === Dapp.DYTM) {
+      depositTxData = getDytmDepositTxData(this, asset, amount);
+    } else {
+      const iLendingPool = new ethers.utils.Interface(ILendingPool.abi);
+      depositTxData = iLendingPool.encodeFunctionData(Transaction.DEPOSIT, [
+        asset,
+        amount,
+        this.address,
+        referralCode
+      ]);
+    }
 
     const tx = await getPoolTxOrGasEstimate(
       this,
@@ -793,11 +804,17 @@ export class Pool {
       estimateGas: false
     }
   ): Promise<any> {
-    const iLendingPool = new ethers.utils.Interface(ILendingPool.abi);
-    const withdrawTxData = iLendingPool.encodeFunctionData(
-      Transaction.WITHDRAW,
-      [asset, amount, this.address]
-    );
+    let withdrawTxData: string;
+    if (dapp === Dapp.DYTM) {
+      withdrawTxData = await getDytmWithdrawTxData(this, asset, amount);
+    } else {
+      const iLendingPool = new ethers.utils.Interface(ILendingPool.abi);
+      withdrawTxData = iLendingPool.encodeFunctionData(Transaction.WITHDRAW, [
+        asset,
+        amount,
+        this.address
+      ]);
+    }
 
     const tx = await getPoolTxOrGasEstimate(
       this,
@@ -860,14 +877,19 @@ export class Pool {
       estimateGas: false
     }
   ): Promise<any> {
-    const iLendingPool = new ethers.utils.Interface(ILendingPool.abi);
-    const borrowTxData = iLendingPool.encodeFunctionData(Transaction.BORROW, [
-      asset,
-      amount,
-      2,
-      referralCode,
-      this.address
-    ]);
+    let borrowTxData: string;
+    if (dapp === Dapp.DYTM) {
+      borrowTxData = getDytmBorrowTxData(this, asset, amount);
+    } else {
+      const iLendingPool = new ethers.utils.Interface(ILendingPool.abi);
+      borrowTxData = iLendingPool.encodeFunctionData(Transaction.BORROW, [
+        asset,
+        amount,
+        2,
+        referralCode,
+        this.address
+      ]);
+    }
     const tx = await getPoolTxOrGasEstimate(
       this,
       [routerAddress[this.network][dapp], borrowTxData, options],
@@ -894,13 +916,18 @@ export class Pool {
       estimateGas: false
     }
   ): Promise<any> {
-    const iLendingPool = new ethers.utils.Interface(ILendingPool.abi);
-    const repayTxData = iLendingPool.encodeFunctionData(Transaction.REPAY, [
-      asset,
-      amount,
-      2,
-      this.address
-    ]);
+    let repayTxData: string;
+    if (dapp === Dapp.DYTM) {
+      repayTxData = await getDytmRepayTxData(this, asset, amount);
+    } else {
+      const iLendingPool = new ethers.utils.Interface(ILendingPool.abi);
+      repayTxData = iLendingPool.encodeFunctionData(Transaction.REPAY, [
+        asset,
+        amount,
+        2,
+        this.address
+      ]);
+    }
     const tx = await getPoolTxOrGasEstimate(
       this,
       [routerAddress[this.network][dapp], repayTxData, options],

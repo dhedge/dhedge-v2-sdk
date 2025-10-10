@@ -55,7 +55,8 @@ export const routerAddress: AddressDappNetworkMap = {
     [Dapp.RAMSES]: "0xaaa87963efeb6f7e0a2711f397663105acb1805e",
     [Dapp.TOROS]: "0xA5679C4272A056Bb83f039961fae7D99C48529F5",
     [Dapp.ODOS]: "0xa669e7A0d4b3e4Fa48af2dE86BD4CD7126Be4e13",
-    [Dapp.PENDLE]: "0x888888888889758F76e7103c6CbF23ABbF58F946"
+    [Dapp.PENDLE]: "0x888888888889758F76e7103c6CbF23ABbF58F946",
+    [Dapp.DYTM]: "0x0fF1CEE337d7af25eEF4c1a7A2CaF83f98d80001"
   },
   [Network.BASE]: {
     [Dapp.ONEINCH]: "0x111111125421ca6dc452d289314280a0f8842a65",
@@ -212,5 +213,18 @@ export const flatMoneyContractAddresses: Readonly<Partial<
     FlatcoinVault: "0x29fAD9d44C550e5D8081AB35763797B39d75b858",
     COLLATERAL: "0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f", // WBTC
     StableModule: "0xcD3657cB0E851b6a734c4D1e7FC2640Bcd9f6B2d"
+  }
+};
+
+export const dytmContractAddresses: Readonly<Partial<
+  Record<
+    Network,
+    {
+      Periphery?: string;
+    }
+  >
+>> = {
+  [Network.ARBITRUM]: {
+    Periphery: "0x9C20D1EFeb769b802576eC8700dD83c24f82b15A"
   }
 };

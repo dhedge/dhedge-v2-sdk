@@ -144,11 +144,23 @@ export const getPoolTxOrGasEstimate = async (
       sdkOptions === true ||
       (!isSdkOptionsBoolean(sdkOptions) && sdkOptions.estimateGas)
     ) {
-      return await getGasEstimateData(
-        pool.signer.estimateGas,
-        txInfoData,
-        txOptions
-      );
+      // Direct approach for signer.estimateGas
+      let gas = null;
+      let gasEstimationError = null;
+      try {
+        gas = await pool.signer.estimateGas({
+          to: txInfoData.to,
+          data: txInfoData.txData,
+          ...txOptions
+        });
+      } catch (e) {
+        gasEstimationError = e;
+      }
+      return {
+        gas,
+        gasEstimationError,
+        ...txInfoData
+      };
     } else {
       return await pool.signer.sendTransaction({
         to: txInfoData.to,

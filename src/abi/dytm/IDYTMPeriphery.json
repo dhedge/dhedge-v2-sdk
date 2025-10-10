@@ -1,0 +1,270 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "contract Office",
+        "name": "_office",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  { "inputs": [], "name": "DYTMPeriphery__ZeroAddress", "type": "error" },
+  {
+    "inputs": [],
+    "name": "OFFICE",
+    "outputs": [
+      { "internalType": "contract Office", "name": "", "type": "address" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "tokenId", "type": "uint256" },
+      { "internalType": "uint256", "name": "assets", "type": "uint256" }
+    ],
+    "name": "assetsToShares",
+    "outputs": [
+      { "internalType": "uint256", "name": "shares", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "AccountId", "name": "account", "type": "uint256" },
+      { "internalType": "MarketId", "name": "market", "type": "uint88" }
+    ],
+    "name": "getAccountCollateralValueUSD",
+    "outputs": [
+      { "internalType": "uint256", "name": "totalValueUSD", "type": "uint256" },
+      {
+        "internalType": "uint256",
+        "name": "weightedValueUSD",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "AccountId", "name": "account", "type": "uint256" },
+      { "internalType": "MarketId", "name": "market", "type": "uint88" }
+    ],
+    "name": "getAccountDebtValueUSD",
+    "outputs": [
+      { "internalType": "uint256", "name": "debtValueUSD", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "AccountId", "name": "account", "type": "uint256" },
+      { "internalType": "MarketId", "name": "market", "type": "uint88" }
+    ],
+    "name": "getAccountPosition",
+    "outputs": [
+      {
+        "components": [
+          {
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "debtShares",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "debtAssets",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "debtValueUSD",
+                "type": "uint256"
+              },
+              {
+                "internalType": "ReserveKey",
+                "name": "debtKey",
+                "type": "uint248"
+              },
+              {
+                "internalType": "contract IERC20",
+                "name": "debtAsset",
+                "type": "address"
+              }
+            ],
+            "internalType": "struct DYTMPeriphery.DebtInfo",
+            "name": "debt",
+            "type": "tuple"
+          },
+          {
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "shares",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "assets",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "valueUSD",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "weightedValueUSD",
+                "type": "uint256"
+              },
+              { "internalType": "uint64", "name": "weight", "type": "uint64" },
+              {
+                "internalType": "ReserveKey",
+                "name": "key",
+                "type": "uint248"
+              },
+              {
+                "internalType": "contract IERC20",
+                "name": "asset",
+                "type": "address"
+              },
+              {
+                "internalType": "enum TokenType",
+                "name": "tokenType",
+                "type": "uint8"
+              }
+            ],
+            "internalType": "struct DYTMPeriphery.CollateralInfo[]",
+            "name": "collaterals",
+            "type": "tuple[]"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalCollateralValueUSD",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalWeightedCollateralValueUSD",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "healthFactor",
+            "type": "uint256"
+          },
+          { "internalType": "bool", "name": "isHealthy", "type": "bool" }
+        ],
+        "internalType": "struct DYTMPeriphery.AccountPosition",
+        "name": "position",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "tokenId", "type": "uint256" }
+    ],
+    "name": "getExchangeRate",
+    "outputs": [
+      { "internalType": "uint256", "name": "exchangeRate", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "ReserveKey", "name": "key", "type": "uint248" }
+    ],
+    "name": "getReserveInfo",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "contract IERC20",
+            "name": "asset",
+            "type": "address"
+          },
+          { "internalType": "uint256", "name": "supplied", "type": "uint256" },
+          { "internalType": "uint256", "name": "borrowed", "type": "uint256" },
+          {
+            "internalType": "uint256",
+            "name": "availableLiquidity",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "utilizationRate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "supplyRate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "borrowRate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalSupplyShares",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalBorrowShares",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "exchangeRateSupply",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "exchangeRateBorrow",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint128",
+            "name": "lastUpdateTimestamp",
+            "type": "uint128"
+          }
+        ],
+        "internalType": "struct DYTMPeriphery.ReserveInfo",
+        "name": "info",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "tokenId", "type": "uint256" },
+      { "internalType": "uint256", "name": "shares", "type": "uint256" }
+    ],
+    "name": "sharesToAssets",
+    "outputs": [
+      { "internalType": "uint256", "name": "assets", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
