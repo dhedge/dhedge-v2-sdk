@@ -92,6 +92,7 @@ import {
   getDytmRepayTxData,
   getDytmWithdrawTxData
 } from "../services/dytm";
+import { getKyberSwapTxData } from "../services/kyberSwap";
 
 export class Pool {
   public readonly poolLogic: Contract;
