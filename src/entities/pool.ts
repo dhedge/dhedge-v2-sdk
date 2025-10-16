@@ -450,6 +450,15 @@ export class Pool {
           slippage
         ));
         break;
+      case Dapp.KYBERSWAP:
+        ({ swapTxData, minAmountOut } = await getKyberSwapTxData(
+          this,
+          assetFrom,
+          assetTo,
+          amountIn,
+          slippage
+        ));
+        break;
       default:
         const iUniswapV2Router = new ethers.utils.Interface(
           IUniswapV2Router.abi
