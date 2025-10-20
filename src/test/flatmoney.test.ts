@@ -118,6 +118,14 @@ const testFlatMoney = ({
       await expect(collateralAllowanceDelta.gt(0));
 
       const depositAmountStr = new BigNumber(1).times(1e18).toString();
+      const estimateData = await pool.mintUnitViaFlatMoney(
+        depositAmountStr,
+        0.5,
+        10, // set higher to tolerate high gasPrice returned by forked local chain
+        null,
+        true
+      );
+      expect(estimateData.gasEstimationError).toBe(null);
       const tx = await pool.mintUnitViaFlatMoney(
         depositAmountStr,
         0.5,
@@ -130,6 +138,12 @@ const testFlatMoney = ({
         pool.address
       );
       expect(existingOrder.orderType).toBe(1);
+    });
+
+    it("cancel order(estimate)", async () => {
+      await provider.send("evm_increaseTime", [60 * 2]); // more than 1 min
+      const res = await pool.cancelOrderViaFlatMoney({}, true);
+      expect(res.gasEstimationError).toBe(null);
     });
 
     it("cancel order", async () => {
@@ -148,6 +162,14 @@ const testFlatMoney = ({
       } else {
         withdrawAmountStr = new BigNumber(2).times(1e18).toString();
       }
+      const estimateData = await pool.redeemUnitViaFlatMoney(
+        withdrawAmountStr,
+        0.5,
+        10, //  set higher to tolerate high gasPrice returned by forked local chain
+        null,
+        true
+      );
+      expect(estimateData.gasEstimationError).toBe(null);
 
       const tx = await pool.redeemUnitViaFlatMoney(
         withdrawAmountStr,
