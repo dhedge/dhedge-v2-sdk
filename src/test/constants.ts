@@ -43,13 +43,15 @@ export const TEST_POOL = {
   [Network.OPTIMISM]: "0x12573bfdf764ab9d52aca20e2827497a66829716",
   [Network.ARBITRUM]: "0x0b5f6591c8eb23e5a68102d3d39ebbb464ee5c14",
   [Network.BASE]: "0x4842b42F68524383F609aa46eAfc18c1459cE3cD",
-  [Network.ETHEREUM]: "0xe8e74f664d2d6a919a18b911990db0979789b6f7"
+  [Network.ETHEREUM]: "0xe8e74f664d2d6a919a18b911990db0979789b6f7",
+  [Network.PLASMA]: "0xdad21646ebb0997eb59de1f6a68a67059daf4c31"
 };
 
 export const CONTRACT_ADDRESS = {
   [Network.POLYGON]: {
     USDC: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
     USDT: "",
+    USDE: "",
     SUSD: "",
     SWETH: "",
     WETH: "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619",
@@ -71,6 +73,7 @@ export const CONTRACT_ADDRESS = {
   [Network.OPTIMISM]: {
     USDC: "0x0b2c639c533813f4aa9d7837caf62653d097ff85",
     USDT: "",
+    USDE: "",
     SWETH: "",
     SUSD: "0x8c6f28f2f1a3c87f0f938b96d27520d9751ec8d9",
     WETH: "0x4200000000000000000000000000000000000006",
@@ -95,6 +98,7 @@ export const CONTRACT_ADDRESS = {
     USDC: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
     USDT: "",
     SUSD: "",
+    USDE: "",
     SWETH: "0xbc011A12Da28e8F0f528d9eE5E7039E22F91cf18",
     WETH: "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
     WBTC: "0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f",
@@ -122,6 +126,7 @@ export const CONTRACT_ADDRESS = {
     USDC: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
     USDT: "0xfde4c96c8593536e31f229ea8f37b2ada2699bb2",
     SUSD: "",
+    USDE: "",
     WETH: "0x4200000000000000000000000000000000000006",
     WBTC: "",
     SWETH: "",
@@ -143,6 +148,7 @@ export const CONTRACT_ADDRESS = {
     USDC: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
     USDT: "",
     SUSD: "",
+    USDE: "0x4c9edd5852cd905f086c759e8383e09bff1e68b3",
     WETH: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
     WBTC: "",
     SWETH: "",
@@ -159,6 +165,12 @@ export const CONTRACT_ADDRESS = {
     FLUID_WETH: "",
     TOROS: "",
     UNIT: ""
+  },
+  [Network.PLASMA]: {
+    USDC: "",
+    WETH: "0x9895d81bb462a195b4922ed7de0e3acd007c32cb",
+    USDT: "0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb",
+    USDE: "0x5d3a1ff2b6bab83b63cd9ad0787074081a52ef34"
   }
 };
 
@@ -169,7 +181,8 @@ export const USDC_BALANCEOF_SLOT = {
   [Network.ARBITRUM]: 9,
   [Network.POLYGON]: 0,
   [Network.BASE]: 9,
-  [Network.ETHEREUM]: 9
+  [Network.ETHEREUM]: 9,
+  [Network.PLASMA]: 9
 };
 
 export const WETH_BALANCEOF_SLOT = {
@@ -177,5 +190,6 @@ export const WETH_BALANCEOF_SLOT = {
   [Network.ARBITRUM]: 51,
   [Network.POLYGON]: 0,
   [Network.BASE]: 0,
-  [Network.ETHEREUM]: 3
+  [Network.ETHEREUM]: 3,
+  [Network.PLASMA]: 3
 };

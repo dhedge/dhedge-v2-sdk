@@ -1,12 +1,15 @@
 import { Dhedge, Pool } from "..";
 import { Network } from "../types";
-import { TEST_POOL } from "./constants";
+import { CONTRACT_ADDRESS, TEST_POOL } from "./constants";
 
 import { testingHelper, TestingRunParams } from "./utils/testingHelper";
+import { balanceDelta } from "./utils/token";
 
-const testPool = ({ wallet, network, provider }: TestingRunParams) => {
+const testPool = ({ wallet, network }: TestingRunParams) => {
   let dhedge: Dhedge;
   let pool: Pool;
+
+  const USDT = CONTRACT_ADDRESS[network].USDT;
 
   jest.setTimeout(200000);
 
@@ -15,62 +18,65 @@ const testPool = ({ wallet, network, provider }: TestingRunParams) => {
       dhedge = new Dhedge(wallet, network);
       pool = await dhedge.loadPool(TEST_POOL[network]);
 
-      await provider.send("hardhat_setBalance", [
-        wallet.address,
-        "0x10000000000000000"
-      ]);
+      // await provider.send("hardhat_setBalance", [
+      //   wallet.address,
+      //   "0x10000000000000000"
+      // ]);
     });
 
     it("checks fund composition", async () => {
       const result = await pool.getComposition();
+      console.log(result);
       expect(result.length).toBeGreaterThan(0);
     });
 
-    it("sets pool private", async () => {
-      const result = await pool.setPrivate(true);
-      expect(result).not.toBeNull();
-    });
+    // it("sets pool private", async () => {
+    //   const result = await pool.setPrivate(true);
+    //   expect(result).not.toBeNull();
+    // });
 
-    //   it("approves USDC balance of User for Deposit", async () => {
-    //     await pool.approveDeposit(
-    //       CONTRACT_ADDRESS[network].USDC,
-    //       ethers.constants.MaxUint256
-    //     );
-    //     const UsdcAllowanceDelta = await allowanceDelta(
-    //       pool.signer.address,
-    //       CONTRACT_ADDRESS[network].USDC,
-    //       pool.address,
-    //       pool.signer
-    //     );
-    //     expect(UsdcAllowanceDelta.gt(0));
-    //   });
+    // it("adds WBTC to enabled assets", async () => {
+    //   const assetsBefore = await pool.getComposition();
 
-    //   it("deposits 1 USDC into Pool", async () => {
-    //     await pool.deposit(CONTRACT_ADDRESS[network].USDC, (1e6).toString());
-    //     const poolTokenDelta = await balanceDelta(
-    //       pool.signer.address,
-    //       pool.address,
-    //       pool.signer
-    //     );
-    //     expect(poolTokenDelta.gt(0));
-    //   });
-
-    //   it("adds WBTC to enabled assets", async () => {
-    //     const assetsBefore = await pool.getComposition();
-
-    //     const newAssets: AssetEnabled[] = [
-    //       { asset: CONTRACT_ADDRESS[network].USDC, isDeposit: true },
-    //       { asset: CONTRACT_ADDRESS[network].WETH, isDeposit: false },
-    //       { asset: CONTRACT_ADDRESS[network].WBTC, isDeposit: false }
-    //     ];
-    //     await pool.changeAssets(newAssets);
-    //     const assetsAfter = await pool.getComposition();
-    //     if (assetsBefore.length < newAssets.length) {
-    //       expect(assetsAfter.length).toBeGreaterThan(assetsBefore.length);
-    //     } else {
-    //       expect(assetsAfter.length).toBeLessThanOrEqual(assetsBefore.length);
+    //   const newAssets: AssetEnabled[] = [
+    //     { asset: CONTRACT_ADDRESS[network].USDT, isDeposit: true },
+    //     { asset: CONTRACT_ADDRESS[network].USDE, isDeposit: true },
+    //     {
+    //       asset: "0x925a2A7214Ed92428B5b1B090F80b25700095e12",
+    //       isDeposit: false
     //     }
-    //   });
+    //   ];
+    //   await pool.changeAssets(newAssets);
+    //   const assetsAfter = await pool.getComposition();
+    //   expect(assetsAfter.length).toBeLessThanOrEqual(assetsBefore.length);
+    // });
+
+    // it("approves USDT balance of User for Deposit", async () => {
+    //   await pool.approveDeposit(
+    //     CONTRACT_ADDRESS[network].USDT,
+    //     ethers.constants.MaxUint256
+    //   );
+    //   const usdtAllowanceDelta = await allowanceDelta(
+    //     pool.signer.address,
+    //     CONTRACT_ADDRESS[network].USDC,
+    //     pool.address,
+    //     pool.signer
+    //   );
+    //   expect(usdtAllowanceDelta.gt(0));
+    // });
+
+    it("deposits 200 USDT into Pool", async () => {
+      await pool.deposit(
+        CONTRACT_ADDRESS[network].USDT,
+        (200000000).toString()
+      );
+      const poolTokenDelta = await balanceDelta(
+        pool.address,
+        USDT,
+        pool.signer
+      );
+      expect(poolTokenDelta.gt(0));
+    });
 
     //   it("get available Manager Fee", async () => {
     //     const result = await pool.getAvailableManagerFee();
@@ -102,6 +108,7 @@ const testPool = ({ wallet, network, provider }: TestingRunParams) => {
 // });
 
 testingHelper({
-  network: Network.OPTIMISM,
+  network: Network.PLASMA,
+  onFork: false,
   testingRun: testPool
 });

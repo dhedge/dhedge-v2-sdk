@@ -33,7 +33,10 @@ export class Dhedge {
    * @param {string} poolName Pool name
    * @param {string} symbol Token symbol
    * @param {tuple[]} supportedAssets Enabled assets to trade
-   * @param {number|BigNumber} managerFeeNumerator Manger fee in percent
+   * @param {number|BigNumber} performanceFeeNumerator Performance fee in percent
+   * @param {number|BigNumber} managerFeeNumerator Manager fee in percent
+   * @param {number|BigNumber} entryFeeNumerator Entry fee in percent
+   * @param {number|BigNumber} exitFeeNumerator Exit fee in percent
    * @param {any} options Transaction options
    * @returns {Pool} Created Pool
    */
@@ -42,7 +45,10 @@ export class Dhedge {
     poolName: string,
     symbol: string,
     supportedAssets: SupportedAsset[],
-    managerFeeNumerator = 20,
+    performanceFeeNumerator = 0,
+    managerFeeNumerator = 0,
+    entryFeeNumerator = 0,
+    exitFeeNumerator = 0,
     options: any = null
   ): Promise<Pool> {
     const pool = await this.factory.createFund(
@@ -51,7 +57,10 @@ export class Dhedge {
       managerName,
       poolName,
       symbol,
+      performanceFeeNumerator * 100,
       managerFeeNumerator * 100,
+      entryFeeNumerator * 100,
+      exitFeeNumerator * 100,
       supportedAssets,
       options
     );

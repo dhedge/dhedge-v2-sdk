@@ -8,7 +8,8 @@ export const networkPortMap = {
   [Network.OPTIMISM]: 8544,
   [Network.ARBITRUM]: 8540,
   [Network.BASE]: 8546,
-  [Network.ETHEREUM]: 8547
+  [Network.ETHEREUM]: 8547,
+  [Network.PLASMA]: 8548
 };
 
 export const getWalletData = (

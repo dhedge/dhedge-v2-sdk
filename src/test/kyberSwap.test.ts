@@ -3,93 +3,82 @@
 import { Dhedge, Pool } from "..";
 
 import { Dapp, Network } from "../types";
-import { CONTRACT_ADDRESS, MAX_AMOUNT } from "./constants";
-import {
-  TestingRunParams,
-  setUSDCAmount,
-  testingHelper,
-  wait
-} from "./utils/testingHelper";
+import { CONTRACT_ADDRESS, MAX_AMOUNT, TEST_POOL } from "./constants";
+import { TestingRunParams, testingHelper, wait } from "./utils/testingHelper";
 
-import BigNumber from "bignumber.js";
 import { allowanceDelta, balanceDelta } from "./utils/token";
 import { routerAddress } from "../config";
-import { getTxOptions } from "./txOptions";
 
-const testKyberSwap = ({ wallet, network, provider }: TestingRunParams) => {
-  const USDC = CONTRACT_ADDRESS[network].USDC;
-  const WETH = CONTRACT_ADDRESS[network].WETH;
+const testKyberSwap = ({ wallet, network }: TestingRunParams) => {
+  const USDT = CONTRACT_ADDRESS[network].USDT;
+  const USDE = CONTRACT_ADDRESS[network].USDE;
 
   let dhedge: Dhedge;
   let pool: Pool;
   jest.setTimeout(100000);
 
-  describe(`pool on ${network}`, () => {
+  describe(`kyberswap on ${network}`, () => {
     beforeAll(async () => {
       dhedge = new Dhedge(wallet, network);
-      pool = await dhedge.loadPool(dhedge.signer.address, false);
+      pool = await dhedge.loadPool(TEST_POOL[network]);
       // top up gas
-      await provider.send("hardhat_setBalance", [
-        wallet.address,
-        "0x10000000000000000"
-      ]);
-      await provider.send("evm_mine", []);
-      // top up USDC
-      await setUSDCAmount({
-        amount: new BigNumber(2).times(1e6).toFixed(0),
-        userAddress: pool.address,
-        network,
-        provider
-      });
+      // await provider.send("hardhat_setBalance", [
+      //   wallet.address,
+      //   "0x10000000000000000"
+      // ]);
+      // await provider.send("evm_mine", []);
+      // // top up USDC
+      // await setUSDCAmount({
+      //   amount: new BigNumber(2).times(1e6).toFixed(0),
+      //   userAddress: pool.address,
+      //   network,
+      //   provider
+      // });
     });
 
-    it("approves unlimited USDC on KyberSwap", async () => {
-      await pool.approve(Dapp.KYBERSWAP, USDC, MAX_AMOUNT);
-      const usdcAllowanceDelta = await allowanceDelta(
+    it("approves unlimited USDT on KyberSwap", async () => {
+      await pool.approve(Dapp.KYBERSWAP, USDT, MAX_AMOUNT);
+      const usdtAllowanceDelta = await allowanceDelta(
         pool.address,
-        USDC,
+        USDT,
         routerAddress[network]["kyberswap"]!,
         pool.signer
       );
-      await expect(usdcAllowanceDelta.gt(0));
+      await expect(usdtAllowanceDelta.gt(0));
     });
 
-    it("gets only amount and txData for 2 USDC into WETH on KyberSwap", async () => {
+    it("gets only amount and txData for 2 USDT into WETH on KyberSwap", async () => {
+      const usdtBalance = await pool.utils.getBalance(USDT, pool.address);
       const result = await pool.trade(
         Dapp.KYBERSWAP,
-        USDC,
-        WETH,
-        "2000000",
+        USDT,
+        USDE,
+        usdtBalance,
         1,
-        await getTxOptions(network),
+        null,
         { estimateGas: false, onlyGetTxData: true }
       );
       expect(result.txData).not.toBeNull();
       expect(result.minAmountOut).not.toBeNull();
     });
 
-    it("trades 2 USDC into WETH on KyberSwap", async () => {
+    it("trades USDT balance into USDE on KyberSwap", async () => {
       await wait(1);
-      await pool.trade(
-        Dapp.KYBERSWAP,
-        USDC,
-        WETH,
-        "2000000",
-        0.5,
-        await getTxOptions(network)
-      );
-      const wethBalanceDelta = await balanceDelta(
+      const usdtBalance = await pool.utils.getBalance(USDT, pool.address);
+      await pool.trade(Dapp.KYBERSWAP, USDT, USDE, usdtBalance, 1);
+      const usdeBalanceDelta = await balanceDelta(
         pool.address,
-        WETH,
+        USDE,
         pool.signer
       );
-      expect(wethBalanceDelta.gt(0));
+      expect(usdeBalanceDelta.gt(0));
     });
   });
 };
 
 testingHelper({
-  network: Network.OPTIMISM,
+  network: Network.PLASMA,
+  onFork: false,
   testingRun: testKyberSwap
 });
 
