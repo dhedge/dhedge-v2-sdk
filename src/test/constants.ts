@@ -182,7 +182,7 @@ export const USDC_BALANCEOF_SLOT = {
   [Network.POLYGON]: 0,
   [Network.BASE]: 9,
   [Network.ETHEREUM]: 9,
-  [Network.PLASMA]: 9
+  [Network.PLASMA]: 9 //Currently no USDC on Plasma
 };
 
 export const WETH_BALANCEOF_SLOT = {
@@ -191,5 +191,5 @@ export const WETH_BALANCEOF_SLOT = {
   [Network.POLYGON]: 0,
   [Network.BASE]: 0,
   [Network.ETHEREUM]: 3,
-  [Network.PLASMA]: 3
+  [Network.PLASMA]: 1
 };
