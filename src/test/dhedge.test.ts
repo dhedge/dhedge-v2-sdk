@@ -1,49 +1,32 @@
 import { Dhedge } from "..";
-import { factoryAddress } from "../config";
 import { Network } from "../types";
 
-import { wallet } from "./wallet";
+import { testingHelper, TestingRunParams } from "./utils/testingHelper";
 
-const myPool = "0x279ac4c05154fd72a636fce1bc25c50966141fd0";
-// const usdc = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174";
-// const weth = "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619";
+const testDhedge = ({ wallet, network }: TestingRunParams) => {
+  let dhedge: Dhedge;
 
-// const options = {
-//   gasPrice: ethers.utils.parseUnits("40", "gwei")
-// };
+  jest.setTimeout(200000);
 
-jest.setTimeout(900000);
+  describe(`dHEDGE on ${network}`, () => {
+    beforeAll(async () => {
+      dhedge = new Dhedge(wallet, network);
+    });
 
-let dhedge: Dhedge;
-
-describe("dhedge", () => {
-  beforeAll(() => {
-    dhedge = new Dhedge(wallet, Network.POLYGON);
+    it("create a pool", async () => {
+      const pool = await dhedge.createPool("Test", "Test", "TEST", [
+        ["0x5d3a1ff2b6bab83b63cd9ad0787074081a52ef34", true],
+        ["0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb", false],
+        ["0x925a2A7214Ed92428B5b1B090F80b25700095e12", false]
+      ]);
+      console.log(pool.address);
+      expect(pool.poolLogic.address).toBe(pool.address);
+    });
   });
+};
 
-  it("loads factory", () => {
-    const factory = dhedge.factory;
-    expect(factory.address).toBe(factoryAddress[dhedge.network]);
-  });
-
-  it("loads a pool by address", async () => {
-    const pool = await dhedge.loadPool(myPool);
-    expect(pool.poolLogic.address).toBe(myPool);
-  });
-
-  // it("create a pool", async () => {
-  //   const pool = await dhedge.createPool(
-  //     "Batman",
-  //     "Gotham Pool",
-  //     "DHHH",
-  //     [
-  //       [usdc, true],
-  //       [weth, true]
-  //     ],
-  //     25,
-  //     options
-  //   );
-  //   console.log(pool.address);
-  //   expect(pool.poolLogic.address).toBe(pool.address);
-  // });
+testingHelper({
+  network: Network.PLASMA,
+  onFork: false,
+  testingRun: testDhedge
 });

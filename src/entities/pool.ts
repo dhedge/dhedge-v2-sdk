@@ -86,6 +86,7 @@ import {
 import { getOdosSwapTxData } from "../services/odos";
 import { getPendleSwapTxData } from "../services/pendle";
 import { getCompleteWithdrawalTxData } from "../services/toros/completeWithdrawal";
+import { getKyberSwapTxData } from "../services/kyberSwap";
 
 export class Pool {
   public readonly poolLogic: Contract;
@@ -437,6 +438,15 @@ export class Pool {
         break;
       case Dapp.PENDLE:
         ({ swapTxData, minAmountOut } = await getPendleSwapTxData(
+          this,
+          assetFrom,
+          assetTo,
+          amountIn,
+          slippage
+        ));
+        break;
+      case Dapp.KYBERSWAP:
+        ({ swapTxData, minAmountOut } = await getKyberSwapTxData(
           this,
           assetFrom,
           assetTo,
