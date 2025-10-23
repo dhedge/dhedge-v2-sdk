@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Contract, ethers, Wallet, BigNumber } from "ethers";
+import { Contract, ethers, Wallet, BigNumber, BigNumberish } from "ethers";
 
 import IERC20 from "../abi/IERC20.json";
 
@@ -1022,6 +1022,31 @@ export class Pool {
       );
     }
     const tx = await this.managerLogic.setPoolPrivate(_private, options);
+    return tx;
+  }
+
+  /**
+   * Sets max supply cap for a pool
+   * @param {BigNumberish} _maxSupplyCapD18 Max supply cap with 18 decimals
+   * @param {any} options Transaction options
+   * @param {boolean} estimateGas Simulate/estimate gas
+   * @returns {Promise<any>} Transaction
+   */
+  async setMaxCap(
+    _maxSupplyCapD18: BigNumberish,
+    options: any = null,
+    estimateGas = false
+  ): Promise<any> {
+    if (estimateGas) {
+      return await this.managerLogic.estimateGas.setMaxSupplyCap(
+        _maxSupplyCapD18,
+        options
+      );
+    }
+    const tx = await this.managerLogic.setMaxSupplyCap(
+      _maxSupplyCapD18,
+      options
+    );
     return tx;
   }
 
