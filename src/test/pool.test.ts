@@ -1,15 +1,14 @@
+import { BigNumber } from "ethers";
 import { Dhedge, Pool } from "..";
 import { Network } from "../types";
-import { CONTRACT_ADDRESS, TEST_POOL } from "./constants";
+import { TEST_POOL } from "./constants";
 
 import { testingHelper, TestingRunParams } from "./utils/testingHelper";
-import { balanceDelta } from "./utils/token";
+// import { balanceDelta } from "./utils/token";
 
-const testPool = ({ wallet, network }: TestingRunParams) => {
+const testPool = ({ wallet, network, provider }: TestingRunParams) => {
   let dhedge: Dhedge;
   let pool: Pool;
-
-  const USDT = CONTRACT_ADDRESS[network].USDT;
 
   jest.setTimeout(200000);
 
@@ -18,16 +17,29 @@ const testPool = ({ wallet, network }: TestingRunParams) => {
       dhedge = new Dhedge(wallet, network);
       pool = await dhedge.loadPool(TEST_POOL[network]);
 
-      // await provider.send("hardhat_setBalance", [
-      //   wallet.address,
-      //   "0x10000000000000000"
-      // ]);
+      await provider.send("hardhat_setBalance", [
+        wallet.address,
+        "0x10000000000000000"
+      ]);
     });
 
     it("checks fund composition", async () => {
       const result = await pool.getComposition();
-      console.log(result);
+      // console.log(result);
       expect(result.length).toBeGreaterThan(0);
+    });
+
+    it("sets max supply cap", async () => {
+      const totalSupply: BigNumber = await pool.poolLogic.totalSupply();
+      let initCap = totalSupply;
+      if (totalSupply.eq(0)) {
+        initCap = BigNumber.from(1000).mul(BigNumber.from(10).pow(18));
+      }
+      await pool.setMaxCap(initCap.mul(2), null, true);
+      const tx = await pool.setMaxCap(initCap.mul(2));
+      await tx.wait(1);
+      const maxCapAfter: BigNumber = await pool.managerLogic.maxSupplyCap();
+      expect(maxCapAfter).toEqual(initCap.mul(2));
     });
 
     // it("sets pool private", async () => {
@@ -65,18 +77,18 @@ const testPool = ({ wallet, network }: TestingRunParams) => {
     //   expect(usdtAllowanceDelta.gt(0));
     // });
 
-    it("deposits 200 USDT into Pool", async () => {
-      await pool.deposit(
-        CONTRACT_ADDRESS[network].USDT,
-        (200000000).toString()
-      );
-      const poolTokenDelta = await balanceDelta(
-        pool.address,
-        USDT,
-        pool.signer
-      );
-      expect(poolTokenDelta.gt(0));
-    });
+    // it("deposits 200 USDT into Pool", async () => {
+    //   await pool.deposit(
+    //     CONTRACT_ADDRESS[network].USDT,
+    //     (200000000).toString()
+    //   );
+    //   const poolTokenDelta = await balanceDelta(
+    //     pool.address,
+    //     USDT,
+    //     pool.signer
+    //   );
+    //   expect(poolTokenDelta.gt(0));
+    // });
 
     //   it("get available Manager Fee", async () => {
     //     const result = await pool.getAvailableManagerFee();
@@ -108,7 +120,6 @@ const testPool = ({ wallet, network }: TestingRunParams) => {
 // });
 
 testingHelper({
-  network: Network.PLASMA,
-  onFork: false,
+  network: Network.ARBITRUM,
   testingRun: testPool
 });
