@@ -20,7 +20,10 @@ export async function getKyberSwapTxData(
     const quoteResult = await axios.get(
       `${kyberBaseUrl}/${pool.network}/api/v1/routes`,
       {
-        params
+        params,
+        headers: {
+          "x-client-id": "dHEDGE"
+        }
       }
     );
 
@@ -33,7 +36,12 @@ export async function getKyberSwapTxData(
 
     const buildResult = await axios.post(
       `${kyberBaseUrl}/${pool.network}/api/v1/route/build`,
-      buildParams
+      buildParams,
+      {
+        headers: {
+          "x-client-id": "dHEDGE"
+        }
+      }
     );
 
     return {
