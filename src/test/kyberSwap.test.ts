@@ -3,7 +3,7 @@
 import { Dhedge, Pool } from "..";
 
 import { Dapp, Network } from "../types";
-import { CONTRACT_ADDRESS, MAX_AMOUNT } from "./constants";
+import { CONTRACT_ADDRESS, MAX_AMOUNT, TEST_POOL } from "./constants";
 import {
   TestingRunParams,
   setUSDCAmount,
@@ -11,10 +11,9 @@ import {
   wait
 } from "./utils/testingHelper";
 
-import BigNumber from "bignumber.js";
 import { allowanceDelta, balanceDelta } from "./utils/token";
 import { routerAddress } from "../config";
-import { getTxOptions } from "./txOptions";
+import BigNumber from "bignumber.js";
 
 const testKyberSwap = ({ wallet, network, provider }: TestingRunParams) => {
   const USDC = CONTRACT_ADDRESS[network].USDC;
@@ -24,10 +23,10 @@ const testKyberSwap = ({ wallet, network, provider }: TestingRunParams) => {
   let pool: Pool;
   jest.setTimeout(100000);
 
-  describe(`pool on ${network}`, () => {
+  describe(`kyberswap on ${network}`, () => {
     beforeAll(async () => {
       dhedge = new Dhedge(wallet, network);
-      pool = await dhedge.loadPool(dhedge.signer.address, false);
+      pool = await dhedge.loadPool(TEST_POOL[network]);
       // top up gas
       await provider.send("hardhat_setBalance", [
         wallet.address,
@@ -55,29 +54,24 @@ const testKyberSwap = ({ wallet, network, provider }: TestingRunParams) => {
     });
 
     it("gets only amount and txData for 2 USDC into WETH on KyberSwap", async () => {
+      const usdcBalance = await pool.utils.getBalance(USDC, pool.address);
       const result = await pool.trade(
         Dapp.KYBERSWAP,
         USDC,
         WETH,
-        "2000000",
+        usdcBalance,
         1,
-        await getTxOptions(network),
+        null,
         { estimateGas: false, onlyGetTxData: true }
       );
       expect(result.txData).not.toBeNull();
       expect(result.minAmountOut).not.toBeNull();
     });
 
-    it("trades 2 USDC into WETH on KyberSwap", async () => {
+    it("trades USDC balance into WETH on KyberSwap", async () => {
       await wait(1);
-      await pool.trade(
-        Dapp.KYBERSWAP,
-        USDC,
-        WETH,
-        "2000000",
-        0.5,
-        await getTxOptions(network)
-      );
+      const usdcBalance = await pool.utils.getBalance(USDC, pool.address);
+      await pool.trade(Dapp.KYBERSWAP, USDC, WETH, usdcBalance, 1);
       const wethBalanceDelta = await balanceDelta(
         pool.address,
         WETH,
@@ -88,15 +82,16 @@ const testKyberSwap = ({ wallet, network, provider }: TestingRunParams) => {
   });
 };
 
+// testingHelper({
+//   network: Network.PLASMA,
+//   onFork: false,
+//   testingRun: testKyberSwap
+// });
+
 testingHelper({
-  network: Network.OPTIMISM,
+  network: Network.ARBITRUM,
   testingRun: testKyberSwap
 });
-
-// testingHelper({
-//   network: Network.ARBITRUM,
-//   testingRun: testOdos
-// });
 
 // testingHelper({
 //   network: Network.POLYGON,

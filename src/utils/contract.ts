@@ -4,6 +4,7 @@ import set from "lodash/set";
 import { Interface } from "@ethersproject/abi";
 import { multiCallAddress } from "../config";
 import { ethers, Network, Pool, SDKOptions } from "..";
+import { Signer } from "ethers";
 
 export async function call(
   provider: ethers.Signer,
@@ -95,14 +96,29 @@ export class Multicaller {
 }
 
 const getGasEstimateData = async (
+  pool: Pool,
   estimateFunc: ethers.ContractFunction<ethers.BigNumber>,
   txInfoData: { to: string; txData: string; minAmountOut: any },
-  txOptions: any = {}
+  txOptions: any = {},
+  sdkOptions: SDKOptions
 ) => {
   let gas = null;
   let gasEstimationError = null;
   try {
-    gas = await estimateFunc(txInfoData.to, txInfoData.txData, txOptions);
+    if (
+      !pool.isDhedge ||
+      (!isSdkOptionsBoolean(sdkOptions) && sdkOptions.useTraderAddressAsFrom)
+    ) {
+      // for pool.signer.estimateGas
+      gas = await (estimateFunc as Signer["estimateGas"])({
+        to: txInfoData.to,
+        data: txInfoData.txData,
+        ...txOptions
+      });
+    } else {
+      // for pool.poolLogic.estimateGas.execTransaction
+      gas = await estimateFunc(txInfoData.to, txInfoData.txData, txOptions);
+    }
   } catch (e) {
     gasEstimationError = e;
   }
@@ -144,23 +160,13 @@ export const getPoolTxOrGasEstimate = async (
       sdkOptions === true ||
       (!isSdkOptionsBoolean(sdkOptions) && sdkOptions.estimateGas)
     ) {
-      // Direct approach for signer.estimateGas
-      let gas = null;
-      let gasEstimationError = null;
-      try {
-        gas = await pool.signer.estimateGas({
-          to: txInfoData.to,
-          data: txInfoData.txData,
-          ...txOptions
-        });
-      } catch (e) {
-        gasEstimationError = e;
-      }
-      return {
-        gas,
-        gasEstimationError,
-        ...txInfoData
-      };
+      return await getGasEstimateData(
+        pool,
+        pool.signer.estimateGas.bind(pool.signer),
+        txInfoData,
+        txOptions,
+        sdkOptions
+      );
     } else {
       return await pool.signer.sendTransaction({
         to: txInfoData.to,
@@ -174,9 +180,11 @@ export const getPoolTxOrGasEstimate = async (
       (!isSdkOptionsBoolean(sdkOptions) && sdkOptions.estimateGas)
     ) {
       return await getGasEstimateData(
+        pool,
         pool.poolLogic.estimateGas.execTransaction,
         txInfoData,
-        txOptions
+        txOptions,
+        sdkOptions
       );
     } else {
       return await pool.poolLogic.execTransaction(
