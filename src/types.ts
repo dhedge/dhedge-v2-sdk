@@ -33,7 +33,7 @@ export enum Dapp {
   COMPOUNDV3 = "compoundV3",
   ODOS = "odos",
   PENDLE = "pendle",
-  KYBERSWAP = "kyberswap"
+  KYBERSWAP = "kyberswap",
   DYTM = "dytm"
 }
 
