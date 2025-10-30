@@ -8,7 +8,7 @@ import PTAbi from "../../abi/pendle/PT.json";
 import SYAbi from "../../abi/pendle/SY.json";
 import BigNumber from "bignumber.js";
 
-const pendleBaseUrl = "https://api-v2.pendle.finance/core/v1";
+const pendleBaseUrl = "https://api-v2.pendle.finance/core";
 
 export async function getPendleSwapTxData(
   pool: Pool,
@@ -41,7 +41,7 @@ export async function getPendleSwapTxData(
   const market = await getMarket(pool, tokenIn, tokenOut);
   try {
     const swapResult = await axios.get(
-      `${pendleBaseUrl}/sdk/${
+      `${pendleBaseUrl}/v2/sdk/${
         networkChainIdMap[pool.network]
       }/markets/${market}/swap`,
       { params }
@@ -70,9 +70,10 @@ export async function getMarket(
   const networkId = networkChainIdMap[pool.network];
   let marketResult;
   try {
-    marketResult = await axios.get(
-      `${pendleBaseUrl}/${networkId}/markets/active`
-    );
+    const params = { isActive: true, chainId: networkId };
+    marketResult = await axios.get(`${pendleBaseUrl}/v1/markets/all`, {
+      params
+    });
   } catch (e) {
     console.error("Error in Pendle API request:", e);
     throw new ApiError("Pendle api request failed");
@@ -103,9 +104,10 @@ const checkExitPostExpPT = async (
   const networkId = networkChainIdMap[pool.network];
   let inactiveMarketResult;
   try {
-    inactiveMarketResult = await axios.get(
-      `${pendleBaseUrl}/${networkId}/markets/inactive`
-    );
+    const params = { isActive: false, chainId: networkId };
+    inactiveMarketResult = await axios.get(`${pendleBaseUrl}/v1/markets/all`, {
+      params
+    });
   } catch (e) {
     console.error("Error in Pendle API request:", e);
     throw new ApiError("Pendle api request failed");
