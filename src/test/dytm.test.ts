@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import BigNumber from "bignumber.js";
 import { Dhedge, Pool } from "..";
 import { Dapp, Network } from "../types";
@@ -10,10 +10,9 @@ import {
   testingHelper
 } from "./utils/testingHelper";
 import { allowanceDelta, balanceDelta } from "./utils/token";
-import { getWalletData } from "./wallet";
 import { routerAddress } from "../config";
 
-const testFluid = ({ network, provider }: TestingRunParams) => {
+const testDytm = ({ network, wallet, provider }: TestingRunParams) => {
   const USDC = CONTRACT_ADDRESS[network].USDC;
   const USDC_DEPOSIT_TOKEN =
     "904625697166532776746648322844000357707437986793529882676722159659208562737";
@@ -26,7 +25,6 @@ const testFluid = ({ network, provider }: TestingRunParams) => {
 
   describe(`[${network}] DYTM tests`, () => {
     beforeAll(async () => {
-      const { wallet } = getWalletData(network);
       // top up ETH (gas)
       await provider.send("hardhat_setBalance", [
         wallet.address,
@@ -80,7 +78,7 @@ const testFluid = ({ network, provider }: TestingRunParams) => {
     });
 
     it("borrows USDC from DYTM market", async () => {
-      await pool.borrow(Dapp.DYTM, USDC_BOORROW_TOKEN, (50 * 1e6).toString());
+      await pool.borrow(Dapp.DYTM, USDC_BOORROW_TOKEN, (1 * 1e6).toString());
 
       const usdcTokenDelta = await balanceDelta(
         pool.address,
@@ -91,7 +89,7 @@ const testFluid = ({ network, provider }: TestingRunParams) => {
     });
 
     it("repays USDC to DYTM market", async () => {
-      await pool.repay(Dapp.DYTM, USDC_BOORROW_TOKEN, (10 * 1e6).toString());
+      await pool.repay(Dapp.DYTM, USDC_BOORROW_TOKEN, (1 * 1e6).toString());
 
       const usdcTokenDelta = await balanceDelta(
         pool.address,
@@ -120,5 +118,5 @@ const testFluid = ({ network, provider }: TestingRunParams) => {
 
 testingHelper({
   network: Network.ARBITRUM,
-  testingRun: testFluid
+  testingRun: testDytm
 });

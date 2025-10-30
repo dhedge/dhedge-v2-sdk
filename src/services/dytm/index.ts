@@ -7,7 +7,7 @@ import { dytmContractAddresses } from "../../config";
 const iOffice = new ethers.utils.Interface(IOffice);
 const iDYTMPeriphery = new ethers.utils.Interface(IDYTMPeriphery);
 
-const getShares = async (
+export const getShares = async (
   pool: Pool,
   tokenId: string | ethers.BigNumber,
   amount: ethers.BigNumber | string
@@ -70,12 +70,13 @@ export const getDytmRepayTxData = async (
   asset: string,
   amount: ethers.BigNumber | string
 ): Promise<string> => {
-  const debtId = toDebtId(ethers.BigNumber.from(asset));
   return iOffice.encodeFunctionData("repay", [
     {
       account: ethers.BigNumber.from(pool.address), // uint256 (converted address)
       key: asset,
-      shares: await getShares(pool, debtId, amount),
+      withCollateralType: "0",
+      assets: amount,
+      shares: "0",
       extraData: "0x"
     }
   ]);
@@ -89,7 +90,8 @@ export const getDytmWithdrawTxData = async (
     {
       account: ethers.BigNumber.from(pool.address), // uint256 (converted address)
       tokenId: asset,
-      shares: await getShares(pool, asset, amount),
+      assets: amount,
+      shares: "0",
       receiver: pool.address,
       extraData: "0x"
     }

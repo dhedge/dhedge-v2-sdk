@@ -1,176 +1,191 @@
 [
-  {
-    "inputs": [
-      {
-        "components": [
-          {
-            "internalType": "AccountId",
-            "name": "account",
-            "type": "uint256"
-          },
-          {
-            "internalType": "ReserveKey",
-            "name": "key",
-            "type": "uint248"
-          },
-          {
-            "internalType": "address",
-            "name": "receiver",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "assets",
-            "type": "uint256"
-          },
-          {
-            "internalType": "bytes",
-            "name": "extraData",
-            "type": "bytes"
-          }
-        ],
-        "internalType": "struct BorrowParams",
-        "name": "params",
-        "type": "tuple"
-      }
-    ],
-    "name": "borrow",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "debtShares",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "components": [
-          {
-            "internalType": "AccountId",
-            "name": "account",
-            "type": "uint256"
-          },
-          {
-            "internalType": "ReserveKey",
-            "name": "key",
-            "type": "uint248"
-          },
-          {
-            "internalType": "uint256",
-            "name": "shares",
-            "type": "uint256"
-          },
-          {
-            "internalType": "bytes",
-            "name": "extraData",
-            "type": "bytes"
-          }
-        ],
-        "internalType": "struct RepayParams",
-        "name": "params",
-        "type": "tuple"
-      }
-    ],
-    "name": "repay",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "assetsRepaid",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "components": [
-          {
-            "internalType": "AccountId",
-            "name": "account",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "tokenId",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "assets",
-            "type": "uint256"
-          },
-          {
-            "internalType": "bytes",
-            "name": "extraData",
-            "type": "bytes"
-          }
-        ],
-        "internalType": "struct SupplyParams",
-        "name": "params",
-        "type": "tuple"
-      }
-    ],
-    "name": "supply",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "shares",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "components": [
-          {
-            "internalType": "AccountId",
-            "name": "account",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "tokenId",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "receiver",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "shares",
-            "type": "uint256"
-          },
-          {
-            "internalType": "bytes",
-            "name": "extraData",
-            "type": "bytes"
-          }
-        ],
-        "internalType": "struct WithdrawParams",
-        "name": "params",
-        "type": "tuple"
-      }
-    ],
-    "name": "withdraw",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "assets",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  }
+	{
+		"inputs": [
+			{
+				"components": [
+					{
+						"internalType": "AccountId",
+						"name": "account",
+						"type": "uint256"
+					},
+					{
+						"internalType": "ReserveKey",
+						"name": "key",
+						"type": "uint248"
+					},
+					{
+						"internalType": "address",
+						"name": "receiver",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "assets",
+						"type": "uint256"
+					},
+					{
+						"internalType": "bytes",
+						"name": "extraData",
+						"type": "bytes"
+					}
+				],
+				"internalType": "struct BorrowParams",
+				"name": "params",
+				"type": "tuple"
+			}
+		],
+		"name": "borrow",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "debtShares",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"components": [
+					{
+						"internalType": "AccountId",
+						"name": "account",
+						"type": "uint256"
+					},
+					{
+						"internalType": "ReserveKey",
+						"name": "key",
+						"type": "uint248"
+					},
+					{
+						"internalType": "enum TokenType",
+						"name": "withCollateralType",
+						"type": "uint8"
+					},
+					{
+						"internalType": "uint256",
+						"name": "assets",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "shares",
+						"type": "uint256"
+					},
+					{
+						"internalType": "bytes",
+						"name": "extraData",
+						"type": "bytes"
+					}
+				],
+				"internalType": "struct RepayParams",
+				"name": "params",
+				"type": "tuple"
+			}
+		],
+		"name": "repay",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "assetsRepaid",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"components": [
+					{
+						"internalType": "AccountId",
+						"name": "account",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "tokenId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "assets",
+						"type": "uint256"
+					},
+					{
+						"internalType": "bytes",
+						"name": "extraData",
+						"type": "bytes"
+					}
+				],
+				"internalType": "struct SupplyParams",
+				"name": "params",
+				"type": "tuple"
+			}
+		],
+		"name": "supply",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "shares",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"components": [
+					{
+						"internalType": "AccountId",
+						"name": "account",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "tokenId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "address",
+						"name": "receiver",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "assets",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "shares",
+						"type": "uint256"
+					},
+					{
+						"internalType": "bytes",
+						"name": "extraData",
+						"type": "bytes"
+					}
+				],
+				"internalType": "struct WithdrawParams",
+				"name": "params",
+				"type": "tuple"
+			}
+		],
+		"name": "withdraw",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "assets",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	}
 ]
