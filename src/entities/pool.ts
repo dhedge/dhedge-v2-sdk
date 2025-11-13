@@ -85,7 +85,7 @@ import {
 } from "../services/pancake/staking";
 import { getOdosSwapTxData } from "../services/odos";
 import { getPendleSwapTxData } from "../services/pendle";
-import { getCompleteWithdrawalTxData } from "../services/toros/completeWithdrawal";
+import { getCompleteWithdrawalTxData, TrackedAsset } from "../services/toros/completeWithdrawal";
 import {
   getDytmBorrowTxData,
   getDytmDepositTxData,
@@ -425,13 +425,13 @@ export class Pool {
         ]);
         break;
       case Dapp.TOROS:
-        swapTxData = await getEasySwapperTxData(
+        ({ swapTxData, minAmountOut } = await getEasySwapperTxData(
           this,
           assetFrom,
           assetTo,
           ethers.BigNumber.from(amountIn),
           slippage
-        );
+        ));
         break;
       case Dapp.ODOS:
         ({ swapTxData, minAmountOut } = await getOdosSwapTxData(
@@ -2086,6 +2086,7 @@ export class Pool {
    * @param {number} slippage Slippage tolerance in %
    * @param {any} options Transaction options
    * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @param {any} trackedAssets Tracked assets information (only for tx data generation)
    * @returns {Promise<any>} Transaction
    */
   async completeTorosWithdrawal(
@@ -2094,13 +2095,15 @@ export class Pool {
     options: any = null,
     sdkOptions: SDKOptions = {
       estimateGas: false
-    }
+    },
+    trackedAssets: TrackedAsset[] = []
   ): Promise<any> {
     const txData = await getCompleteWithdrawalTxData(
       this,
       destinationToken,
       slippage * 100,
-      false
+      false,
+      trackedAssets
     );
     const tx = await getPoolTxOrGasEstimate(
       this,

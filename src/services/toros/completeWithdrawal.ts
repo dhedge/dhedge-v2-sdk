@@ -21,8 +21,7 @@ const getSwapWithdrawData = async (
   pool: Pool,
   trackedAssets: TrackedAsset[],
   receiveToken: string,
-  slippage: number,
-  swapDestMinDestAmount: BigNumber
+  slippage: number
 ) => {
   const srcData = [];
   const routerKey = ethers.utils.formatBytes32String("ODOS_V2");
@@ -56,23 +55,27 @@ const getSwapWithdrawData = async (
     srcData,
     destData: {
       destToken: receiveToken,
-      minDestAmount: swapDestMinDestAmount.toString()
+      minDestAmount: "0"
     }
   };
 };
+
 export const createCompleteWithdrawalTxArguments = async (
   pool: Pool,
   receiveToken: string,
-  slippage: number
+  slippage: number,
+  _trackedAssets: TrackedAsset[]
 ): Promise<any> => {
   const easySwapper = new ethers.Contract(
     routerAddress[pool.network][Dapp.TOROS] as string,
     IEasySwapperV2,
     pool.signer
   );
-  const trackedAssets: TrackedAsset[] = await easySwapper.getTrackedAssets(
-    pool.address
-  );
+
+  let trackedAssets: TrackedAsset[] = _trackedAssets;
+  if (trackedAssets.length === 0) {
+    trackedAssets = await easySwapper.getTrackedAssets(pool.address);
+  }
 
   if (
     trackedAssets.length === 0 ||
@@ -169,8 +172,7 @@ export const createCompleteWithdrawalTxArguments = async (
     pool,
     swapTrackedAssets,
     receiveToken,
-    slippage,
-    estimatedMinReceiveAmount
+    slippage
   );
 
   return {
@@ -184,12 +186,14 @@ export const getCompleteWithdrawalTxData = async (
   pool: Pool,
   receiveToken: string,
   slippage: number,
-  useOnChainSwap: boolean
+  useOnChainSwap: boolean,
+  trackedAssets: TrackedAsset[]
 ): Promise<string> => {
   const completeWithdrawTxArguments = await createCompleteWithdrawalTxArguments(
     pool,
     receiveToken,
-    slippage
+    slippage,
+    trackedAssets
   );
 
   const isSwapNeeded = completeWithdrawTxArguments.isSwapNeeded;
