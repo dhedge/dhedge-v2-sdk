@@ -14,7 +14,7 @@ import { getSwapDataViaOdos, SWAPPER_ADDERSS } from "./swapData";
 
 export interface TrackedAsset {
   token: string;
-  balance: ethers.BigNumber;
+  balance: ethers.BigNumber | string;
 }
 
 const getSwapWithdrawData = async (
