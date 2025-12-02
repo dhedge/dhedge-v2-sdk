@@ -158,20 +158,6 @@ export const getInitWithdrawalTxData = async (
     useOnChainSwap
   );
   const iEasySwapperV2 = new ethers.utils.Interface(IEasySwapperV2);
-  const easySwapper = new ethers.Contract(
-    routerAddress[pool.network][Dapp.TOROS] as string, // EasySwapperV2 contract address
-    iEasySwapperV2,
-    pool.signer.provider
-  );
-
-  const {
-    trackedAssets
-  } = await easySwapper.callStatic.initWithdrawal(
-    torosAsset,
-    amountIn,
-    complexAssetsData,
-    { from: pool.address }
-  );
 
   return {
     swapTxData: iEasySwapperV2.encodeFunctionData("initWithdrawal", [
@@ -179,6 +165,6 @@ export const getInitWithdrawalTxData = async (
       amountIn,
       complexAssetsData
     ]),
-    minAmountOut: trackedAssets
+    minAmountOut: "0"
   };
 };
