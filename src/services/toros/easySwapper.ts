@@ -87,10 +87,13 @@ export async function getEasySwapperTxData(
     );
     const _minAmountOut = minAmountOut.mul(10000 - slippage * 100).div(10000);
     return {
-      swapTxData: iEasySwapperV2.encodeFunctionData(
-        "depositWithCustomCooldown",
-        [torosAsset, depositAsset, amountIn, _minAmountOut]
-      ),
+      //For DYTM testing on regular pool setting to deposit
+      swapTxData: iEasySwapperV2.encodeFunctionData("deposit", [
+        torosAsset,
+        depositAsset,
+        amountIn,
+        _minAmountOut
+      ]),
       minAmountOut: _minAmountOut
     };
   }
