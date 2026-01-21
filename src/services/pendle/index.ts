@@ -79,7 +79,9 @@ export async function getPendleMintTxData(
     );
     return {
       swapTxData: swapResult.data.routes[0].tx.data,
-      minAmountOut: swapResult.data.routes[0].outputs[0].amount
+      minAmountOut: swapResult.data.routes[0].outputs.filter(
+        (e: { token: string }) => e.token === pt.toLowerCase()
+      )[0].amount
     };
   } catch (e) {
     console.error("Error in Pendle API request:", e);
