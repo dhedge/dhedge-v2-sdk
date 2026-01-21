@@ -56,6 +56,39 @@ export async function getPendleSwapTxData(
   }
 }
 
+export async function getPendleMintTxData(
+  pool: Pool,
+  tokenIn: string,
+  pt: string,
+  amountIn: ethers.BigNumber | string,
+  slippage: number
+): Promise<{ swapTxData: string; minAmountOut: string | null }> {
+  const PTcontract = new ethers.Contract(pt, PTAbi, pool.signer);
+  const ytAddress = await PTcontract.YT();
+  const params = {
+    receiver: pool.address,
+    tokensIn: tokenIn,
+    tokensOut: `${pt},${ytAddress}`,
+    amountsIn: amountIn.toString(),
+    slippage: slippage / 100
+  };
+  try {
+    const swapResult = await axios.get(
+      `${pendleBaseUrl}/v2/sdk/${networkChainIdMap[pool.network]}/convert`,
+      { params }
+    );
+    return {
+      swapTxData: swapResult.data.routes[0].tx.data,
+      minAmountOut: swapResult.data.routes[0].outputs.filter(
+        (e: { token: string }) => e.token === pt.toLowerCase()
+      )[0].amount
+    };
+  } catch (e) {
+    console.error("Error in Pendle API request:", e);
+    throw new ApiError("Pendle api request failed");
+  }
+}
+
 const checkUnderlying = (market: any, token: string, networkId: number) => {
   if (market.underlyingAsset !== `${networkId}-${token.toLocaleLowerCase()}`) {
     throw new Error("Can only trade in or out of the underlying asset");

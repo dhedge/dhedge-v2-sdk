@@ -84,7 +84,7 @@ import {
   getPancakeUnStakeTxData
 } from "../services/pancake/staking";
 import { getOdosSwapTxData } from "../services/odos";
-import { getPendleSwapTxData } from "../services/pendle";
+import { getPendleMintTxData, getPendleSwapTxData } from "../services/pendle";
 import { getCompleteWithdrawalTxData } from "../services/toros/completeWithdrawal";
 import { getKyberSwapTxData } from "../services/kyberSwap";
 
@@ -2103,6 +2103,46 @@ export class Pool {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [routerAddress[this.network].toros, txData, options],
+      sdkOptions
+    );
+    return tx;
+  }
+
+  /**
+   * Mint PT and YT tokens on Pendle
+   * @param {string} assetFrom Asset to mint from (only underlying asset)
+   * @param {string} pt PT address
+   * @param {BigNumber | string} amountIn Amount underlying asset
+   * @param {number} slippage Slippage tolerance in %
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+  async mintPendle(
+    assetFrom: string,
+    pt: string,
+    amountIn: BigNumber | string,
+    slippage = 0.5,
+    options: any = null,
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
+  ): Promise<any> {
+    const { swapTxData, minAmountOut } = await getPendleMintTxData(
+      this,
+      assetFrom,
+      pt,
+      amountIn,
+      slippage
+    );
+    const tx = await getPoolTxOrGasEstimate(
+      this,
+      [
+        routerAddress[this.network][Dapp.PENDLE],
+        swapTxData,
+        options,
+        minAmountOut
+      ],
       sdkOptions
     );
     return tx;
