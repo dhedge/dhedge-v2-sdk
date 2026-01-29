@@ -1,6 +1,9 @@
 import axios from "axios";
 import BigNumber from "bignumber.js";
-import { odosBaseUrl } from "../odos";
+import { ethers } from "ethers";
+import { odosBaseUrl, SwapReferralInfo, SwapTokenInfo } from "../odos";
+import { networkChainIdMap, OdosSwapFeeRecipient } from "../../config";
+import OdosRouterV3Abi from "../../abi/odos/OdosRouterV3.json";
 
 export const SWAPPER_ADDERSS = "0x4F754e0F0924afD74980886b0B479Fa1D7C58D0D";
 
@@ -22,13 +25,19 @@ export const getSwapDataViaOdos = async ({
   from,
   slippage
 }: SwapParams): Promise<string> => {
-  let referralCode = 0; //  Defaults to 0 for unregistered activity.
-  if (
-    process.env.ODOS_REFERAL_CODE &&
-    Number(process.env.ODOS_REFERAL_CODE) > 0
-  ) {
-    referralCode = Number(process.env.ODOS_REFERAL_CODE);
+  if (!process.env.ODOS_API_KEY) {
+    throw new Error("ODOS_API_KEY is not set");
   }
+  const ODOS_API_KEY = process.env.ODOS_API_KEY;
+  const network = (Object.keys(networkChainIdMap) as Array<
+    keyof typeof networkChainIdMap
+  >).find(key => networkChainIdMap[key] === chainId);
+  if (!network) {
+    throw new Error(`Unsupported chainId: ${chainId}`);
+  }
+
+  const referralFeeBips = 2; // 2 basis points = 0.02%
+
   const quoteParams = {
     chainId: chainId,
     inputTokens: [
@@ -45,12 +54,20 @@ export const getSwapDataViaOdos = async ({
     ],
     slippageLimitPercent: new BigNumber(slippage).div(100).toString(), // Convert basis points to percentage
     userAddr: from,
-    referralCode
+    referralFee: referralFeeBips, // 0.02% fee
+    referralFeeRecipient: OdosSwapFeeRecipient[network],
+    compact: false
   };
   try {
     const quoteResult = await axios.post(
-      `${odosBaseUrl}/quote/v2`,
-      quoteParams
+      `${odosBaseUrl}/quote/v3`,
+      quoteParams,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": ODOS_API_KEY
+        }
+      }
     );
 
     const assembleParams = {
@@ -60,9 +77,48 @@ export const getSwapDataViaOdos = async ({
 
     const assembleResult = await axios.post(
       `${odosBaseUrl}/assemble`,
-      assembleParams
+      assembleParams,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": ODOS_API_KEY
+        }
+      }
     );
-    return assembleResult.data.transaction.data;
+
+    const txData = assembleResult.data.transaction.data;
+
+    // Decode the transaction data
+    const iface = new ethers.utils.Interface(OdosRouterV3Abi.abi);
+    const decodedData = iface.parseTransaction({ data: txData });
+
+    const tokenInfo = decodedData.args[0] as SwapTokenInfo;
+    const pathDefinition = decodedData.args[1] as string;
+    const executor = decodedData.args[2] as string;
+    const referralInfo = decodedData.args[3] as SwapReferralInfo;
+
+    if (
+      referralInfo.fee.eq(
+        ethers.BigNumber.from((referralFeeBips * 1e18) / 10000)
+      )
+    ) {
+      // Referral fee is already correct, return original txData
+      return txData;
+    }
+
+    // Create corrected referral info
+    const correctedTxData = iface.encodeFunctionData(decodedData.name, [
+      tokenInfo,
+      pathDefinition,
+      executor,
+      {
+        code: referralInfo.code,
+        fee: ethers.BigNumber.from((referralFeeBips * 1e18) / 10000), // align with referralFeeBips
+        feeRecipient: referralInfo.feeRecipient
+      }
+    ]);
+
+    return correctedTxData;
   } catch (e) {
     console.error("Error in Odos API request:", e);
     throw new Error("Swap api request of Odos failed");
