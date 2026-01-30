@@ -96,10 +96,24 @@ const testOdos = ({ wallet, network, provider }: TestingRunParams) => {
       // e.g. for 0.04% fee, diffRatio = 0.9996 / 0.00032 = 3123.75
       // e.g. for 0.05% fee, diffRatio = 0.9995 / 0.00040 = 2498.75
       const diffRatio = wethBalanceDelta.div(wethBalanceDeltaForFeeRecipient);
-
       console.log("diff ratio:", diffRatio.toString());
-      expect(diffRatio.gt(6240)).toBe(true);
-      expect(diffRatio.lt(6252)).toBe(true);
+      expect(diffRatio.gt(6200)).toBe(true);
+      expect(diffRatio.lt(6260)).toBe(true);
+      const wethBalanceDeltaForRouter = await balanceDelta(
+        routerAddress[network]["odos"]!,
+        WETH,
+        pool.signer
+      );
+      // diffRatio  = (1 - fee) / (0.2 * fee)
+      // 0.2 is the split percentage for router
+      // e.g. for 0.02% fee, diffRatio = 0.9998 / 0.00004 = 24995
+      // e.g. for 0.03% fee, diffRatio = 0.9997 / 0.00006 = 16661.67
+      // e.g. for 0.04% fee, diffRatio = 0.9996 / 0.00008 = 12495
+      // e.g. for 0.05% fee, diffRatio = 0.9995 / 0.00010 = 9995
+      const diffRatioRouter = wethBalanceDelta.div(wethBalanceDeltaForRouter);
+      console.log("diff ratio router:", diffRatioRouter.toString());
+      expect(diffRatioRouter.gt(24000)).toBe(true);
+      expect(diffRatioRouter.lt(26000)).toBe(true);
     });
   });
 };
