@@ -4,6 +4,7 @@ import { ApiError, ethers } from "../..";
 import { networkChainIdMap, OdosSwapFeeRecipient } from "../../config";
 import { Pool } from "../../entities";
 import OdosRouterV3Abi from "../../abi/odos/OdosRouterV3.json";
+import BigNumber from "bignumber.js";
 
 export const odosBaseUrl = "https://enterprise-api.odos.xyz/sor";
 
@@ -98,7 +99,7 @@ export async function getOdosSwapTxData(
     const referralInfo = decodedData.args[3] as SwapReferralInfo;
 
     if (
-      referralInfo.fee.eq(
+      referralInfo.fee.lte(
         ethers.BigNumber.from((referralFeeBips * 1e18) / 10000)
       )
     ) {
@@ -109,14 +110,29 @@ export async function getOdosSwapTxData(
       };
     }
 
+    const FEE_DENOM = new BigNumber(1e18);
+    const correctedFee = new BigNumber((referralFeeBips * 1e18) / 10000);
+    const factor = 1.1;
+    const correctedOutputQuote = new BigNumber(tokenInfo.outputQuote.toString())
+      .times(
+        FEE_DENOM.minus(correctedFee).div(
+          FEE_DENOM.minus(referralInfo.fee.toString())
+        )
+      )
+      .times(factor);
+
+    // example referralInfo.fee could be 0.0005 * 1e18 = 500000000000000, which is 0.05%
     // Create corrected referral info
     const correctedTxData = iface.encodeFunctionData(decodedData.name, [
-      tokenInfo,
+      {
+        ...tokenInfo,
+        outputQuote: correctedOutputQuote.toFixed(0)
+      },
       pathDefinition,
       executor,
       {
         code: referralInfo.code,
-        fee: ethers.BigNumber.from((referralFeeBips * 1e18) / 10000), // align with referralFeeBips
+        fee: correctedFee.toFixed(0), // align with referralFeeBips
         feeRecipient: referralInfo.feeRecipient
       }
     ]);
