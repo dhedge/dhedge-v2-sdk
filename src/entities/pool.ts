@@ -57,8 +57,8 @@ import { getLyraOptionTxData } from "../services/lyra/trade";
 import { getOptionPositions } from "../services/lyra/positions";
 import { getDeadline } from "../utils/deadline";
 import {
-  getFuturesChangePositionTxData,
-  getFuturesChangeMarginTxData
+  getFuturesChangeMarginTxData,
+  getFuturesChangePositionTxData
 } from "../services/futures";
 import { getFuturesCancelOrderTxData } from "../services/futures/trade";
 import { getOneInchSwapTxData } from "../services/oneInch";
@@ -87,6 +87,13 @@ import { getOdosSwapTxData } from "../services/odos";
 import { getPendleMintTxData, getPendleSwapTxData } from "../services/pendle";
 import { getCompleteWithdrawalTxData } from "../services/toros/completeWithdrawal";
 import { getKyberSwapTxData } from "../services/kyberSwap";
+import {
+  getDepositHyperliquidTxData,
+  getLimitOrderHyperliquidTxData,
+  getPerpToSpotHyperliquidTxData,
+  getWithdrawSpotHyperliquidTxData
+} from "../services/hyperliquid";
+import { CORE_WRITER_ADDRESS } from "../services/hyperliquid/constants";
 
 export class Pool {
   public readonly poolLogic: Contract;
@@ -2142,6 +2149,115 @@ export class Pool {
         swapTxData,
         options,
         minAmountOut
+      ],
+      sdkOptions
+    );
+    return tx;
+  }
+
+  /** Deposit USDC for Hyperliquid Perp trading
+   *
+   * @param {BigNumber | string } amount Amount to deposit
+   * @param {number} dexId DEX Id (default 0) (Main Perp DEX)
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+  async depositHyperliquid(
+    amount: BigNumber | string,
+    dexId = 0,
+    options: any = null,
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
+  ): Promise<any> {
+    const tx = await getPoolTxOrGasEstimate(
+      this,
+      [
+        routerAddress[this.network][Dapp.HYPERLIQUID],
+        getDepositHyperliquidTxData(dexId, amount),
+        options
+      ],
+      sdkOptions
+    );
+    return tx;
+  }
+
+  /** Move USDC from Perp to Spot on Hyperliquid
+   *
+   * @param {number} dexId DEX Id  (0 is Main Perp DEX)
+   * @param {BigNumber | string } amount Amount to deposit
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+  async perpToSpotHyperliquid(
+    dexId: number,
+    amount: BigNumber | string,
+    options: any = null,
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
+  ): Promise<any> {
+    const tx = await getPoolTxOrGasEstimate(
+      this,
+      [
+        CORE_WRITER_ADDRESS,
+        getPerpToSpotHyperliquidTxData(dexId, this.address, amount),
+        options
+      ],
+      sdkOptions
+    );
+    return tx;
+  }
+
+  /** Withdraw USDC from Hyperliquid Spot
+   *
+   * @param {BigNumber | string } amount Amount to withdraw
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+  async withdrawHyperliquid(
+    amount: BigNumber | string,
+    options: any = null,
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
+  ): Promise<any> {
+    const tx = await getPoolTxOrGasEstimate(
+      this,
+      [CORE_WRITER_ADDRESS, getWithdrawSpotHyperliquidTxData(amount), options],
+      sdkOptions
+    );
+    return tx;
+  }
+
+  /** Open a limit order on Hyperliquid
+   *  @param {number} assetId Asset id
+   * @param {BigNumber | string } value Value changed (positive for long, negative for short)
+   * @param {boolean} isLong Long or short
+   * @param {number } slippage Slippage tolerance in %
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+  async openMarketOrderHyperliquid(
+    assetId: number,
+    isLong: boolean,
+    value: number,
+    slippage = 0.5,
+    options: any = null,
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
+  ): Promise<any> {
+    const tx = await getPoolTxOrGasEstimate(
+      this,
+      [
+        CORE_WRITER_ADDRESS,
+        await getLimitOrderHyperliquidTxData(assetId, isLong, value, slippage),
+        options
       ],
       sdkOptions
     );

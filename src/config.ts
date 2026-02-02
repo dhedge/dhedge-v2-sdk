@@ -19,7 +19,8 @@ export const factoryAddress: AddressNetworkMap = {
   [Network.ARBITRUM]: "0xfffb5fb14606eb3a548c113026355020ddf27535",
   [Network.BASE]: "0x49Afe3abCf66CF09Fab86cb1139D8811C8afe56F",
   [Network.ETHEREUM]: "0x96D33bCF84DdE326014248E2896F79bbb9c13D6d",
-  [Network.PLASMA]: "0xAec4975Fc8ad911464D2948D771488b30F6eEE87"
+  [Network.PLASMA]: "0xAec4975Fc8ad911464D2948D771488b30F6eEE87",
+  [Network.HYPERLIQUID]: "0xe91505e2ab653dd128c71e9690eeefd28cc5b333"
 };
 
 export const routerAddress: AddressDappNetworkMap = {
@@ -81,6 +82,9 @@ export const routerAddress: AddressDappNetworkMap = {
     [Dapp.AAVEV3]: "0x925a2A7214Ed92428B5b1B090F80b25700095e12",
     [Dapp.PENDLE]: "0x888888888889758F76e7103c6CbF23ABbF58F946",
     [Dapp.KYBERSWAP]: "0x6131B5fae19EA4f9D964eAc0408E4408b66337b5"
+  },
+  [Network.HYPERLIQUID]: {
+    [Dapp.HYPERLIQUID]: "0x6b9e773128f453f5c2c60935ee2de2cbc5390a24"
   }
 };
 
@@ -93,7 +97,8 @@ export const dappFactoryAddress: AddressDappNetworkMap = {
   [Network.ARBITRUM]: {},
   [Network.BASE]: {},
   [Network.ETHEREUM]: {},
-  [Network.PLASMA]: {}
+  [Network.PLASMA]: {},
+  [Network.HYPERLIQUID]: {}
 };
 
 export const stakingAddress: AddressDappNetworkMap = {
@@ -115,7 +120,8 @@ export const stakingAddress: AddressDappNetworkMap = {
     [Dapp.PANCAKECL]: "0xC6A2Db661D5a5690172d8eB0a7DEA2d3008665A3"
   },
   [Network.ETHEREUM]: {},
-  [Network.PLASMA]: {}
+  [Network.PLASMA]: {},
+  [Network.HYPERLIQUID]: {}
 };
 
 export const aaveAddressProvider: AddressDappNetworkMap = {
@@ -138,7 +144,8 @@ export const aaveAddressProvider: AddressDappNetworkMap = {
   },
   [Network.PLASMA]: {
     [Dapp.AAVEV3]: "0x061D8e131F26512348ee5FA42e2DF1bA9d6505E9"
-  }
+  },
+  [Network.HYPERLIQUID]: {}
 };
 export const nonfungiblePositionManagerAddress: AddressDappNetworkMap = {
   [Network.POLYGON]: {
@@ -159,7 +166,8 @@ export const nonfungiblePositionManagerAddress: AddressDappNetworkMap = {
     [Dapp.PANCAKECL]: "0x46A15B0b27311cedF172AB29E4f4766fbE7F4364"
   },
   [Network.ETHEREUM]: {},
-  [Network.PLASMA]: {}
+  [Network.PLASMA]: {},
+  [Network.HYPERLIQUID]: {}
 };
 
 export const networkChainIdMap: NetworkChainIdMap = {
@@ -168,7 +176,8 @@ export const networkChainIdMap: NetworkChainIdMap = {
   [Network.ARBITRUM]: 42161,
   [Network.BASE]: 8453,
   [Network.ETHEREUM]: 1,
-  [Network.PLASMA]: 9745
+  [Network.PLASMA]: 9745,
+  [Network.HYPERLIQUID]: 999
 };
 
 export const balancerSubgraph: AddressNetworkMap = {
@@ -178,7 +187,8 @@ export const balancerSubgraph: AddressNetworkMap = {
   [Network.ARBITRUM]: "",
   [Network.BASE]: "",
   [Network.ETHEREUM]: "",
-  [Network.PLASMA]: ""
+  [Network.PLASMA]: "",
+  [Network.HYPERLIQUID]: ""
 };
 
 export const multiCallAddress: AddressNetworkMap = {
@@ -187,7 +197,8 @@ export const multiCallAddress: AddressNetworkMap = {
   [Network.ARBITRUM]: "",
   [Network.BASE]: "",
   [Network.ETHEREUM]: "",
-  [Network.PLASMA]: ""
+  [Network.PLASMA]: "",
+  [Network.HYPERLIQUID]: ""
 };
 
 export const lyraNetworkMap: LyraNetworkMap = {

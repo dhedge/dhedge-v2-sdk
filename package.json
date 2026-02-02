@@ -1,6 +1,6 @@
 {
   "name": "@dhedge/v2-sdk",
-  "version": "2.1.4",
+  "version": "2.1.479",
   "license": "MIT",
   "description": "🛠 An SDK for building applications on top of dHEDGE V2",
   "main": "dist/index.js",
@@ -25,7 +25,8 @@
     "fork:arbitrum": "hardhat node --port 8540 --fork $(grep ARBITRUM_URL .env | cut -d '=' -f2)",
     "fork:base": "hardhat node --port 8546 --fork $(grep BASE_URL .env | cut -d '=' -f2)",
     "fork:ethereum": "hardhat node --port 8547 --fork $(grep ETHEREUM_URL .env | cut -d '=' -f2)",
-    "fork:plasma": "hardhat node --port 8548 --fork $(grep PLASMA_URL .env | cut -d '=' -f2)"
+    "fork:plasma": "hardhat node --port 8548 --fork $(grep PLASMA_URL .env | cut -d '=' -f2)",
+    "fork:hyperliquid": "hardhat node --port 8549 --fork $(grep HYPERLIQUID_URL .env | cut -d '=' -f2)"
   },
   "husky": {
     "hooks": {

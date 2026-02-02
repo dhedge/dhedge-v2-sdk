@@ -44,7 +44,8 @@ export const TEST_POOL = {
   [Network.ARBITRUM]: "0x0b5f6591c8eb23e5a68102d3d39ebbb464ee5c14",
   [Network.BASE]: "0x4842b42F68524383F609aa46eAfc18c1459cE3cD",
   [Network.ETHEREUM]: "0xe8e74f664d2d6a919a18b911990db0979789b6f7",
-  [Network.PLASMA]: "0xdad21646ebb0997eb59de1f6a68a67059daf4c31"
+  [Network.PLASMA]: "0xdad21646ebb0997eb59de1f6a68a67059daf4c31",
+  [Network.HYPERLIQUID]: "0x954155fe3ec8eea8f931319cd3aa482130a18613"
 };
 
 export const CONTRACT_ADDRESS = {
@@ -171,6 +172,10 @@ export const CONTRACT_ADDRESS = {
     WETH: "0x9895d81bb462a195b4922ed7de0e3acd007c32cb",
     USDT: "0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb",
     USDE: "0x5d3a1ff2b6bab83b63cd9ad0787074081a52ef34"
+  },
+  [Network.HYPERLIQUID]: {
+    USDC: "0xb88339cb7199b77e23db6e890353e22632ba630f",
+    WETH: ""
   }
 };
 
@@ -182,7 +187,8 @@ export const USDC_BALANCEOF_SLOT = {
   [Network.POLYGON]: 0,
   [Network.BASE]: 9,
   [Network.ETHEREUM]: 9,
-  [Network.PLASMA]: 9 //Currently no USDC on Plasma
+  [Network.PLASMA]: 9,
+  [Network.HYPERLIQUID]: 9
 };
 
 export const WETH_BALANCEOF_SLOT = {
@@ -191,5 +197,6 @@ export const WETH_BALANCEOF_SLOT = {
   [Network.POLYGON]: 0,
   [Network.BASE]: 0,
   [Network.ETHEREUM]: 3,
-  [Network.PLASMA]: 1
+  [Network.PLASMA]: 1,
+  [Network.HYPERLIQUID]: 1
 };
