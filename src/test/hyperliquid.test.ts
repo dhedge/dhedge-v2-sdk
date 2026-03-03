@@ -62,27 +62,41 @@ const testHyperliquid = ({ wallet, network }: TestingRunParams) => {
 
     // it("move 5 USDC from Perp to Spot Wallet", async () => {
     //   const tx = await pool.perpToSpotHyperliquid(
+    //     0,
     //     "5000000" // 5 USDC with 6 decimals
     //   );
     //   expect(tx).toBeDefined();
     // });
 
-    it("withdraws USDC from Hyperliquid Spot Wallet", async () => {
-      const tx = await pool.withdrawHyperliquid(
-        "5000000" // 5 USDC with 6 decimals
-      );
-      expect(tx).toBeDefined();
-    });
-
-    // it("sets up a BTC_USDC buy order", async () => {
-    //   const tx = await pool.openMarketOrderHyperliquid(
-    //     10107, // HYPE SPOT
-    //     true, // is long
-    //     25, // 25 USD value of BTC,
-    //     1 // 0.5% slippage
+    // it("withdraws USDC from Hyperliquid Spot Wallet", async () => {
+    //   const tx = await pool.withdrawHyperliquid(
+    //     "784577548" // 5 USDC with 6 decimals
     //   );
     //   expect(tx).toBeDefined();
     // });
+
+    // it("sets up a BTC_USDC buy order", async () => {
+    //   const tx = await pool.openMarketOrderHyperliquid(
+    //     10182, // HYPE SPOT
+    //     true, // is long
+    //     25, // 25 USD value of BTC,
+    //     1, // 0.5% slippage,
+    //     null,
+    //     true
+    //   );
+    //   expect(tx).toBeDefined();
+    // });
+
+    it("closes a position on Hyperliquid", async () => {
+      const tx = await pool.closePositionHyperliquid(
+        1, // HYPE SPOT
+        50, // percentage to close
+        1, // 0.5% slippage,
+        null,
+        true
+      );
+      expect(tx).toBeDefined();
+    });
   });
 };
 

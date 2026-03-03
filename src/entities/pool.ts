@@ -88,6 +88,7 @@ import { getPendleMintTxData, getPendleSwapTxData } from "../services/pendle";
 import { getCompleteWithdrawalTxData } from "../services/toros/completeWithdrawal";
 import { getKyberSwapTxData } from "../services/kyberSwap";
 import {
+  getClosePositionHyperliquidTxData,
   getDepositHyperliquidTxData,
   getLimitOrderHyperliquidTxData,
   getPerpToSpotHyperliquidTxData,
@@ -2233,7 +2234,7 @@ export class Pool {
     return tx;
   }
 
-  /** Open a limit order on Hyperliquid
+  /** Open a market order on Hyperliquid
    *  @param {number} assetId Asset id
    * @param {BigNumber | string } value Value changed (positive for long, negative for short)
    * @param {boolean} isLong Long or short
@@ -2257,6 +2258,40 @@ export class Pool {
       [
         CORE_WRITER_ADDRESS,
         await getLimitOrderHyperliquidTxData(assetId, isLong, value, slippage),
+        options
+      ],
+      sdkOptions
+    );
+    return tx;
+  }
+
+  /** Close a position on Hyperliquid
+   *  @param {number} assetId Asset id
+   * @param {number} percentageToClose Percentage of position to close (0-100)
+   * @param {number } slippage Slippage tolerance in %
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+  async closePositionHyperliquid(
+    assetId: number,
+    percentageToClose = 100,
+    slippage = 0.5,
+    options: any = null,
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
+  ): Promise<any> {
+    const tx = await getPoolTxOrGasEstimate(
+      this,
+      [
+        CORE_WRITER_ADDRESS,
+        await getClosePositionHyperliquidTxData(
+          assetId,
+          percentageToClose,
+          slippage,
+          this.address
+        ),
         options
       ],
       sdkOptions

@@ -34,7 +34,11 @@ export const getMidPrice = async (
 
 export const getAssetInfo = async (
   assetId: number
-): Promise<{ assetName: string; szDecimals: number }> => {
+): Promise<{
+  assetName: string;
+  szDecimals: number;
+  baseTokenName?: string;
+}> => {
   if (isSpotAsset(assetId)) {
     const response = await axios.post(API_URL, {
       type: "spotMeta"
@@ -43,10 +47,12 @@ export const getAssetInfo = async (
     const asset = response.data.universe.filter(
       (e: { index: number }) => e.index === spotAssetIndex(assetId)
     )[0];
+    console.log("asset info response :", asset);
     const baseToken = response.data.tokens[asset.tokens[0]];
     return {
       assetName: asset.name,
-      szDecimals: baseToken.szDecimals
+      szDecimals: baseToken.szDecimals,
+      baseTokenName: baseToken.name
     };
   } else {
     console.log("perp asset index :", assetIndex(assetId));
@@ -91,5 +97,19 @@ export const calculateSize = (
   const factor = Math.pow(10, szDecimals);
   return new BigNumber(Math.round((value / price) * factor) / factor)
     .times(1e8)
+    .toFixed(0);
+};
+
+export const scaleSize = (
+  szDecimals: number,
+  positionSize: number,
+  percentageToClose: number
+): string => {
+  const factor = Math.pow(10, szDecimals);
+  return new BigNumber(
+    Math.round(((positionSize * percentageToClose) / 100) * factor) / factor
+  )
+    .times(1e8)
+    .abs()
     .toFixed(0);
 };
