@@ -34,18 +34,18 @@ yarn add @dhedge/v2-sdk
       <a href="#initial-setup">Initial setup</a>
     </li>
       <li>
-        <a href="#general-pool-management">General Pool Management</a>
+        <a href="#general-vault-management">General Vault Management</a>
         <ul>
-          <li><a href="#1-create-pool">Create pool</a></li>
-          <li><a href="#2-load-pool">Load pool</a></li>
-          <li><a href="#3-get-pool-composition">Get pool composition</a></li>
-          <li><a href="#4-change-pool-assets-enabledisable">Change pool assets</a></li>
+          <li><a href="#1-create-a-vault">Create a vault</a></li>
+          <li><a href="#2-load-a-vault">Load a vault</a></li>
+          <li><a href="#3-get-vault-composition">Get vault composition</a></li>
+          <li><a href="#4-change-vault-assets-enabledisable">Change vault assets</a></li>
           <li><a href="#5-set-trader">Set trader</a></li>
           <li><a href="#6-approve-asset-for-deposit">Approve asset for deposit</a></li>
-          <li><a href="#7-deposit-asset-into-pool">Deposit asset into pool</a></li>
-          <li><a href="#8-withdraw-from-pool">Withdraw from pool</a></li>
-          <li><a href="#9-approve-pool-asset-for-trading--staking)">Approve pool asset for trading & staking</a></li>
-          <li><a href="#10-trade-pool-assets">Trade pool assets</a></li>
+          <li><a href="#7-deposit-asset-into-a-vault">Deposit asset into a vault</a></li>
+          <li><a href="#8-withdraw-from-a-vault">Withdraw from a vault</a></li>
+          <li><a href="#9-approve-vault-asset-for-trading--staking)">Approve vault asset for trading & staking</a></li>
+          <li><a href="#10-trade-vault-assets">Trade vault assets</a></li>
         </ul>
     </li>
     <li>
@@ -77,12 +77,23 @@ yarn add @dhedge/v2-sdk
 
 ---
 
-If you want to use 1Inch to trade pool assets you need to apply for an API key at [1Inch Dev Portal](https://docs.1inch.io/docs/aggregation-protocol/introduction).
-Then you need to copy .env.example file to .env and set your API key there.
+If you want to use aggregators such as 1Inch or Odos, copy `.env.example` to `.env` and configure the API keys you need.
 
 ```
 ONEINCH_API_KEY=YOUR_API_KEY_FROM_1INCH
+ODOS_API_KEY=YOUR_ODOS_API_KEY
 ```
+
+- `ONEINCH_API_KEY` is required for `Dapp.ONEINCH`
+- `ODOS_API_KEY` is required for `Dapp.ODOS`
+- `ODOS_API_KEY` can also be required by `completeTorosWithdrawal(...)` when a Toros withdrawal needs Odos-backed swap data
+
+To get started:
+
+- get a 1inch API key from the [1inch Developer Portal](https://docs.1inch.io/docs/aggregation-protocol/introduction)
+- get an Odos API key via the [Odos developer docs](https://docs.odos.xyz/build/api-docs), and make sure it is valid for the Odos endpoint configured by this SDK
+- place the keys in a `.env` file at the project root before calling aggregator-backed methods
+- if a required key is missing, the SDK will fail before transaction submission
 
 Initialize the sdk with an [ethers wallet](https://docs.ethers.io/v5/api/signer/#Wallet) and the network.
 
@@ -98,20 +109,74 @@ const walletWithProvider = new ethers.Wallet(privateKey, provider);
 const dhedge = new Dhedge(walletWithProvider, Network.POLYGON);
 ```
 
+In dHEDGE product language these are usually called vaults. In the SDK and smart contracts, many classes and methods still use the older `pool` naming, so both terms may appear in the code examples below.
+
+Important notes:
+
+- `Dhedge` expects a provider-connected `ethers.Wallet`. Read-only providers are not enough for state-changing calls.
+- The wallet you pass in is the account that signs transactions. In most cases this is the pool manager wallet.
+- `loadPool(address)` assumes the address is a dHEDGE pool and resolves the manager contract automatically.
+- `loadPool(address, false)` can be used when you want to work with a non-dHEDGE contract that should execute directly from the signer.
+
+#### Execution model
+
+By default, manager actions are executed through `pool.poolLogic.execTransaction(...)`.
+
+If you set a separate trader account with `pool.setTrader(...)`, you can estimate or send transactions from the trader wallet by using `sdkOptions.useTraderAddressAsFrom`.
+
+```ts
+const tx = await pool.trade(
+  Dapp.ONEINCH,
+  "USDC_TOKEN_ADDRESS",
+  "WETH_TOKEN_ADDRESS",
+  "1000000",
+  0.5,
+  null,
+  {
+    estimateGas: true,
+    useTraderAddressAsFrom: true,
+  }
+)
+```
+
+#### Simulation and tx data
+
+Most manager methods accept `sdkOptions` as the last argument.
+
+- `true` is shorthand for `{ estimateGas: true }`
+- `{ estimateGas: true }` returns `{ gas, gasEstimationError, to, txData, minAmountOut }`
+- `{ onlyGetTxData: true }` returns `{ to, txData, minAmountOut }` without sending a transaction
+
+```ts
+const result = await pool.trade(
+  Dapp.ONEINCH,
+  "USDC_TOKEN_ADDRESS",
+  "WETH_TOKEN_ADDRESS",
+  "1000000",
+  0.5,
+  null,
+  { estimateGas: true }
+)
+
+if (result.gasEstimationError) {
+  console.error(result.gasEstimationError)
+}
+```
+
 <br>
 
-### General Pool Management
+### General Vault Management
 
 ---
 
-#### 1. Create a pool
+#### 1. Create a vault
 
 USDC and DAI enabled assets, but only USDC available for deposit.
 
 ```ts
 const usdcTokenAddress = "USDC_TOKEN_ADDRESS"
 const daiTokenAddress = "DAI_TOKEN_ADDRESS"
-const pool = await dhedge.createPool(
+const vault = await dhedge.createPool(
   "Day Ralio",
   "Awesome Fund",
   "DRAF",
@@ -121,23 +186,45 @@ const pool = await dhedge.createPool(
   ],
   10
 )
-console.log("created pool with address", pool.address)
+console.log("created vault with address", vault.address)
 ```
 
-#### 2. Load pool
+#### 2. Load a vault
 
 ```ts
-const poolAddress = "YOUR_POOL_ADDRESS"
-const pool = await dhedge.loadPool(poolAddress)
+const vaultAddress = "YOUR_VAULT_ADDRESS"
+const vault = await dhedge.loadPool(vaultAddress)
 ```
 
-#### 3. Get pool composition
+Validate a vault address before loading it:
 
 ```ts
-const composition = await pool.getComposition();
+const isValidVault = await dhedge.validatePool(vaultAddress)
+if (!isValidVault) throw new Error("invalid dHEDGE vault address")
 ```
 
-#### 4. Change pool assets (enable/disable)
+#### 3. Get vault composition
+
+```ts
+const composition = await vault.getComposition();
+```
+
+`getComposition()` returns raw on-chain values:
+
+```ts
+[
+  {
+    asset: "0x...",
+    isDeposit: true,
+    balance: BigNumber,
+    rate: BigNumber,
+  }
+]
+```
+
+You will usually need to fetch token decimals and symbols separately before displaying vault holdings to users.
+
+#### 4. Change vault assets (enable/disable)
 
 Change pool assets to allow DAI for deposits. Also enable WETH as an asset, but shouldn't be allowed as deposit.
 
@@ -147,7 +234,7 @@ const enabledAssets = [
   { asset: "DAI_TOKEN_ADDRESS", isDeposit: true },
   { asset: "WETH_TOKEN_ADDRESS", isDeposit: false },
 ]
-const tx = await pool.changeAssets(enabledAssets)
+const tx = await vault.changeAssets(enabledAssets)
 ```
 
 #### 5. Set trader
@@ -155,59 +242,66 @@ const tx = await pool.changeAssets(enabledAssets)
 Set an account with trading permissions
 
 ```ts
-const tx = await pool.setTrader("TRADER_ACCOUNT_ADDRESS")
+const tx = await vault.setTrader("TRADER_ACCOUNT_ADDRESS")
 ```
 
 #### 6. Approve asset for deposit
 
-Before depositing an asset into a Pool, it needs to be approved.
+Before depositing an asset into a vault, the user wallet must approve the vault to transfer that asset.
 
-Approve unlimited amount of USDC to deposit into Pool.
+Approve unlimited amount of USDC to deposit into a vault.
 
 ```ts
-const tx = await pool.approveDeposit("USDC_TOKEN_ADDRESS", ethers.constants.MaxUint256);
+const tx = await vault.approveDeposit("USDC_TOKEN_ADDRESS", ethers.constants.MaxUint256);
 ```
 
-#### 7. Deposit asset into pool
+#### 7. Deposit asset into a vault
 
-Deposit 1 USDC into Pool
+Deposit 1 USDC into a vault
 
 ```ts
 const usdcDepositAmount = "100000"
-const tx = await pool.deposit("USDC_TOKEN_ADDRESS", usdcDepositAmount);
+const tx = await vault.deposit("USDC_TOKEN_ADDRESS", usdcDepositAmount);
 ```
 
-#### 8. Withdraw from pool
+#### 8. Withdraw from a vault
 
-Withdraw 1.00002975 pool tokens. Note that this cannot be called if set as Trader account
+Withdraw 1.00002975 vault tokens. Note that this cannot be called if set as Trader account
 
 ```ts
 const poolTokensWithdrawAmount = "1000029750000000000"
-const tx = await pool.withdraw(poolTokensWithdrawAmount);
+const tx = await vault.withdraw(poolTokensWithdrawAmount);
 ```
 
-#### 9. Approve pool asset for trading & staking
+#### 9. Approve vault asset for trading & staking
 
-Before trading an asset on platforms like Sushiswap it needs to be approved.
+Before the vault can trade or stake an asset on an external protocol, the vault must approve that protocol router or staking contract.
 
 Approve unlimited amount of USDC to trade on Sushiswap
 
 ```ts
-const tx = await pool.approve(
+const tx = await vault.approve(
   Dapp.SUSHISWAP,
   "USDC_TOKEN_ADDRESS",
   ethers.constants.MaxInt256
 )
 ```
 
-#### 10. Trade pool assets
+Approval model summary:
 
-Trade 1 USDC into DAI on Sushiswap (other options: TOROS, QUICKSWAP, BALANCER, or ONEINCH)
+- `approveDeposit(asset, amount)` approves from the user wallet to the vault
+- `approve(dapp, asset, amount)` approves from the vault to a protocol router
+- `approveStaking(dapp, asset, amount)` approves from the vault to a staking contract
+- `approveSpender(spender, asset, amount)` is available for custom integrations
+
+#### 10. Trade vault assets
+
+Trade 1 USDC into DAI on Sushiswap (other options depend on network and configured API keys, and can include TOROS, QUICKSWAP, BALANCER, ONEINCH, and ODOS)
 
 ```ts
 const amountIn = "1000000"
 const slippage = 0.5
-const tx = await pool.trade(
+const tx = await vault.trade(
   Dapp.SUSHISWAP,
   "USDC_TOKEN_ADDRESS",
   "DAI_TOKEN_ADDRESS",
@@ -216,21 +310,62 @@ const tx = await pool.trade(
 )
 ```
 
-#### 🚨 Important Update  
-Due to the upgrade of our contract, trading out of a Toros token now involves a second step. Please follow the updated process below:
-1. Step:
+#### Toros mint flow
+
+Minting a Toros token uses `vault.trade(...)`, but it is not a generic token-to-token swap. The input asset must be a valid deposit asset for the underlying Toros vault.
+
 ```ts
-const tx = await pool.trade(
+await vault.approve(
   Dapp.TOROS,
-  "TOROS_TOKEN_ADDRESS",
   "USDC_TOKEN_ADDRESS",
-  '100000000',
+  ethers.constants.MaxUint256
+)
+
+const tx = await vault.trade(
+  Dapp.TOROS,
+  "USDC_TOKEN_ADDRESS",
+  "TOROS_TOKEN_ADDRESS",
+  "100000000",
   slippage
 )
 ```
-2. Step:
+
+#### Toros redeem flow
+
+Redeeming a Toros token has more prerequisites than a normal trade:
+
+- newly minted Toros or dHEDGE vault tokens may be subject to a cooldown before redemption can be initiated
+- while that cooldown is active, redemption cannot be initiated
+- before initiating redemption, the vault must approve the Toros token for the Toros router
+- after redemption is initiated, some Toros withdrawals require a second completion step
+- `completeTorosWithdrawal(...)` can require `ODOS_API_KEY` when Odos-backed swap data is needed
+
+1. Approve the Toros token for redemption:
+
 ```ts
-const tx = await pool.completeTorosWithdrawal(
+await vault.approve(
+  Dapp.TOROS,
+  "TOROS_TOKEN_ADDRESS",
+  ethers.constants.MaxUint256
+)
+```
+
+2. Initiate the redemption:
+
+```ts
+const tx = await vault.trade(
+  Dapp.TOROS,
+  "TOROS_TOKEN_ADDRESS",
+  "USDC_TOKEN_ADDRESS",
+  "100000000",
+  slippage
+)
+```
+
+3. Complete the withdrawal when required by the product flow:
+
+```ts
+const tx = await vault.completeTorosWithdrawal(
   "USDC_TOKEN_ADDRESS",
   slippage
 )
