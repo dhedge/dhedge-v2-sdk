@@ -15,12 +15,6 @@ export const LIMIT_ORDER_TIF_ALO = 1;
 export const LIMIT_ORDER_TIF_GTC = 2;
 export const LIMIT_ORDER_TIF_IOC = 3;
 
-export const assetConfig: {
-  [key: number]: { symbol: string; szDecimals: number };
-} = {
-  0: { symbol: "BTC", szDecimals: 5 }
-};
-
 export const dexIdNameMap: { [key: number]: string } = {
   0: "",
   1: "xyz"

@@ -148,11 +148,6 @@ export const getClosePositionHyperliquidTxData = async (
   const isBuy = positionSize < 0; // if position size is negative, we need to buy to close, otherwise sell
   const sizeRaw = scaleSize(szDecimals, positionSize, percentageToClose);
 
-  console.log(`Closing position on asset ${assetName} (id: ${assetId}): 
-    size: ${positionSize}, 
-    isBuy: ${isBuy}, 
-    sizeRaw: ${sizeRaw}`);
-
   //Calculate price with slippage
   const midPrice = await getMidPrice(assetId, assetName);
   const price = calculatePrice(
