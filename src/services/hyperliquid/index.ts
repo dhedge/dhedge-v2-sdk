@@ -104,12 +104,6 @@ export const getLimitOrderHyperliquidTxData = async (
   );
   const size = calculateSize(szDecimals, changeAmount, midPrice);
 
-  console.log(`Placing limit order on asset ${assetName} (id: ${assetId}): 
-    isBuy: ${isBuy}, 
-    price: ${price}, 
-    size: ${size}, 
-    reduceOnly: ${reduceOnly}`);
-
   const innerEncoded = ethers.utils.defaultAbiCoder.encode(
     //assetIndex, isBuy, price, size, reduceOnly, tif, clientOrderId
     ["uint32", "bool", "uint64", "uint64", "bool", "uint8", "uint128"],

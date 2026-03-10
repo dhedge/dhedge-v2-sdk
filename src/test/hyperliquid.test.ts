@@ -89,7 +89,7 @@ const testHyperliquid = ({ wallet, network }: TestingRunParams) => {
 
     it("closes a position on Hyperliquid", async () => {
       const tx = await pool.closePositionHyperliquid(
-        1, // HYPE SPOT
+        1, // ETH Perp,
         50, // percentage to close
         1, // 0.5% slippage,
         null,

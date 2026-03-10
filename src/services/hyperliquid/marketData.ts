@@ -1,6 +1,7 @@
 import axios from "axios";
 import { API_URL, dexIdNameMap } from "./constants";
 import { BigNumber } from "bignumber.js";
+import { ApiError } from "../..";
 
 const perpDexIndex = (assetId: number): number => {
   return Math.max(Math.floor((assetId - 100000) / 10000), 0);
@@ -29,7 +30,19 @@ export const getMidPrice = async (
     type: "allMids",
     dex: dexIdNameMap[perpDexIndex(assetId)]
   });
-  return +response.data[assetName];
+  const raw = response.data[assetName];
+  if (raw === undefined || raw === null) {
+    throw new ApiError(
+      `Hyperliquid allMids response missing price for asset "${assetName}"`
+    );
+  }
+  const price = +raw;
+  if (isNaN(price)) {
+    throw new ApiError(
+      `Hyperliquid allMids returned non-numeric price for asset "${assetName}": ${raw}`
+    );
+  }
+  return price;
 };
 
 export const getAssetInfo = async (
@@ -43,11 +56,16 @@ export const getAssetInfo = async (
     const response = await axios.post(API_URL, {
       type: "spotMeta"
     });
-    console.log("spot asset index :", spotAssetIndex(assetId));
-    const asset = response.data.universe.filter(
+    const asset = response.data.universe.find(
       (e: { index: number }) => e.index === spotAssetIndex(assetId)
-    )[0];
-    console.log("asset info response :", asset);
+    );
+    if (!asset) {
+      throw new ApiError(
+        `Hyperliquid spotMeta response contains no asset for assetId ${assetId} (index ${spotAssetIndex(
+          assetId
+        )})`
+      );
+    }
     const baseToken = response.data.tokens[asset.tokens[0]];
     return {
       assetName: asset.name,
@@ -55,7 +73,6 @@ export const getAssetInfo = async (
       baseTokenName: baseToken.name
     };
   } else {
-    console.log("perp asset index :", assetIndex(assetId));
     const response = await axios.post(API_URL, {
       type: "metaAndAssetCtxs",
       dex: dexIdNameMap[perpDexIndex(assetId)]

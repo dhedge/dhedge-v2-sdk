@@ -21,11 +21,9 @@ export const getPositionSize = async (
       type: "clearinghouseState",
       user
     });
-    console.log("position size response :", response.data);
     const position = response.data.assetPositions.find(
       (e: { position: { coin: string } }) => e.position.coin === assetName
     );
-    console.log("position size found :", position);
     if (!position) throw new Error(`No position found for asset ${assetName}`);
     return +position.position.szi;
   }
