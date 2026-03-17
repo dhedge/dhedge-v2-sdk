@@ -19,7 +19,8 @@ import {
   nonfungiblePositionManagerAddress,
   routerAddress,
   stakingAddress,
-  SYNTHETIX_TRACKING_CODE
+  SYNTHETIX_TRACKING_CODE,
+  limitOrderAddress
 } from "../config";
 import {
   Dapp,
@@ -31,7 +32,8 @@ import {
   LyraOptionType,
   LyraTradeType,
   LyraPosition,
-  SDKOptions
+  SDKOptions,
+  LimitOrderInfo
 } from "../types";
 
 import { Utils } from "./utils";
@@ -86,6 +88,13 @@ import {
 import { getOdosSwapTxData } from "../services/odos";
 import { getPendleMintTxData, getPendleSwapTxData } from "../services/pendle";
 import { getCompleteWithdrawalTxData } from "../services/toros/completeWithdrawal";
+import {
+  getCreateLimitOrderTxData,
+  getModifyLimitOrderTxData,
+  getDeleteLimitOrderTxData,
+  getTorosLimitOrder,
+  hasActiveTorosLimitOrder
+} from "../services/toros/limitOrder";
 import { getKyberSwapTxData } from "../services/kyberSwap";
 
 export class Pool {
@@ -2146,5 +2155,154 @@ export class Pool {
       sdkOptions
     );
     return tx;
+  }
+
+  /**
+   * Approve the Toros vault token for the PoolLimitOrderManager
+   * Must be called before createTorosLimitOrder
+   * @param {string} vaultAddress Address of the Toros vault token to approve
+   * @param {BigNumber | string} amount Amount to approve
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+  async approveTorosLimitOrder(
+    vaultAddress: string,
+    amount: BigNumber | string,
+    options: any = null,
+    sdkOptions: SDKOptions = { estimateGas: false }
+  ): Promise<any> {
+    const managerAddress = limitOrderAddress[this.network];
+    const iERC20 = new ethers.utils.Interface(IERC20.abi);
+    const approveTxData = iERC20.encodeFunctionData("approve", [
+      managerAddress,
+      amount
+    ]);
+    return getPoolTxOrGasEstimate(
+      this,
+      [vaultAddress, approveTxData, options],
+      sdkOptions
+    );
+  }
+
+  /**
+   * Create a Toros limit order (stop-loss / take-profit)
+   * @param {string} vaultAddress Address of the Toros vault token
+   * @param {BigNumber | string} amount Vault token amount (18 decimals)
+   * @param {BigNumber | string} stopLossPriceD18 Stop-loss price in D18 (0 = no stop-loss)
+   * @param {BigNumber | string} takeProfitPriceD18 Take-profit price in D18 (MaxUint256 = no take-profit)
+   * @param {string} pricingAsset Address of the pricing asset (e.g. USDC)
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+  async createTorosLimitOrder(
+    vaultAddress: string,
+    amount: BigNumber | string,
+    stopLossPriceD18: BigNumber | string,
+    takeProfitPriceD18: BigNumber | string,
+    pricingAsset: string,
+    options: any = null,
+    sdkOptions: SDKOptions = { estimateGas: false }
+  ): Promise<any> {
+    const managerAddress = limitOrderAddress[this.network];
+    const info: LimitOrderInfo = {
+      amount: BigNumber.from(amount),
+      stopLossPriceD18: BigNumber.from(stopLossPriceD18),
+      takeProfitPriceD18: BigNumber.from(takeProfitPriceD18),
+      user: this.address,
+      pool: vaultAddress,
+      pricingAsset
+    };
+    const txData = getCreateLimitOrderTxData(info);
+    return getPoolTxOrGasEstimate(
+      this,
+      [managerAddress, txData, options],
+      sdkOptions
+    );
+  }
+
+  /**
+   * Modify an existing Toros limit order
+   * @param {string} vaultAddress Address of the Toros vault token
+   * @param {BigNumber | string} amount New vault token amount (18 decimals)
+   * @param {BigNumber | string} stopLossPriceD18 New stop-loss price in D18
+   * @param {BigNumber | string} takeProfitPriceD18 New take-profit price in D18
+   * @param {string} pricingAsset Address of the pricing asset
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+  async modifyTorosLimitOrder(
+    vaultAddress: string,
+    amount: BigNumber | string,
+    stopLossPriceD18: BigNumber | string,
+    takeProfitPriceD18: BigNumber | string,
+    pricingAsset: string,
+    options: any = null,
+    sdkOptions: SDKOptions = { estimateGas: false }
+  ): Promise<any> {
+    const managerAddress = limitOrderAddress[this.network];
+    const info: LimitOrderInfo = {
+      amount: BigNumber.from(amount),
+      stopLossPriceD18: BigNumber.from(stopLossPriceD18),
+      takeProfitPriceD18: BigNumber.from(takeProfitPriceD18),
+      user: this.address,
+      pool: vaultAddress,
+      pricingAsset
+    };
+    const txData = getModifyLimitOrderTxData(info);
+    return getPoolTxOrGasEstimate(
+      this,
+      [managerAddress, txData, options],
+      sdkOptions
+    );
+  }
+
+  /**
+   * Delete an existing Toros limit order
+   * @param {string} vaultAddress Address of the Toros vault token
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+  async deleteTorosLimitOrder(
+    vaultAddress: string,
+    options: any = null,
+    sdkOptions: SDKOptions = { estimateGas: false }
+  ): Promise<any> {
+    const managerAddress = limitOrderAddress[this.network];
+    const txData = getDeleteLimitOrderTxData(vaultAddress);
+    return getPoolTxOrGasEstimate(
+      this,
+      [managerAddress, txData, options],
+      sdkOptions
+    );
+  }
+
+  /**
+   * Fetch a Toros limit order for a given user and vault
+   * @param {string} userAddress Address of the order owner (the dHEDGE pool)
+   * @param {string} vaultAddress Address of the Toros vault token
+   * @returns {Promise<LimitOrderInfo | null>} Order info, or null if none exists
+   */
+  async getTorosLimitOrder(
+    userAddress: string,
+    vaultAddress: string
+  ): Promise<LimitOrderInfo | null> {
+    return getTorosLimitOrder(this, userAddress, vaultAddress);
+  }
+
+  /**
+   * Check whether an active Toros limit order exists for a given user and vault
+   * @param {string} userAddress Address of the order owner (the dHEDGE pool)
+   * @param {string} vaultAddress Address of the Toros vault token
+   * @returns {Promise<boolean>}
+   */
+  async hasActiveTorosLimitOrder(
+    userAddress: string,
+    vaultAddress: string
+  ): Promise<boolean> {
+    return hasActiveTorosLimitOrder(this, userAddress, vaultAddress);
   }
 }

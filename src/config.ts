@@ -235,6 +235,15 @@ export const flatMoneyContractAddresses: Readonly<Partial<
   }
 };
 
+export const limitOrderAddress: AddressNetworkMap = {
+  [Network.POLYGON]: "0xB71410736d2C8F2DAf30dA9D332dA10534d2624d",
+  [Network.OPTIMISM]: "0x3bFE2a472d2964Ea4070725b7Fb0A868b3f08b63",
+  [Network.ARBITRUM]: "0x26a687e8244f1866E9Aa2D400c8b9957Aa8e6Ad4",
+  [Network.BASE]: "0xFcBEc28c43E356693971a24bf3F2Fd7D965E2ebA",
+  [Network.ETHEREUM]: "",
+  [Network.PLASMA]: ""
+};
+
 export const OdosSwapFeeRecipient = {
   [Network.POLYGON]: "0x090e7fbD87A673eE3D0B6ccACf0e1d94fB90DA59",
   [Network.OPTIMISM]: "0x813123A13d01d3F07d434673Fdc89cBBA523f14d",
