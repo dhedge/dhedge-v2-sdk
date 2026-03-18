@@ -7,7 +7,8 @@ export enum Network {
   ARBITRUM = "arbitrum",
   BASE = "base",
   ETHEREUM = "ethereum",
-  PLASMA = "plasma"
+  PLASMA = "plasma",
+  HYPERLIQUID = "hyperliquid"
 }
 
 export enum Dapp {
@@ -33,7 +34,8 @@ export enum Dapp {
   COMPOUNDV3 = "compoundV3",
   ODOS = "odos",
   PENDLE = "pendle",
-  KYBERSWAP = "kyberswap"
+  KYBERSWAP = "kyberswap",
+  HYPERLIQUID = "hyperliquid"
 }
 
 export enum Transaction {
