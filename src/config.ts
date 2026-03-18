@@ -252,7 +252,8 @@ export const limitOrderAddress: AddressNetworkMap = {
   [Network.ARBITRUM]: "0x26a687e8244f1866E9Aa2D400c8b9957Aa8e6Ad4",
   [Network.BASE]: "0xFcBEc28c43E356693971a24bf3F2Fd7D965E2ebA",
   [Network.ETHEREUM]: "",
-  [Network.PLASMA]: ""
+  [Network.PLASMA]: "",
+  [Network.HYPERLIQUID]: ""
 };
 
 export const OdosSwapFeeRecipient = {
@@ -261,5 +262,6 @@ export const OdosSwapFeeRecipient = {
   [Network.ARBITRUM]: "0xfbD2B4216f422DC1eEe1Cff4Fb64B726F099dEF5",
   [Network.BASE]: "0x5619AD05b0253a7e647Bd2E4C01c7f40CEaB0879",
   [Network.ETHEREUM]: "0xfbD2B4216f422DC1eEe1Cff4Fb64B726F099dEF5",
-  [Network.PLASMA]: ""
+  [Network.PLASMA]: "",
+  [Network.HYPERLIQUID]: ""
 };
