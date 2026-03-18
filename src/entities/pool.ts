@@ -19,7 +19,8 @@ import {
   nonfungiblePositionManagerAddress,
   routerAddress,
   stakingAddress,
-  SYNTHETIX_TRACKING_CODE
+  SYNTHETIX_TRACKING_CODE,
+  limitOrderAddress
 } from "../config";
 import {
   Dapp,
@@ -31,7 +32,8 @@ import {
   LyraOptionType,
   LyraTradeType,
   LyraPosition,
-  SDKOptions
+  SDKOptions,
+  LimitOrderInfo
 } from "../types";
 
 import { Utils } from "./utils";
@@ -57,8 +59,8 @@ import { getLyraOptionTxData } from "../services/lyra/trade";
 import { getOptionPositions } from "../services/lyra/positions";
 import { getDeadline } from "../utils/deadline";
 import {
-  getFuturesChangePositionTxData,
-  getFuturesChangeMarginTxData
+  getFuturesChangeMarginTxData,
+  getFuturesChangePositionTxData
 } from "../services/futures";
 import { getFuturesCancelOrderTxData } from "../services/futures/trade";
 import { getOneInchSwapTxData } from "../services/oneInch";
@@ -86,7 +88,22 @@ import {
 import { getOdosSwapTxData } from "../services/odos";
 import { getPendleMintTxData, getPendleSwapTxData } from "../services/pendle";
 import { getCompleteWithdrawalTxData } from "../services/toros/completeWithdrawal";
+import {
+  getCreateLimitOrderTxData,
+  getModifyLimitOrderTxData,
+  getDeleteLimitOrderTxData,
+  getTorosLimitOrder,
+  hasActiveTorosLimitOrder
+} from "../services/toros/limitOrder";
 import { getKyberSwapTxData } from "../services/kyberSwap";
+import {
+  getClosePositionHyperliquidTxData,
+  getDepositHyperliquidTxData,
+  getLimitOrderHyperliquidTxData,
+  getPerpToSpotHyperliquidTxData,
+  getWithdrawSpotHyperliquidTxData
+} from "../services/hyperliquid";
+import { CORE_WRITER_ADDRESS } from "../services/hyperliquid/constants";
 
 export class Pool {
   public readonly poolLogic: Contract;
@@ -2146,5 +2163,313 @@ export class Pool {
       sdkOptions
     );
     return tx;
+  }
+
+  /** Deposit USDC for Hyperliquid Perp trading
+   *
+   * @param {BigNumber | string } amount Amount to deposit
+   * @param {number} dexId DEX Id (default 0) (Main Perp DEX)
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+  async depositHyperliquid(
+    amount: BigNumber | string,
+    dexId = 0,
+    options: any = null,
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
+  ): Promise<any> {
+    const tx = await getPoolTxOrGasEstimate(
+      this,
+      [
+        routerAddress[this.network][Dapp.HYPERLIQUID],
+        getDepositHyperliquidTxData(dexId, amount),
+        options
+      ],
+      sdkOptions
+    );
+    return tx;
+  }
+
+  /** Move USDC from Perp to Spot on Hyperliquid
+   *
+   * @param {number} dexId DEX Id  (0 is Main Perp DEX)
+   * @param {BigNumber | string } amount Amount to deposit
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+  async perpToSpotHyperliquid(
+    dexId: number,
+    amount: BigNumber | string,
+    options: any = null,
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
+  ): Promise<any> {
+    const tx = await getPoolTxOrGasEstimate(
+      this,
+      [
+        CORE_WRITER_ADDRESS,
+        getPerpToSpotHyperliquidTxData(dexId, this.address, amount),
+        options
+      ],
+      sdkOptions
+    );
+    return tx;
+  }
+
+  /** Withdraw USDC from Hyperliquid Spot
+   *
+   * @param {BigNumber | string } amount Amount to withdraw
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+  async withdrawHyperliquid(
+    amount: BigNumber | string,
+    options: any = null,
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
+  ): Promise<any> {
+    const tx = await getPoolTxOrGasEstimate(
+      this,
+      [CORE_WRITER_ADDRESS, getWithdrawSpotHyperliquidTxData(amount), options],
+      sdkOptions
+    );
+    return tx;
+  }
+
+  /** Open a market order on Hyperliquid
+   *  @param {number} assetId Asset id
+   * @param {BigNumber | string } value Value changed (positive for long, negative for short)
+   * @param {boolean} isLong Long or short
+   * @param {number } slippage Slippage tolerance in %
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+  async openMarketOrderHyperliquid(
+    assetId: number,
+    isLong: boolean,
+    value: number,
+    slippage = 0.5,
+    options: any = null,
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
+  ): Promise<any> {
+    const tx = await getPoolTxOrGasEstimate(
+      this,
+      [
+        CORE_WRITER_ADDRESS,
+        await getLimitOrderHyperliquidTxData(assetId, isLong, value, slippage),
+        options
+      ],
+      sdkOptions
+    );
+    return tx;
+  }
+
+  /** Close a position on Hyperliquid
+   *  @param {number} assetId Asset id
+   * @param {number} percentageToClose Percentage of position to close (0-100)
+   * @param {number } slippage Slippage tolerance in %
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+  async closePositionHyperliquid(
+    assetId: number,
+    percentageToClose = 100,
+    slippage = 0.5,
+    options: any = null,
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
+  ): Promise<any> {
+    const tx = await getPoolTxOrGasEstimate(
+      this,
+      [
+        CORE_WRITER_ADDRESS,
+        await getClosePositionHyperliquidTxData(
+          assetId,
+          percentageToClose,
+          slippage,
+          this.address
+        ),
+        options
+      ],
+      sdkOptions
+    );
+    return tx;
+  }
+
+  /**
+   * Approve the Toros vault token for the PoolLimitOrderManager
+   * Must be called before createTorosLimitOrder
+   * @param {string} vaultAddress Address of the Toros vault token to approve
+   * @param {BigNumber | string} amount Amount to approve
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+  async approveTorosLimitOrder(
+    vaultAddress: string,
+    amount: BigNumber | string,
+    options: any = null,
+    sdkOptions: SDKOptions = { estimateGas: false }
+  ): Promise<any> {
+    const managerAddress = limitOrderAddress[this.network];
+    const iERC20 = new ethers.utils.Interface(IERC20.abi);
+    const approveTxData = iERC20.encodeFunctionData("approve", [
+      managerAddress,
+      amount
+    ]);
+    return getPoolTxOrGasEstimate(
+      this,
+      [vaultAddress, approveTxData, options],
+      sdkOptions
+    );
+  }
+
+  /**
+   * Create a Toros limit order (stop-loss / take-profit)
+   * @param {string} vaultAddress Address of the Toros vault token
+   * @param {BigNumber | string} amount Vault token amount (18 decimals)
+   * @param {BigNumber | string | null | undefined} stopLossPriceD18 Stop-loss price in D18 (0 or null/undefined = disabled)
+   * @param {BigNumber | string | null | undefined} takeProfitPriceD18 Take-profit price in D18 (MaxUint256 or null/undefined = disabled)
+   * @param {string} pricingAsset Address of the pricing asset (e.g. USDC)
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+  async createTorosLimitOrder(
+    vaultAddress: string,
+    amount: BigNumber | string,
+    stopLossPriceD18: BigNumber | string | null | undefined,
+    takeProfitPriceD18: BigNumber | string | null | undefined,
+    pricingAsset: string,
+    options: any = null,
+    sdkOptions: SDKOptions = { estimateGas: false }
+  ): Promise<any> {
+    const managerAddress = limitOrderAddress[this.network];
+    const resolvedStopLoss =
+      stopLossPriceD18 == null
+        ? BigNumber.from(0)
+        : BigNumber.from(stopLossPriceD18);
+    const resolvedTakeProfit =
+      takeProfitPriceD18 == null
+        ? ethers.constants.MaxUint256
+        : BigNumber.from(takeProfitPriceD18);
+    const info: LimitOrderInfo = {
+      amount: BigNumber.from(amount),
+      stopLossPriceD18: resolvedStopLoss,
+      takeProfitPriceD18: resolvedTakeProfit,
+      user: this.address,
+      pool: vaultAddress,
+      pricingAsset
+    };
+    const txData = getCreateLimitOrderTxData(info);
+    return getPoolTxOrGasEstimate(
+      this,
+      [managerAddress, txData, options],
+      sdkOptions
+    );
+  }
+
+  /**
+   * Modify an existing Toros limit order
+   * @param {string} vaultAddress Address of the Toros vault token
+   * @param {BigNumber | string} amount New vault token amount (18 decimals)
+   * @param {BigNumber | string | null | undefined} stopLossPriceD18 New stop-loss price in D18 (0 or null/undefined = disabled)
+   * @param {BigNumber | string | null | undefined} takeProfitPriceD18 New take-profit price in D18 (MaxUint256 or null/undefined = disabled)
+   * @param {string} pricingAsset Address of the pricing asset
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+  async modifyTorosLimitOrder(
+    vaultAddress: string,
+    amount: BigNumber | string,
+    stopLossPriceD18: BigNumber | string | null | undefined,
+    takeProfitPriceD18: BigNumber | string | null | undefined,
+    pricingAsset: string,
+    options: any = null,
+    sdkOptions: SDKOptions = { estimateGas: false }
+  ): Promise<any> {
+    const managerAddress = limitOrderAddress[this.network];
+    const resolvedStopLoss =
+      stopLossPriceD18 == null
+        ? BigNumber.from(0)
+        : BigNumber.from(stopLossPriceD18);
+    const resolvedTakeProfit =
+      takeProfitPriceD18 == null
+        ? ethers.constants.MaxUint256
+        : BigNumber.from(takeProfitPriceD18);
+    const info: LimitOrderInfo = {
+      amount: BigNumber.from(amount),
+      stopLossPriceD18: resolvedStopLoss,
+      takeProfitPriceD18: resolvedTakeProfit,
+      user: this.address,
+      pool: vaultAddress,
+      pricingAsset
+    };
+    const txData = getModifyLimitOrderTxData(info);
+    return getPoolTxOrGasEstimate(
+      this,
+      [managerAddress, txData, options],
+      sdkOptions
+    );
+  }
+
+  /**
+   * Delete an existing Toros limit order
+   * @param {string} vaultAddress Address of the Toros vault token
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+  async deleteTorosLimitOrder(
+    vaultAddress: string,
+    options: any = null,
+    sdkOptions: SDKOptions = { estimateGas: false }
+  ): Promise<any> {
+    const managerAddress = limitOrderAddress[this.network];
+    const txData = getDeleteLimitOrderTxData(vaultAddress);
+    return getPoolTxOrGasEstimate(
+      this,
+      [managerAddress, txData, options],
+      sdkOptions
+    );
+  }
+
+  /**
+   * Fetch a Toros limit order for a given user and vault
+   * @param {string} userAddress Address of the order owner (the dHEDGE pool)
+   * @param {string} vaultAddress Address of the Toros vault token
+   * @returns {Promise<LimitOrderInfo | null>} Order info, or null if none exists
+   */
+  async getTorosLimitOrder(
+    userAddress: string,
+    vaultAddress: string
+  ): Promise<LimitOrderInfo | null> {
+    return getTorosLimitOrder(this, userAddress, vaultAddress);
+  }
+
+  /**
+   * Check whether an active Toros limit order exists for a given user and vault
+   * @param {string} userAddress Address of the order owner (the dHEDGE pool)
+   * @param {string} vaultAddress Address of the Toros vault token
+   * @returns {Promise<boolean>}
+   */
+  async hasActiveTorosLimitOrder(
+    userAddress: string,
+    vaultAddress: string
+  ): Promise<boolean> {
+    return hasActiveTorosLimitOrder(this, userAddress, vaultAddress);
   }
 }

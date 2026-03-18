@@ -7,7 +7,8 @@ export enum Network {
   ARBITRUM = "arbitrum",
   BASE = "base",
   ETHEREUM = "ethereum",
-  PLASMA = "plasma"
+  PLASMA = "plasma",
+  HYPERLIQUID = "hyperliquid"
 }
 
 export enum Dapp {
@@ -33,7 +34,8 @@ export enum Dapp {
   COMPOUNDV3 = "compoundV3",
   ODOS = "odos",
   PENDLE = "pendle",
-  KYBERSWAP = "kyberswap"
+  KYBERSWAP = "kyberswap",
+  HYPERLIQUID = "hyperliquid"
 }
 
 export enum Transaction {
@@ -111,3 +113,12 @@ export type SDKOptions =
       useTraderAddressAsFrom?: boolean;
     }
   | boolean; // shorthand for { estimateGas: true/false }; for backward compatibility
+
+export type LimitOrderInfo = {
+  amount: BigNumber;
+  stopLossPriceD18: BigNumber;
+  takeProfitPriceD18: BigNumber;
+  user: string;
+  pool: string;
+  pricingAsset: string;
+};
