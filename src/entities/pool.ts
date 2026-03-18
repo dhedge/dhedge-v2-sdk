@@ -2189,8 +2189,8 @@ export class Pool {
    * Create a Toros limit order (stop-loss / take-profit)
    * @param {string} vaultAddress Address of the Toros vault token
    * @param {BigNumber | string} amount Vault token amount (18 decimals)
-   * @param {BigNumber | string} stopLossPriceD18 Stop-loss price in D18 (0 = no stop-loss)
-   * @param {BigNumber | string} takeProfitPriceD18 Take-profit price in D18 (MaxUint256 = no take-profit)
+   * @param {BigNumber | string | null | undefined} stopLossPriceD18 Stop-loss price in D18 (0 or null/undefined = disabled)
+   * @param {BigNumber | string | null | undefined} takeProfitPriceD18 Take-profit price in D18 (MaxUint256 or null/undefined = disabled)
    * @param {string} pricingAsset Address of the pricing asset (e.g. USDC)
    * @param {any} options Transaction options
    * @param {SDKOptions} sdkOptions SDK options including estimateGas
@@ -2199,17 +2199,25 @@ export class Pool {
   async createTorosLimitOrder(
     vaultAddress: string,
     amount: BigNumber | string,
-    stopLossPriceD18: BigNumber | string,
-    takeProfitPriceD18: BigNumber | string,
+    stopLossPriceD18: BigNumber | string | null | undefined,
+    takeProfitPriceD18: BigNumber | string | null | undefined,
     pricingAsset: string,
     options: any = null,
     sdkOptions: SDKOptions = { estimateGas: false }
   ): Promise<any> {
     const managerAddress = limitOrderAddress[this.network];
+    const resolvedStopLoss =
+      stopLossPriceD18 == null
+        ? BigNumber.from(0)
+        : BigNumber.from(stopLossPriceD18);
+    const resolvedTakeProfit =
+      takeProfitPriceD18 == null
+        ? ethers.constants.MaxUint256
+        : BigNumber.from(takeProfitPriceD18);
     const info: LimitOrderInfo = {
       amount: BigNumber.from(amount),
-      stopLossPriceD18: BigNumber.from(stopLossPriceD18),
-      takeProfitPriceD18: BigNumber.from(takeProfitPriceD18),
+      stopLossPriceD18: resolvedStopLoss,
+      takeProfitPriceD18: resolvedTakeProfit,
       user: this.address,
       pool: vaultAddress,
       pricingAsset
@@ -2226,8 +2234,8 @@ export class Pool {
    * Modify an existing Toros limit order
    * @param {string} vaultAddress Address of the Toros vault token
    * @param {BigNumber | string} amount New vault token amount (18 decimals)
-   * @param {BigNumber | string} stopLossPriceD18 New stop-loss price in D18
-   * @param {BigNumber | string} takeProfitPriceD18 New take-profit price in D18
+   * @param {BigNumber | string | null | undefined} stopLossPriceD18 New stop-loss price in D18 (0 or null/undefined = disabled)
+   * @param {BigNumber | string | null | undefined} takeProfitPriceD18 New take-profit price in D18 (MaxUint256 or null/undefined = disabled)
    * @param {string} pricingAsset Address of the pricing asset
    * @param {any} options Transaction options
    * @param {SDKOptions} sdkOptions SDK options including estimateGas
@@ -2236,17 +2244,25 @@ export class Pool {
   async modifyTorosLimitOrder(
     vaultAddress: string,
     amount: BigNumber | string,
-    stopLossPriceD18: BigNumber | string,
-    takeProfitPriceD18: BigNumber | string,
+    stopLossPriceD18: BigNumber | string | null | undefined,
+    takeProfitPriceD18: BigNumber | string | null | undefined,
     pricingAsset: string,
     options: any = null,
     sdkOptions: SDKOptions = { estimateGas: false }
   ): Promise<any> {
     const managerAddress = limitOrderAddress[this.network];
+    const resolvedStopLoss =
+      stopLossPriceD18 == null
+        ? BigNumber.from(0)
+        : BigNumber.from(stopLossPriceD18);
+    const resolvedTakeProfit =
+      takeProfitPriceD18 == null
+        ? ethers.constants.MaxUint256
+        : BigNumber.from(takeProfitPriceD18);
     const info: LimitOrderInfo = {
       amount: BigNumber.from(amount),
-      stopLossPriceD18: BigNumber.from(stopLossPriceD18),
-      takeProfitPriceD18: BigNumber.from(takeProfitPriceD18),
+      stopLossPriceD18: resolvedStopLoss,
+      takeProfitPriceD18: resolvedTakeProfit,
       user: this.address,
       pool: vaultAddress,
       pricingAsset
