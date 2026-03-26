@@ -149,7 +149,7 @@ export const getInitWithdrawalTxData = async (
   amountIn: string,
   slippage: number,
   useOnChainSwap: boolean
-): Promise<string> => {
+): Promise<{ swapTxData: string; minAmountOut?: any }> => {
   const complexAssetsData = await createWithdrawTxArguments(
     pool,
     torosAsset,
@@ -158,9 +158,13 @@ export const getInitWithdrawalTxData = async (
     useOnChainSwap
   );
   const iEasySwapperV2 = new ethers.utils.Interface(IEasySwapperV2);
-  return iEasySwapperV2.encodeFunctionData("initWithdrawal", [
-    torosAsset,
-    amountIn,
-    complexAssetsData
-  ]);
+
+  return {
+    swapTxData: iEasySwapperV2.encodeFunctionData("initWithdrawal", [
+      torosAsset,
+      amountIn,
+      complexAssetsData
+    ]),
+    minAmountOut: null // not be used when building multicall tx data
+  };
 };

@@ -85,7 +85,16 @@ import {
 } from "../services/pancake/staking";
 import { getOdosSwapTxData } from "../services/odos";
 import { getPendleMintTxData, getPendleSwapTxData } from "../services/pendle";
-import { getCompleteWithdrawalTxData } from "../services/toros/completeWithdrawal";
+import {
+  getCompleteWithdrawalTxData,
+  TrackedAsset
+} from "../services/toros/completeWithdrawal";
+import {
+  getDytmBorrowTxData,
+  getDytmDepositTxData,
+  getDytmRepayTxData,
+  getDytmWithdrawTxData
+} from "../services/dytm";
 import { getKyberSwapTxData } from "../services/kyberSwap";
 
 export class Pool {
@@ -419,13 +428,13 @@ export class Pool {
         ]);
         break;
       case Dapp.TOROS:
-        swapTxData = await getEasySwapperTxData(
+        ({ swapTxData, minAmountOut } = await getEasySwapperTxData(
           this,
           assetFrom,
           assetTo,
           ethers.BigNumber.from(amountIn),
           slippage
-        );
+        ));
         break;
       case Dapp.ODOS:
         ({ swapTxData, minAmountOut } = await getOdosSwapTxData(
@@ -736,13 +745,18 @@ export class Pool {
       estimateGas: false
     }
   ): Promise<any> {
-    const iLendingPool = new ethers.utils.Interface(ILendingPool.abi);
-    const depositTxData = iLendingPool.encodeFunctionData(Transaction.DEPOSIT, [
-      asset,
-      amount,
-      this.address,
-      referralCode
-    ]);
+    let depositTxData: string;
+    if (dapp === Dapp.DYTM) {
+      depositTxData = getDytmDepositTxData(this, asset, amount);
+    } else {
+      const iLendingPool = new ethers.utils.Interface(ILendingPool.abi);
+      depositTxData = iLendingPool.encodeFunctionData(Transaction.DEPOSIT, [
+        asset,
+        amount,
+        this.address,
+        referralCode
+      ]);
+    }
 
     const tx = await getPoolTxOrGasEstimate(
       this,
@@ -803,11 +817,17 @@ export class Pool {
       estimateGas: false
     }
   ): Promise<any> {
-    const iLendingPool = new ethers.utils.Interface(ILendingPool.abi);
-    const withdrawTxData = iLendingPool.encodeFunctionData(
-      Transaction.WITHDRAW,
-      [asset, amount, this.address]
-    );
+    let withdrawTxData: string;
+    if (dapp === Dapp.DYTM) {
+      withdrawTxData = await getDytmWithdrawTxData(this, asset, amount);
+    } else {
+      const iLendingPool = new ethers.utils.Interface(ILendingPool.abi);
+      withdrawTxData = iLendingPool.encodeFunctionData(Transaction.WITHDRAW, [
+        asset,
+        amount,
+        this.address
+      ]);
+    }
 
     const tx = await getPoolTxOrGasEstimate(
       this,
@@ -870,14 +890,19 @@ export class Pool {
       estimateGas: false
     }
   ): Promise<any> {
-    const iLendingPool = new ethers.utils.Interface(ILendingPool.abi);
-    const borrowTxData = iLendingPool.encodeFunctionData(Transaction.BORROW, [
-      asset,
-      amount,
-      2,
-      referralCode,
-      this.address
-    ]);
+    let borrowTxData: string;
+    if (dapp === Dapp.DYTM) {
+      borrowTxData = getDytmBorrowTxData(this, asset, amount);
+    } else {
+      const iLendingPool = new ethers.utils.Interface(ILendingPool.abi);
+      borrowTxData = iLendingPool.encodeFunctionData(Transaction.BORROW, [
+        asset,
+        amount,
+        2,
+        referralCode,
+        this.address
+      ]);
+    }
     const tx = await getPoolTxOrGasEstimate(
       this,
       [routerAddress[this.network][dapp], borrowTxData, options],
@@ -904,13 +929,18 @@ export class Pool {
       estimateGas: false
     }
   ): Promise<any> {
-    const iLendingPool = new ethers.utils.Interface(ILendingPool.abi);
-    const repayTxData = iLendingPool.encodeFunctionData(Transaction.REPAY, [
-      asset,
-      amount,
-      2,
-      this.address
-    ]);
+    let repayTxData: string;
+    if (dapp === Dapp.DYTM) {
+      repayTxData = await getDytmRepayTxData(this, asset, amount);
+    } else {
+      const iLendingPool = new ethers.utils.Interface(ILendingPool.abi);
+      repayTxData = iLendingPool.encodeFunctionData(Transaction.REPAY, [
+        asset,
+        amount,
+        2,
+        this.address
+      ]);
+    }
     const tx = await getPoolTxOrGasEstimate(
       this,
       [routerAddress[this.network][dapp], repayTxData, options],
@@ -2084,6 +2114,7 @@ export class Pool {
    * @param {number} slippage Slippage tolerance in %
    * @param {any} options Transaction options
    * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @param {any} trackedAssets Tracked assets information (only for tx data generation)
    * @returns {Promise<any>} Transaction
    */
   async completeTorosWithdrawal(
@@ -2092,13 +2123,15 @@ export class Pool {
     options: any = null,
     sdkOptions: SDKOptions = {
       estimateGas: false
-    }
+    },
+    trackedAssets: TrackedAsset[] = []
   ): Promise<any> {
     const txData = await getCompleteWithdrawalTxData(
       this,
       destinationToken,
       slippage * 100,
-      false
+      false,
+      trackedAssets
     );
     const tx = await getPoolTxOrGasEstimate(
       this,
