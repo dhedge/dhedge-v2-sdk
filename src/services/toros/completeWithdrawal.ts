@@ -24,7 +24,7 @@ const getSwapWithdrawData = async (
   slippage: number
 ) => {
   const srcData = [];
-  const routerKey = ethers.utils.formatBytes32String("ODOS_V2");
+  const routerKey = ethers.utils.formatBytes32String("ODOS_V3");
   // const destData
   for (const { token, balance } of trackedAssets) {
     if (token.toLowerCase() === receiveToken.toLowerCase()) {

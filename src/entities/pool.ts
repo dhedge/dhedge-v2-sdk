@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Contract, ethers, Wallet, BigNumber } from "ethers";
+import { Contract, ethers, Wallet, BigNumber, BigNumberish } from "ethers";
 
 import IERC20 from "../abi/IERC20.json";
 
@@ -84,8 +84,8 @@ import {
   getPancakeUnStakeTxData
 } from "../services/pancake/staking";
 import { getOdosSwapTxData } from "../services/odos";
-import { getPendleSwapTxData } from "../services/pendle";
-import { getCompleteWithdrawalTxData, TrackedAsset } from "../services/toros/completeWithdrawal";
+import { getPendleMintTxData, getPendleSwapTxData } from "../services/pendle";
+import { getCompleteWithdrawalTxData } from "../services/toros/completeWithdrawal";
 import {
   getDytmBorrowTxData,
   getDytmDepositTxData,
@@ -1049,6 +1049,31 @@ export class Pool {
       );
     }
     const tx = await this.managerLogic.setPoolPrivate(_private, options);
+    return tx;
+  }
+
+  /**
+   * Sets max supply cap for a pool
+   * @param {BigNumberish} _maxSupplyCapD18 Max supply cap with 18 decimals
+   * @param {any} options Transaction options
+   * @param {boolean} estimateGas Simulate/estimate gas
+   * @returns {Promise<any>} Transaction
+   */
+  async setMaxCap(
+    _maxSupplyCapD18: BigNumberish,
+    options: any = null,
+    estimateGas = false
+  ): Promise<any> {
+    if (estimateGas) {
+      return await this.managerLogic.estimateGas.setMaxSupplyCap(
+        _maxSupplyCapD18,
+        options
+      );
+    }
+    const tx = await this.managerLogic.setMaxSupplyCap(
+      _maxSupplyCapD18,
+      options
+    );
     return tx;
   }
 
@@ -2108,6 +2133,46 @@ export class Pool {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [routerAddress[this.network].toros, txData, options],
+      sdkOptions
+    );
+    return tx;
+  }
+
+  /**
+   * Mint PT and YT tokens on Pendle
+   * @param {string} assetFrom Asset to mint from (only underlying asset)
+   * @param {string} pt PT address
+   * @param {BigNumber | string} amountIn Amount underlying asset
+   * @param {number} slippage Slippage tolerance in %
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+  async mintPendle(
+    assetFrom: string,
+    pt: string,
+    amountIn: BigNumber | string,
+    slippage = 0.5,
+    options: any = null,
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
+  ): Promise<any> {
+    const { swapTxData, minAmountOut } = await getPendleMintTxData(
+      this,
+      assetFrom,
+      pt,
+      amountIn,
+      slippage
+    );
+    const tx = await getPoolTxOrGasEstimate(
+      this,
+      [
+        routerAddress[this.network][Dapp.PENDLE],
+        swapTxData,
+        options,
+        minAmountOut
+      ],
       sdkOptions
     );
     return tx;

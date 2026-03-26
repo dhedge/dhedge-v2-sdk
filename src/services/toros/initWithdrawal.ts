@@ -46,7 +46,7 @@ const getAaveAssetWithdrawData = async (
   const { srcData, dstData } = swapDataParams;
 
   const srcDataToEncode: unknown[] = [];
-  const routerKey = ethers.utils.formatBytes32String("ODOS_V2");
+  const routerKey = ethers.utils.formatBytes32String("ODOS_V3");
   for (const { asset, amount } of srcData) {
     const swapData = await retry({
       fn: () => {
