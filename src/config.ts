@@ -254,6 +254,6 @@ export const dytmContractAddresses: Readonly<Partial<
   >
 >> = {
   [Network.ARBITRUM]: {
-    Periphery: "0x9C20D1EFeb769b802576eC8700dD83c24f82b15A"
+    Periphery: "0x1FBe7Bb394BE505C08e9ee419Dd166c71004e51B"
   }
 };

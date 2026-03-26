@@ -85,7 +85,10 @@ import {
 } from "../services/pancake/staking";
 import { getOdosSwapTxData } from "../services/odos";
 import { getPendleMintTxData, getPendleSwapTxData } from "../services/pendle";
-import { getCompleteWithdrawalTxData } from "../services/toros/completeWithdrawal";
+import {
+  getCompleteWithdrawalTxData,
+  TrackedAsset
+} from "../services/toros/completeWithdrawal";
 import {
   getDytmBorrowTxData,
   getDytmDepositTxData,

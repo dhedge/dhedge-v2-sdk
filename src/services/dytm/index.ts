@@ -1,33 +1,8 @@
-import { Contract, ethers } from "ethers";
+import { ethers } from "ethers";
 import IOffice from "../../abi/dytm/IOffice.json";
-import IDYTMPeriphery from "../../abi/dytm/IDYTMPeriphery.json";
 import { Pool } from "../../entities";
-import { dytmContractAddresses } from "../../config";
 
 const iOffice = new ethers.utils.Interface(IOffice);
-const iDYTMPeriphery = new ethers.utils.Interface(IDYTMPeriphery);
-
-export const getShares = async (
-  pool: Pool,
-  tokenId: string | ethers.BigNumber,
-  amount: ethers.BigNumber | string
-): Promise<ethers.BigNumber> => {
-  const dytmContracts = dytmContractAddresses[pool.network];
-  if (!dytmContracts || !dytmContracts.Periphery) {
-    throw new Error(`DYTM: network of ${pool.network} not supported`);
-  }
-  const peripheryContract = new Contract(
-    dytmContracts.Periphery,
-    iDYTMPeriphery,
-    pool.signer
-  );
-  const shares = await peripheryContract.assetsToShares(
-    tokenId,
-    ethers.BigNumber.from(amount)
-  );
-
-  return shares;
-};
 
 export function toDebtId(key: ethers.BigNumber): ethers.BigNumber {
   const tokenTypeBits = ethers.BigNumber.from(3).shl(248);
@@ -86,12 +61,15 @@ export const getDytmWithdrawTxData = async (
   asset: string,
   amount: ethers.BigNumber | string
 ): Promise<string> => {
+  const isMaxAmount = ethers.BigNumber.from(amount).eq(
+    ethers.constants.MaxUint256
+  );
   return iOffice.encodeFunctionData("withdraw", [
     {
       account: ethers.BigNumber.from(pool.address), // uint256 (converted address)
       tokenId: asset,
-      assets: amount,
-      shares: "0",
+      assets: isMaxAmount ? 0 : amount,
+      shares: isMaxAmount ? amount : 0,
       receiver: pool.address,
       extraData: "0x"
     }

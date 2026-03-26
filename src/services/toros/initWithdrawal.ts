@@ -165,6 +165,6 @@ export const getInitWithdrawalTxData = async (
       amountIn,
       complexAssetsData
     ]),
-    minAmountOut: "0"
+    minAmountOut: null // not be used when building multicall tx data
   };
 };
