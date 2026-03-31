@@ -56,7 +56,7 @@ export async function getEasySwapperTxData(
   amountIn: ethers.BigNumber,
   slippage: number
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): Promise<any> {
+): Promise<{ swapTxData: string; minAmountOut?: any }> {
   const isWithdrawal = await isPool(pool, assetFrom);
   const [torosAsset, investAsset] = isWithdrawal
     ? [assetFrom, assetTo]
@@ -85,11 +85,13 @@ export async function getEasySwapperTxData(
       investAsset,
       amountIn
     );
-    return iEasySwapperV2.encodeFunctionData("depositWithCustomCooldown", [
-      torosAsset,
-      depositAsset,
-      amountIn,
-      minAmountOut.mul(10000 - slippage * 100).div(10000)
-    ]);
+    const _minAmountOut = minAmountOut.mul(10000 - slippage * 100).div(10000);
+    return {
+      swapTxData: iEasySwapperV2.encodeFunctionData(
+        "depositWithCustomCooldown",
+        [torosAsset, depositAsset, amountIn, _minAmountOut]
+      ),
+      minAmountOut: _minAmountOut
+    };
   }
 }

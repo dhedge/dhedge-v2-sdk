@@ -14,15 +14,14 @@ import { getSwapDataViaOdos, SWAPPER_ADDERSS } from "./swapData";
 
 export interface TrackedAsset {
   token: string;
-  balance: ethers.BigNumber;
+  balance: ethers.BigNumber | string;
 }
 
 const getSwapWithdrawData = async (
   pool: Pool,
   trackedAssets: TrackedAsset[],
   receiveToken: string,
-  slippage: number,
-  swapDestMinDestAmount: BigNumber
+  slippage: number
 ) => {
   const srcData = [];
   const routerKey = ethers.utils.formatBytes32String("ODOS_V3");
@@ -56,23 +55,27 @@ const getSwapWithdrawData = async (
     srcData,
     destData: {
       destToken: receiveToken,
-      minDestAmount: swapDestMinDestAmount.toString()
+      minDestAmount: "0"
     }
   };
 };
+
 export const createCompleteWithdrawalTxArguments = async (
   pool: Pool,
   receiveToken: string,
-  slippage: number
+  slippage: number,
+  _trackedAssets: TrackedAsset[]
 ): Promise<any> => {
   const easySwapper = new ethers.Contract(
     routerAddress[pool.network][Dapp.TOROS] as string,
     IEasySwapperV2,
     pool.signer
   );
-  const trackedAssets: TrackedAsset[] = await easySwapper.getTrackedAssets(
-    pool.address
-  );
+
+  let trackedAssets: TrackedAsset[] = _trackedAssets;
+  if (trackedAssets.length === 0) {
+    trackedAssets = await easySwapper.getTrackedAssets(pool.address);
+  }
 
   if (
     trackedAssets.length === 0 ||
@@ -156,9 +159,19 @@ export const createCompleteWithdrawalTxArguments = async (
   const withdrawalVaultAddress = await easySwapper.withdrawalContracts(
     pool.address
   );
-  const balanceOfReceiveToken = await receiveTokenErc20.balanceOf(
+  let balanceOfReceiveToken = await receiveTokenErc20.balanceOf(
     withdrawalVaultAddress
   );
+
+  if (trackedAssets.length != 0) {
+    //  finds the receiveTokenErc20's balance inside trackedAssets
+    const trackedAsset = trackedAssets.find(
+      ({ token }) => token.toLowerCase() === receiveToken.toLowerCase()
+    );
+    if (trackedAsset) {
+      balanceOfReceiveToken += trackedAsset.balance;
+    }
+  }
 
   // complete withdraw _expectedDestTokenAmount
   const estimatedMinReceiveAmount = swapDestMinDestAmount.plus(
@@ -169,8 +182,7 @@ export const createCompleteWithdrawalTxArguments = async (
     pool,
     swapTrackedAssets,
     receiveToken,
-    slippage,
-    estimatedMinReceiveAmount
+    slippage
   );
 
   return {
@@ -184,12 +196,14 @@ export const getCompleteWithdrawalTxData = async (
   pool: Pool,
   receiveToken: string,
   slippage: number,
-  useOnChainSwap: boolean
+  useOnChainSwap: boolean,
+  trackedAssets: TrackedAsset[]
 ): Promise<string> => {
   const completeWithdrawTxArguments = await createCompleteWithdrawalTxArguments(
     pool,
     receiveToken,
-    slippage
+    slippage,
+    trackedAssets
   );
 
   const isSwapNeeded = completeWithdrawTxArguments.isSwapNeeded;

@@ -59,7 +59,8 @@ export const routerAddress: AddressDappNetworkMap = {
     [Dapp.TOROS]: "0xA5679C4272A056Bb83f039961fae7D99C48529F5",
     [Dapp.ODOS]: "0x0D05a7D3448512B78fa8A9e46c4872C88C4a0D05",
     [Dapp.PENDLE]: "0x888888888889758F76e7103c6CbF23ABbF58F946",
-    [Dapp.KYBERSWAP]: "0x6131B5fae19EA4f9D964eAc0408E4408b66337b5"
+    [Dapp.KYBERSWAP]: "0x6131B5fae19EA4f9D964eAc0408E4408b66337b5",
+    [Dapp.DYTM]: "0x0fF1CEE337d7af25eEF4c1a7A2CaF83f98d80001"
   },
   [Network.BASE]: {
     [Dapp.ONEINCH]: "0x111111125421ca6dc452d289314280a0f8842a65",
@@ -242,4 +243,17 @@ export const OdosSwapFeeRecipient = {
   [Network.BASE]: "0x5619AD05b0253a7e647Bd2E4C01c7f40CEaB0879",
   [Network.ETHEREUM]: "0xfbD2B4216f422DC1eEe1Cff4Fb64B726F099dEF5",
   [Network.PLASMA]: ""
+};
+
+export const dytmContractAddresses: Readonly<Partial<
+  Record<
+    Network,
+    {
+      Periphery?: string;
+    }
+  >
+>> = {
+  [Network.ARBITRUM]: {
+    Periphery: "0x1FBe7Bb394BE505C08e9ee419Dd166c71004e51B"
+  }
 };
