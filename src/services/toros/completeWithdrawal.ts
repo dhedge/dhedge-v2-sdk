@@ -159,9 +159,19 @@ export const createCompleteWithdrawalTxArguments = async (
   const withdrawalVaultAddress = await easySwapper.withdrawalContracts(
     pool.address
   );
-  const balanceOfReceiveToken = await receiveTokenErc20.balanceOf(
+  let balanceOfReceiveToken = await receiveTokenErc20.balanceOf(
     withdrawalVaultAddress
   );
+
+  if (trackedAssets.length != 0) {
+    //  finds the receiveTokenErc20's balance inside trackedAssets
+    const trackedAsset = trackedAssets.find(
+      ({ token }) => token.toLowerCase() === receiveToken.toLowerCase()
+    );
+    if (trackedAsset) {
+      balanceOfReceiveToken += trackedAsset.balance;
+    }
+  }
 
   // complete withdraw _expectedDestTokenAmount
   const estimatedMinReceiveAmount = swapDestMinDestAmount.plus(
