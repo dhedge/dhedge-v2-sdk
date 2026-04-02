@@ -120,8 +120,7 @@ const testToros = ({ network, provider }: TestingRunParams) => {
         {
           estimateGas: false,
           onlyGetTxData: true
-        },
-        tradeResult.minAmountOut
+        }
       );
       expect(completWithdrawResult.txData).toBeDefined();
     });

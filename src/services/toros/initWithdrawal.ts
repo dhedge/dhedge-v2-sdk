@@ -34,12 +34,13 @@ const getCalculateSwapDataParams = async (
   const assetGuard = new ethers.Contract(
     assetGuardAddress,
     AaveLendingPoolAssetGuardAbi,
-    pool.signer
+    pool.signer.provider
   );
   const swapDataParams = await assetGuard.callStatic.calculateSwapDataParams(
     torosAsset,
     amountIn,
-    slippage
+    slippage,
+    { from: ethers.constants.AddressZero }
   );
 
   return {
