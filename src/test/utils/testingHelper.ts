@@ -9,6 +9,8 @@ import {
 } from "../constants";
 import { Pool } from "../../entities";
 import AssetHandler from "../../abi/AssetHandler.json";
+import PoolLogicAbi from "../../abi/PoolLogic.json";
+import PoolManagerLogicAbi from "../../abi/PoolManagerLogic.json";
 
 export type TestingRunParams = {
   network: Network;
@@ -144,6 +146,119 @@ export const runWithImpersonateAccount = async (
   await fnToRun({ signer });
 
   await provider.send("hardhat_stopImpersonatingAccount", [account]);
+};
+
+// Fixes oracle staleness reverts on hardhat forks for ChainlinkPythPriceAggregator and PythPriceAggregator.
+// These aggregators have their own maxAge staleness checks separate from the AssetHandler's chainlinkTimeout.
+// This function dynamically finds all such aggregators for a pool's supported assets and overrides
+// their maxAge fields to max uint32 (0xffffffff, ~136 years).
+//
+// ChainlinkPythPriceAggregator storage layout:
+//   slot 0: asset (address)
+//   slot 1: oracleData.onchainOracle = [12 bytes padding][4 bytes maxAge][20 bytes oracleContract]
+//   slot 2: oracleData.offchainOracle.priceId (bytes32)
+//   slot 3: oracleData.offchainOracle = [24 bytes padding][4 bytes minConfidenceRatio][4 bytes maxAge]
+//
+// PythPriceAggregator storage layout:
+//   slot 0: asset (address)
+//   slot 1: oracleData.priceId (bytes32)
+//   slot 2: oracleData = [24 bytes padding][4 bytes minConfidenceRatio][4 bytes maxAge]
+const MAX_UINT32_HEX = "ffffffff";
+
+const overrideMaxAgeInSlot = async (
+  provider: ethers.providers.JsonRpcProvider,
+  contractAddress: string,
+  slotIndex: string,
+  maxAgeHexOffset: number // character offset of maxAge within the 64-char hex string
+): Promise<void> => {
+  const slot: string = await provider.send("eth_getStorageAt", [
+    contractAddress,
+    slotIndex,
+    "latest"
+  ]);
+  const hex = slot.slice(2); // remove 0x
+  const newHex =
+    hex.slice(0, maxAgeHexOffset) +
+    MAX_UINT32_HEX +
+    hex.slice(maxAgeHexOffset + 8);
+  await provider.send("hardhat_setStorageAt", [
+    contractAddress,
+    slotIndex,
+    "0x" + newHex
+  ]);
+};
+
+export const fixOracleAggregatorStaleness = async ({
+  pool,
+  provider
+}: {
+  pool: Pool;
+  provider: ethers.providers.JsonRpcProvider;
+}): Promise<void> => {
+  const assetHandlerAddress = await pool.factory.callStatic.getAssetHandler();
+  const assetHandlerContract = new Contract(
+    assetHandlerAddress,
+    AssetHandler.abi,
+    provider
+  );
+
+  // Resolve managerLogic from poolLogic to support both isDhedge=true and isDhedge=false pools
+  const poolLogic = new Contract(pool.address, PoolLogicAbi.abi, provider);
+  const managerLogicAddress: string = await poolLogic.poolManagerLogic();
+  const managerLogic = new Contract(
+    managerLogicAddress,
+    PoolManagerLogicAbi.abi,
+    provider
+  );
+  const supportedAssets: {
+    asset: string;
+  }[] = await managerLogic.getSupportedAssets();
+
+  // ABI fragments to detect aggregator type
+  const chainlinkPythAbi = [
+    "function oracleData() view returns (address oracleContract, uint32 maxAge)"
+  ];
+  const pythAbi = [
+    "function oracleData() view returns (bytes32 priceId, uint32 maxAge, uint32 minConfidenceRatio)"
+  ];
+
+  for (const { asset } of supportedAssets) {
+    try {
+      const aggregatorAddress: string = await assetHandlerContract.priceAggregators(
+        asset
+      );
+      if (aggregatorAddress === ethers.constants.AddressZero) continue;
+
+      // Try ChainlinkPythPriceAggregator first (has onchainOracle + offchainOracle)
+      const agg = new Contract(aggregatorAddress, chainlinkPythAbi, provider);
+      try {
+        await agg.oracleData();
+        // ChainlinkPythPriceAggregator detected
+        // Slot 1: onchain maxAge at hex offset 16 (after 12 bytes padding = 24 hex, but maxAge is before address)
+        // Layout: [12 bytes padding][4 bytes maxAge][20 bytes oracleContract]
+        await overrideMaxAgeInSlot(provider, aggregatorAddress, "0x1", 16);
+        // Slot 3: offchain maxAge
+        // Layout: [24 bytes padding][4 bytes minConfidenceRatio][4 bytes maxAge]
+        await overrideMaxAgeInSlot(provider, aggregatorAddress, "0x3", 48);
+        continue;
+      } catch {
+        // Not a ChainlinkPythPriceAggregator
+      }
+
+      // Try PythPriceAggregator (has only offchainOracle)
+      const pythAgg = new Contract(aggregatorAddress, pythAbi, provider);
+      try {
+        await pythAgg.oracleData();
+        // PythPriceAggregator detected
+        // Slot 2: [24 bytes padding][4 bytes minConfidenceRatio][4 bytes maxAge]
+        await overrideMaxAgeInSlot(provider, aggregatorAddress, "0x2", 48);
+      } catch {
+        // Not a PythPriceAggregator either — skip
+      }
+    } catch {
+      // No aggregator set for this asset — skip
+    }
+  }
 };
 
 export const setChainlinkTimeout = async (
