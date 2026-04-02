@@ -1,15 +1,27 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Dapp, ethers, Pool } from "../..";
+import { Dapp, ethers, Network, Pool } from "../..";
 import { networkChainIdMap, routerAddress } from "../../config";
 import { retry } from "./retry";
 import AaveLendingPoolAssetGuardAbi from "../../abi/IAaveLendingPoolAssetGuard.json";
 import IEasySwapperV2 from "../../abi/IEasySwapperV2.json";
 import { loadPool } from "./pool";
 import { getSwapDataViaOdos, SWAPPER_ADDERSS } from "./swapData";
-const AAVE_WITHDRAW_ONCHAIN_SWAP_SLIPPAGE = 150; // 1.5% slippage for onchain swap in Aave withdrawal
+const COMPLEX_ASSET_ONCHAIN_SWAP_SLIPPAGE = 150; // 1.5% slippage for onchain swap in complex asset withdrawal
+
+// Returns addresses of complex assets that require off-chain swap data during withdrawal.
+// Add new complex asset dapps here as they are integrated.
+const getComplexAssetAddresses = (network: Network): string[] => {
+  const addresses: string[] = [];
+  const aaveAddress = routerAddress[network]?.[Dapp.AAVEV3];
+  if (aaveAddress) addresses.push(aaveAddress);
+  const dytmAddress = routerAddress[network]?.[Dapp.DYTM];
+  if (dytmAddress) addresses.push(dytmAddress);
+  return addresses;
+};
 
 const getCalculateSwapDataParams = async (
   pool: Pool,
+  dappAddress: string,
   torosAsset: string,
   amountIn: string,
   slippage: number
@@ -17,19 +29,18 @@ const getCalculateSwapDataParams = async (
   offchainSwapNeeded: boolean;
   swapDataParams: any;
 }> => {
-  const aaveAssetGuardAddress = await pool.factory.getAssetGuard(
-    routerAddress[pool.network][Dapp.AAVEV3] as string
-  );
+  const assetGuardAddress = await pool.factory.getAssetGuard(dappAddress);
 
-  const aaveAssetGuard = new ethers.Contract(
-    aaveAssetGuardAddress,
+  const assetGuard = new ethers.Contract(
+    assetGuardAddress,
     AaveLendingPoolAssetGuardAbi,
-    pool.signer
+    pool.signer.provider
   );
-  const swapDataParams = await aaveAssetGuard.callStatic.calculateSwapDataParams(
+  const swapDataParams = await assetGuard.callStatic.calculateSwapDataParams(
     torosAsset,
     amountIn,
-    slippage
+    slippage,
+    { from: ethers.constants.AddressZero }
   );
 
   return {
@@ -38,7 +49,7 @@ const getCalculateSwapDataParams = async (
   };
 };
 
-const getAaveAssetWithdrawData = async (
+const getComplexAssetWithdrawData = async (
   pool: Pool,
   swapDataParams: any,
   slippage: number
@@ -96,31 +107,32 @@ export const createWithdrawTxArguments = async (
       return {
         supportedAsset: assetObj.asset,
         withdrawData: "0x",
-        slippageTolerance: AAVE_WITHDRAW_ONCHAIN_SWAP_SLIPPAGE
+        slippageTolerance: COMPLEX_ASSET_ONCHAIN_SWAP_SLIPPAGE
       };
     });
   }
 
   // for off-chain swap
-  const aaveLendingPoolAddress = routerAddress[pool.network][
-    Dapp.AAVEV3
-  ] as string;
+  const complexAssetAddresses = getComplexAssetAddresses(pool.network);
+
   return Promise.all(
     supportedAssets.map(async assetObj => {
-      if (
-        assetObj.asset.toLowerCase() === aaveLendingPoolAddress.toLowerCase()
-      ) {
+      const complexAssetDappAddress = complexAssetAddresses.find(
+        addr => addr.toLowerCase() === assetObj.asset.toLowerCase()
+      );
+      if (complexAssetDappAddress) {
         const {
           offchainSwapNeeded,
           swapDataParams
         } = await getCalculateSwapDataParams(
           pool,
+          complexAssetDappAddress,
           torosAsset,
           amountIn,
           slippage
         );
         if (offchainSwapNeeded) {
-          const withdrawData = await getAaveAssetWithdrawData(
+          const withdrawData = await getComplexAssetWithdrawData(
             pool,
             swapDataParams,
             slippage
