@@ -2156,10 +2156,13 @@ export class Pool {
     return tx;
   }
 
-  /** Deposit USDC for Hyperliquid Perp trading
+  /** Deposit USDC from EVM to a HyperCore trading dex via the CoreDepositWallet.
+   *  This bridges USDC on-chain to Hyperliquid for perp/spot trading.
    *
-   * @param {BigNumber | string } amount Amount to deposit
-   * @param {number} dexId DEX Id (default 0) (Main Perp DEX)
+   * @param {BigNumber | string} amount USDC amount to deposit (6 decimals, e.g. "1000000" = 1 USDC)
+   * @param {number} dexId Destination dex ID where USDC will be available (default 0)
+   *   - 0: Core Perp dex (standard perps like BTC, ETH)
+   *   - 1: xyz HIP-3 dex (builder perps like TSLA, GOLD)
    * @param {any} options Transaction options
    * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
@@ -2184,14 +2187,18 @@ export class Pool {
     return tx;
   }
 
-  /** Move USDC from Perp to Spot on Hyperliquid
+  /** Move USDC from a HyperCore trading dex to the Spot wallet.
+   *  Required before calling withdrawHyperliquid() to bridge USDC back to EVM.
    *
-   * @param {number} dexId DEX Id  (0 is Main Perp DEX)
-   * @param {BigNumber | string } amount Amount to deposit
+   * @param {number} dexId Source dex ID where USDC currently sits
+   *   - 0: Core Perp dex (standard perps like BTC, ETH)
+   *   - 1: xyz HIP-3 dex (builder perps like TSLA, GOLD)
+   * @param {BigNumber | string} amount USDC amount to transfer (6 decimals, e.g. "1000000" = 1 USDC)
    * @param {any} options Transaction options
    * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
+
   async perpToSpotHyperliquid(
     dexId: number,
     amount: BigNumber | string,
@@ -2212,13 +2219,15 @@ export class Pool {
     return tx;
   }
 
-  /** Withdraw USDC from Hyperliquid Spot
+  /** Withdraw USDC from Hyperliquid Spot wallet back to EVM.
+   *  USDC must be in the Spot wallet first — use perpToSpotHyperliquid() to move it from a trading dex.
    *
-   * @param {BigNumber | string } amount Amount to withdraw
+   * @param {BigNumber | string} amount USDC amount to withdraw (6 decimals, e.g. "1000000" = 1 USDC)
    * @param {any} options Transaction options
    * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
    */
+
   async withdrawHyperliquid(
     amount: BigNumber | string,
     options: any = null,
@@ -2236,8 +2245,9 @@ export class Pool {
 
   /** Open a market order on Hyperliquid
    *  @param {number} assetId Asset id
-   * @param {BigNumber | string } value Value changed (positive for long, negative for short)
-   * @param {boolean} isLong Long or short
+   * @param {boolean} isLong Long or short (Note: Spot assets only support long positions)
+   * @param {number} value Order value in base asset units (positive for opening/increasing,
+   *        negative for closing/reducing or selling spot)
    * @param {number } slippage Slippage tolerance in %
    * @param {any} options Transaction options
    * @param {SDKOptions} sdkOptions SDK options including estimateGas

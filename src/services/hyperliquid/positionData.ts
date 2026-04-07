@@ -1,7 +1,9 @@
 import axios from "axios";
-import { API_URL } from "./constants";
+import { API_URL, dexIdNameMap } from "./constants";
+import { perpDexIndex } from "./marketData";
 
 export const getPositionSize = async (
+  assetId: number,
   isSpot: boolean,
   assetName: string,
   user: string
@@ -19,7 +21,8 @@ export const getPositionSize = async (
   } else {
     const response = await axios.post(API_URL, {
       type: "clearinghouseState",
-      user
+      user,
+      dex: dexIdNameMap[perpDexIndex(assetId)]
     });
     const position = response.data.assetPositions.find(
       (e: { position: { coin: string } }) => e.position.coin === assetName

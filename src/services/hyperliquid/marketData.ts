@@ -3,7 +3,7 @@ import { API_URL, dexIdNameMap } from "./constants";
 import { BigNumber } from "bignumber.js";
 import { ApiError } from "../..";
 
-const perpDexIndex = (assetId: number): number => {
+export const perpDexIndex = (assetId: number): number => {
   return Math.max(Math.floor((assetId - 100000) / 10000), 0);
 };
 

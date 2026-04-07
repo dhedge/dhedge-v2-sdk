@@ -135,6 +135,7 @@ export const getClosePositionHyperliquidTxData = async (
   const isSpot = isSpotAsset(assetId);
   const { assetName, szDecimals, baseTokenName } = await getAssetInfo(assetId);
   const positionSize = await getPositionSize(
+    assetId,
     isSpot,
     baseTokenName ?? assetName,
     poolAddress
