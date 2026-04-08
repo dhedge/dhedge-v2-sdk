@@ -18,6 +18,7 @@ import {
   MaxUint128,
   nonfungiblePositionManagerAddress,
   routerAddress,
+  gpv2SettlementAddress,
   stakingAddress,
   SYNTHETIX_TRACKING_CODE,
   limitOrderAddress
@@ -96,6 +97,7 @@ import {
   hasActiveTorosLimitOrder
 } from "../services/toros/limitOrder";
 import { getKyberSwapTxData } from "../services/kyberSwap";
+import { getCowSwapTxData } from "../services/cowSwap";
 import {
   getClosePositionHyperliquidTxData,
   getDepositHyperliquidTxData,
@@ -471,6 +473,46 @@ export class Pool {
           slippage
         ));
         break;
+      case Dapp.COWSWAP: {
+        const {
+          encodedTypedData,
+          preSignTxData,
+          minAmountOut: cowMinOut
+        } = await getCowSwapTxData(
+          this,
+          assetFrom,
+          assetTo,
+          amountIn,
+          slippage
+        );
+        // Tx 1: manager calls submit() directly on TypedStructuredDataValidator (not via pool.execTransaction)
+        const validatorContract = new Contract(
+          routerAddress[this.network][dapp] as string,
+          [
+            "function submit(address _poolLogic, uint8 _dataType, bytes memory _structuredData) external"
+          ],
+          this.signer
+        );
+        const submitTx = await validatorContract.submit(
+          this.address,
+          1 /* COWSWAP_ORDER */,
+          encodedTypedData,
+          ...(options ? [options] : [])
+        );
+        await submitTx.wait();
+
+        // Tx 2: pool.execTransaction → setPreSignature() on GPv2Settlement — guard checks stored digest, solvers execute
+        return getPoolTxOrGasEstimate(
+          this,
+          [
+            gpv2SettlementAddress[this.network],
+            preSignTxData,
+            options,
+            cowMinOut
+          ],
+          sdkOptions
+        );
+      }
       default:
         const iUniswapV2Router = new ethers.utils.Interface(
           IUniswapV2Router.abi

@@ -35,7 +35,8 @@ export enum Dapp {
   ODOS = "odos",
   PENDLE = "pendle",
   KYBERSWAP = "kyberswap",
-  HYPERLIQUID = "hyperliquid"
+  HYPERLIQUID = "hyperliquid",
+  COWSWAP = "cowswap"
 }
 
 export enum Transaction {
