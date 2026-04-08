@@ -73,14 +73,39 @@ export const getAssetInfo = async (
       baseTokenName: baseToken.name
     };
   } else {
+    const dex = dexIdNameMap[perpDexIndex(assetId)];
     const response = await axios.post(API_URL, {
       type: "metaAndAssetCtxs",
-      dex: dexIdNameMap[perpDexIndex(assetId)]
+      dex
     });
-    const assets = response.data[0].universe;
+    if (!Array.isArray(response.data) || response.data.length === 0) {
+      throw new ApiError(
+        `Hyperliquid metaAndAssetCtxs response has invalid data for assetId ${assetId} (dex ${String(
+          dex
+        )})`
+      );
+    }
+    const meta = response.data[0];
+    if (!meta || !Array.isArray(meta.universe)) {
+      throw new ApiError(
+        `Hyperliquid metaAndAssetCtxs response contains no universe for assetId ${assetId} (dex ${String(
+          dex
+        )})`
+      );
+    }
+    const assets = meta.universe;
+    const index = assetIndex(assetId);
+    if (index < 0 || index >= assets.length) {
+      throw new ApiError(
+        `Hyperliquid metaAndAssetCtxs response contains no asset for assetId ${assetId} (dex ${String(
+          dex
+        )}, index ${index}, universe length ${assets.length})`
+      );
+    }
+    const asset = assets[index];
     return {
-      assetName: assets[assetIndex(assetId)].name,
-      szDecimals: assets[assetIndex(assetId)].szDecimals
+      assetName: asset.name,
+      szDecimals: asset.szDecimals
     };
   }
 };
