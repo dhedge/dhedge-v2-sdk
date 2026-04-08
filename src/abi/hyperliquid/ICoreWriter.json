@@ -1,0 +1,1 @@
+[{"anonymous": false,"inputs": [{"indexed": true,"internalType": "address","name": "user","type": "address"},{"indexed": false,"internalType": "bytes","name": "data","type": "bytes"}],"name": "RawAction","type": "event"},{"inputs": [{"internalType": "bytes","name": "data","type": "bytes"}],"name": "sendRawAction","outputs": [],"stateMutability": "nonpayable","type": "function"}]
