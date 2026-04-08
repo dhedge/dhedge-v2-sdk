@@ -2367,6 +2367,9 @@ export class Pool {
     sdkOptions: SDKOptions = { estimateGas: false }
   ): Promise<any> {
     const managerAddress = limitOrderAddress[this.network];
+    if (!managerAddress) {
+      throw new Error(`Limit orders not supported on ${this.network}`);
+    }
     const resolvedStopLoss =
       stopLossPriceD18 == null
         ? BigNumber.from(0)
@@ -2412,6 +2415,9 @@ export class Pool {
     sdkOptions: SDKOptions = { estimateGas: false }
   ): Promise<any> {
     const managerAddress = limitOrderAddress[this.network];
+    if (!managerAddress) {
+      throw new Error(`Limit orders not supported on ${this.network}`);
+    }
     const resolvedStopLoss =
       stopLossPriceD18 == null
         ? BigNumber.from(0)
@@ -2449,6 +2455,9 @@ export class Pool {
     sdkOptions: SDKOptions = { estimateGas: false }
   ): Promise<any> {
     const managerAddress = limitOrderAddress[this.network];
+    if (!managerAddress) {
+      throw new Error(`Limit orders not supported on ${this.network}`);
+    }
     const txData = getDeleteLimitOrderTxData(vaultAddress);
     return getPoolTxOrGasEstimate(
       this,

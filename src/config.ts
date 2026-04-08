@@ -251,7 +251,7 @@ export const limitOrderAddress: AddressNetworkMap = {
   [Network.OPTIMISM]: "0x3bFE2a472d2964Ea4070725b7Fb0A868b3f08b63",
   [Network.ARBITRUM]: "0x26a687e8244f1866E9Aa2D400c8b9957Aa8e6Ad4",
   [Network.BASE]: "0xFcBEc28c43E356693971a24bf3F2Fd7D965E2ebA",
-  [Network.ETHEREUM]: "",
+  [Network.ETHEREUM]: "0x95B19De479bc693721cab39Da98FfECE062f5Ea4",
   [Network.PLASMA]: "",
   [Network.HYPERLIQUID]: ""
 };
