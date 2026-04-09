@@ -510,7 +510,10 @@ export class Pool {
           encodedTypedData,
           ...(options ? [options] : [])
         );
-        await submitTx.wait();
+        const submitReceipt = await submitTx.wait();
+        if (submitReceipt.status === 0) {
+          return submitReceipt;
+        }
 
         // Tx 2: pool.execTransaction → setPreSignature() on GPv2Settlement — guard checks stored digest, solvers execute
         return getPoolTxOrGasEstimate(
