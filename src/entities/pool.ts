@@ -70,7 +70,7 @@ import {
   getExitVestTxData,
   getRewardsTxDta
 } from "../services/ramses/vesting";
-import { getPoolTxOrGasEstimate } from "../utils/contract";
+import { getPoolTxOrGasEstimate, isSdkOptionsBoolean } from "../utils/contract";
 import {
   cancelOrderViaFlatMoney,
   mintUnitViaFlatMoney,
@@ -474,6 +474,17 @@ export class Pool {
         ));
         break;
       case Dapp.COWSWAP: {
+        const cowSwapEstimateGas = isSdkOptionsBoolean(sdkOptions)
+          ? sdkOptions
+          : sdkOptions.estimateGas;
+        if (
+          cowSwapEstimateGas ||
+          (!isSdkOptionsBoolean(sdkOptions) && sdkOptions.onlyGetTxData)
+        ) {
+          throw new Error(
+            "CowSwap requires two sequential transactions (submit + preSign) and does not support estimateGas or onlyGetTxData"
+          );
+        }
         const {
           encodedTypedData,
           preSignTxData,
