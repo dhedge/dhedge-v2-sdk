@@ -35,7 +35,7 @@ const testCowswap = ({ wallet, network }: TestingRunParams) => {
     //     "0xC92E8bdf79f0507f65a392b0ab4667716BFE0110", //Vault relayer
     //     pool.signer
     //   );
-    //   await expect(usdcAllowanceDelta.gt(0));
+    //   await expect(usdcAllowanceDelta.gt(0).toBe(true));
     // });
 
     // it("gets gas estimation for 2 USDC into WETH on Cowswap", async () => {
@@ -69,7 +69,7 @@ const testCowswap = ({ wallet, network }: TestingRunParams) => {
         WETH,
         pool.signer
       );
-      expect(wethBalanceDelta.gt(0));
+      expect(wethBalanceDelta.gt(0)).toBe(true);
     });
   });
 };
