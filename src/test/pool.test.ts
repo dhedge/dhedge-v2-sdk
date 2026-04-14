@@ -1,12 +1,18 @@
-import { Dhedge, Network, Pool } from "..";
-import { CONTRACT_ADDRESS, TEST_POOL } from "./constants";
+import { Dhedge, ethers, Network, Pool } from "..";
+import { AssetEnabled } from "../types";
+import { CONTRACT_ADDRESS } from "./constants";
 
-import { testingHelper, TestingRunParams } from "./utils/testingHelper";
-import { balanceDelta } from "./utils/token";
-// import { allowanceDelta } from "./utils/token";
-// import { balanceDelta } from "./utils/token";
+import {
+  testingHelper,
+  TestingRunParams,
+  beforeAfterReset,
+  setUSDCAmount,
+  setChainlinkTimeout,
+  fixOracleAggregatorStaleness
+} from "./utils/testingHelper";
+import { allowanceDelta, balanceDelta } from "./utils/token";
 
-const testPool = ({ wallet, network }: TestingRunParams) => {
+const testPool = ({ wallet, network, provider }: TestingRunParams) => {
   let dhedge: Dhedge;
   let pool: Pool;
 
@@ -14,104 +20,99 @@ const testPool = ({ wallet, network }: TestingRunParams) => {
 
   describe(`pool on ${network}`, () => {
     beforeAll(async () => {
+      await provider.send("hardhat_setBalance", [
+        wallet.address,
+        "0x10000000000000000"
+      ]);
       dhedge = new Dhedge(wallet, network);
-      pool = await dhedge.loadPool(TEST_POOL[network]);
+
+      // Create a fresh pool with USDC and WETH
+      pool = await dhedge.createPool("Test Manager", "Pool Test Fund", "PTF", [
+        [CONTRACT_ADDRESS[network].USDC, true],
+        [CONTRACT_ADDRESS[network].WETH, false]
+      ]);
+
+      // Extend oracle timeouts so price feeds work on fork
+      await setChainlinkTimeout({ pool, provider }, 86400 * 365);
+      await fixOracleAggregatorStaleness({ pool, provider });
+
+      // Fund wallet with USDC for deposit test
+      await setUSDCAmount({
+        amount: (100 * 1e6).toString(),
+        userAddress: wallet.address,
+        network,
+        provider
+      });
     });
 
-    // it("checks fund composition", async () => {
-    //   const result = await pool.getComposition();
-    //   console.log(result);
-    //   expect(result.length).toBeGreaterThan(0);
-    // });
+    beforeAfterReset({ beforeAll, afterAll, provider });
 
-    // it("sets max supply cap", async () => {
-    //   const totalSupply: BigNumber = await pool.poolLogic.totalSupply();
-    //   let initCap = totalSupply;
-    //   if (totalSupply.eq(0)) {
-    //     initCap = BigNumber.from(1000).mul(BigNumber.from(10).pow(18));
-    //   }
-    //   await pool.setMaxCap(initCap.mul(2), null, true);
-    //   const tx = await pool.setMaxCap(initCap.mul(2));
-    //   await tx.wait(1);
-    //   const maxCapAfter: BigNumber = await pool.managerLogic.maxSupplyCap();
-    //   expect(maxCapAfter).toEqual(initCap.mul(2));
-    // });
+    it("checks fund composition", async () => {
+      const result = await pool.getComposition();
+      expect(result.length).toBeGreaterThan(0);
+    });
 
-    // it("sets pool private", async () => {
-    //   const result = await pool.setPrivate(true);
-    //   expect(result).not.toBeNull();
-    // });
+    it("changes enabled assets (removes WETH, keeps USDC only)", async () => {
+      const assetsBefore = await pool.getComposition();
+      const newAssets: AssetEnabled[] = [
+        { asset: CONTRACT_ADDRESS[network].USDC, isDeposit: true }
+      ];
+      await pool.changeAssets(newAssets);
+      const assetsAfter = await pool.getComposition();
+      expect(assetsAfter.length).toBeLessThan(assetsBefore.length);
+    });
 
-    // it("adds WBTC to enabled assets", async () => {
-    //   const assetsBefore = await pool.getComposition();
-
-    //   const newAssets: AssetEnabled[] = [
-    //     { asset: CONTRACT_ADDRESS[network].USDC, isDeposit: true },
-    //     {
-    //       asset: "0x3333333333333333333333333333333333333333",
-    //       isDeposit: false
-    //     }
-    //   ];
-    //   await pool.changeAssets(newAssets);
-    //   const assetsAfter = await pool.getComposition();
-    //   expect(assetsAfter.length).toBeLessThanOrEqual(assetsBefore.length);
-    // });
-
-    // it("approves USDT balance of User for Deposit", async () => {
-    //   await pool.approveDeposit(
-    //     CONTRACT_ADDRESS[network].USDC,
-    //     ethers.constants.MaxUint256
-    //   );
-    //   const usdtAllowanceDelta = await allowanceDelta(
-    //     pool.signer.address,
-    //     CONTRACT_ADDRESS[network].USDC,
-    //     pool.address,
-    //     pool.signer
-    //   );
-    //   expect(usdtAllowanceDelta.gt(0));
-    // });
-
-    it("deposits 200 USDT into Pool", async () => {
-      await pool.deposit(CONTRACT_ADDRESS[network].USDC, (30000000).toString());
-      const poolTokenDelta = await balanceDelta(
-        pool.address,
+    it("approves USDC for deposit", async () => {
+      await pool.approveDeposit(
         CONTRACT_ADDRESS[network].USDC,
+        ethers.constants.MaxUint256
+      );
+      const usdcAllowanceDelta = await allowanceDelta(
+        wallet.address,
+        CONTRACT_ADDRESS[network].USDC,
+        pool.address,
         pool.signer
       );
-      expect(poolTokenDelta.gt(0));
+      expect(usdcAllowanceDelta.gt(0)).toBe(true);
     });
 
-    //   it("get available Manager Fee", async () => {
-    //     const result = await pool.getAvailableManagerFee();
-    //     expect(result).toBeInstanceOf(BigNumber);
-    //   });
+    it("deposits 30 USDC into pool", async () => {
+      await pool.deposit(CONTRACT_ADDRESS[network].USDC, (30 * 1e6).toString());
+      const poolTokenDelta = await balanceDelta(
+        wallet.address,
+        pool.address,
+        pool.signer
+      );
+      expect(poolTokenDelta.gt(0)).toBe(true);
+    });
 
-    //   it("mintManagerFee; should not revert", async () => {
-    //     const tx = await pool.mintManagerFee();
-    //     expect(tx).toHaveProperty("wait");
-    //   });
+    it("gets available manager fee", async () => {
+      const result = await pool.getAvailableManagerFee();
+      expect(result).toBeDefined();
+    });
 
-    //   it("withdraw 0.1 pool token into Pool", async () => {
-    //     await provider.send("evm_increaseTime", [24 * 60 * 60]);
-    //     await provider.send("evm_mine", []);
-    //     await pool.withdraw((0.1 * 1e18).toString());
-    //     const poolTokenDelta = await balanceDelta(
-    //       pool.signer.address,
-    //       pool.address,
-    //       pool.signer
-    //     );
-    //     expect(poolTokenDelta.lt(0));
-    //   });
+    it("withdraws pool tokens", async () => {
+      // Wait for exit cooldown after deposit
+      await provider.send("evm_increaseTime", [24 * 60 * 60]);
+      await provider.send("evm_mine", []);
+      const poolTokenBalance = await dhedge.utils.getBalance(
+        pool.address,
+        wallet.address
+      );
+      expect(poolTokenBalance.gt(0)).toBe(true);
+      await pool.withdraw(poolTokenBalance.div(2).toString());
+      const poolTokenDelta = await balanceDelta(
+        wallet.address,
+        pool.address,
+        pool.signer
+      );
+      expect(poolTokenDelta.lt(0)).toBe(true);
+    });
   });
 };
 
-// testingHelper({
-//   network: Network.POLYGON,
-//   testingRun: testPool
-// });
-
 testingHelper({
-  network: Network.HYPERLIQUID,
+  network: Network.ARBITRUM,
   testingRun: testPool,
-  onFork: false
+  onFork: true
 });

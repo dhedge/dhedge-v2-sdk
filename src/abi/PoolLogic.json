@@ -98,6 +98,44 @@
         {
           "indexed": false,
           "internalType": "address",
+          "name": "recipient",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "entryFeeAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "EntryFeeMinted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "recipient",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "exitFeeAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "ExitFeeMinted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
           "name": "pool",
           "type": "address"
         },
@@ -165,6 +203,25 @@
         }
       ],
       "name": "PoolPrivacyUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "referrer",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "ReferralFeeMinted",
       "type": "event"
     },
     {
@@ -350,19 +407,6 @@
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "availableManagerFee",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "fee",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
       "inputs": [
         {
           "internalType": "address",
@@ -385,7 +429,7 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "fundValue",
+          "name": "_fundValue",
           "type": "uint256"
         }
       ],
@@ -398,50 +442,6 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "currentBalance",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "liquidityMinted",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "newCooldown",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "lastCooldown",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "lastDepositTime",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "blockTimestamp",
-          "type": "uint256"
-        }
-      ],
-      "name": "calculateCooldown",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "cooldown",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "pure",
       "type": "function"
     },
     {
@@ -547,40 +547,16 @@
           "internalType": "uint256",
           "name": "_amount",
           "type": "uint256"
-        }
-      ],
-      "name": "depositFor",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "liquidityMinted",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_recipient",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "_asset",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_amount",
-          "type": "uint256"
         },
         {
           "internalType": "uint256",
           "name": "_cooldown",
           "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "_referrer",
+          "type": "address"
         }
       ],
       "name": "depositForWithCustomCooldown",
@@ -639,13 +615,7 @@
         }
       ],
       "name": "execTransactions",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "success",
-          "type": "bool"
-        }
-      ],
+      "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
     },
@@ -668,7 +638,7 @@
         },
         {
           "internalType": "address",
-          "name": "originator",
+          "name": "initiator",
           "type": "address"
         },
         {
@@ -705,7 +675,7 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "sender",
+          "name": "_depositor",
           "type": "address"
         }
       ],
@@ -856,25 +826,6 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "member",
-          "type": "address"
-        }
-      ],
-      "name": "isMemberAllowed",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
           "name": "",
           "type": "address"
         }
@@ -943,19 +894,6 @@
     },
     {
       "inputs": [],
-      "name": "managerName",
-      "outputs": [
-        {
-          "internalType": "string",
-          "name": "_managerName",
-          "type": "string"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
       "name": "mintManagerFee",
       "outputs": [],
       "stateMutability": "nonpayable",
@@ -972,6 +910,25 @@
         }
       ],
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes",
+          "name": "data",
+          "type": "bytes"
+        }
+      ],
+      "name": "onDelegationCallback",
+      "outputs": [
+        {
+          "internalType": "bytes",
+          "name": "",
+          "type": "bytes"
+        }
+      ],
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -1043,13 +1000,7 @@
         }
       ],
       "name": "setPoolManagerLogic",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
+      "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
     },
@@ -1200,6 +1151,41 @@
     {
       "inputs": [
         {
+          "internalType": "uint256",
+          "name": "_fundTokenAmount",
+          "type": "uint256"
+        },
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "supportedAsset",
+              "type": "address"
+            },
+            {
+              "internalType": "bytes",
+              "name": "withdrawData",
+              "type": "bytes"
+            },
+            {
+              "internalType": "uint256",
+              "name": "slippageTolerance",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct IPoolLogic.ComplexAsset[]",
+          "name": "_complexAssetsData",
+          "type": "tuple[]"
+        }
+      ],
+      "name": "withdrawSafe",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "address",
           "name": "_recipient",
           "type": "address"
@@ -1214,6 +1200,46 @@
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_recipient",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_fundTokenAmount",
+          "type": "uint256"
+        },
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "supportedAsset",
+              "type": "address"
+            },
+            {
+              "internalType": "bytes",
+              "name": "withdrawData",
+              "type": "bytes"
+            },
+            {
+              "internalType": "uint256",
+              "name": "slippageTolerance",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct IPoolLogic.ComplexAsset[]",
+          "name": "_complexAssetsData",
+          "type": "tuple[]"
+        }
+      ],
+      "name": "withdrawToSafe",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
     }
-  ]
+  ] 
 }

@@ -1036,8 +1036,20 @@ export class Pool {
       e.asset.toLocaleLowerCase()
     );
     const newAssets = assets.map(e => e.asset.toLocaleLowerCase());
-    const removedAssets = currentAssets.filter(e => !newAssets.includes(e));
+    const candidateRemovals = currentAssets.filter(e => !newAssets.includes(e));
     const changedAssets = assets.map(e => [e.asset, e.isDeposit]);
+
+    // Simulate each removal to filter out assets that can't be removed
+    // (non-zero balance, guard dependency, active order, etc.)
+    const removedAssets: string[] = [];
+    for (const asset of candidateRemovals) {
+      try {
+        await this.managerLogic.callStatic.changeAssets([], [asset]);
+        removedAssets.push(asset);
+      } catch {
+        // Asset can't be removed — skip it
+      }
+    }
 
     if (estimateGas) {
       return await this.managerLogic.estimateGas.changeAssets(
@@ -1950,7 +1962,8 @@ export class Pool {
    * @returns {Promise<BigNumber>} fee
    */
   async getAvailableManagerFee(): Promise<BigNumber> {
-    const fee = await this.poolLogic.availableManagerFee();
+    const fundValue = await this.managerLogic.totalFundValue();
+    const fee = await this.poolLogic.calculateAvailableManagerFee(fundValue);
     return BigNumber.from(fee);
   }
 
