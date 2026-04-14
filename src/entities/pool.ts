@@ -43,7 +43,7 @@ import {
   getIncreaseLiquidityTxData,
   getUniswapV3MintTxData
 } from "../services/uniswap/V3Liquidity";
-import { getUniswapV3SwapTxData } from "../services/uniswap/V3Trade";
+
 import { getEasySwapperTxData } from "../services/toros/easySwapper";
 import { getAaveV3ClaimTxData } from "../services/aave/incentives";
 import {
@@ -1596,45 +1596,6 @@ export class Pool {
         getRewardsTxDta(tokenId, rewards),
         options
       ],
-      sdkOptions
-    );
-    return tx;
-  }
-
-  /**
-   * Trade an asset into another asset
-   * @param {Dapp} dapp Platform like Sushiswap or Uniswap
-   * @param {string} assetFrom Asset to trade from
-   * @param {string} assetTo Asset to trade into
-   * @param {BigNumber | string} amountIn Amount
-   * @param { FeeAmount } feeAmount Fee tier (Low 0.05%, Medium 0.3%, High 1%)
-   * @param {number} slippage Slippage tolerance in %
-   * @param {any} options Transaction options
-   * @param {SDKOptions} sdkOptions SDK options including estimateGas
-   * @returns {Promise<any>} Transaction
-   */
-  async tradeUniswapV3(
-    assetFrom: string,
-    assetTo: string,
-    amountIn: BigNumber | string,
-    feeAmount: number,
-    slippage = 0.5,
-    options: any = null,
-    sdkOptions: SDKOptions = {
-      estimateGas: false
-    }
-  ): Promise<any> {
-    const swapxData = await getUniswapV3SwapTxData(
-      this,
-      assetFrom,
-      assetTo,
-      amountIn,
-      slippage,
-      feeAmount
-    );
-    const tx = await getPoolTxOrGasEstimate(
-      this,
-      [routerAddress[this.network][Dapp.UNISWAPV3], swapxData, options],
       sdkOptions
     );
     return tx;

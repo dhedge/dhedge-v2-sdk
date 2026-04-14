@@ -211,8 +211,6 @@ export const lyraNetworkMap: LyraNetworkMap = {
 };
 
 export const MaxUint128 = "0xffffffffffffffffffffffffffffffff";
-export const UNISWAPV3_QUOTER_ADDRESS =
-  "0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6";
 
 export const SYNTHETIX_TRACKING_CODE =
   "0x4448454447450000000000000000000000000000000000000000000000000000";
