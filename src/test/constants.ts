@@ -201,7 +201,7 @@ export const WETH_BALANCEOF_SLOT = {
   [Network.OPTIMISM]: 3,
   [Network.ARBITRUM]: 51,
   [Network.POLYGON]: 0,
-  [Network.BASE]: 0,
+  [Network.BASE]: 3,
   [Network.ETHEREUM]: 3,
   [Network.PLASMA]: 1,
   [Network.HYPERLIQUID]: 1

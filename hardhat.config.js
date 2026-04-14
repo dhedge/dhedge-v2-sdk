@@ -1,12 +1,13 @@
 module.exports = {
   networks: {
-    baseGoerli: {
-      url: "https://goerli.base.org", // Replace with your node URL
-      chainId: 8453,
-      hardforkHistory: {
-        // Specify the hardfork activation block numbers for chainId 8453
-        london: 27411493, // Example: London hardfork activated at block 27411493
-        // Add other hardforks as needed
+    hardhat: {
+      chains: {
+        137: { hardforkHistory: { london: 23850000 } },     // Polygon
+        10: { hardforkHistory: { london: 0 } },             // Optimism
+        42161: { hardforkHistory: { london: 0 } },           // Arbitrum
+        8453: { hardforkHistory: { london: 0 } },            // Base
+        9745: { hardforkHistory: { london: 0 } },            // Plasma
+        999: { hardforkHistory: { london: 0 } },             // Hyperliquid
       },
     },
   },
