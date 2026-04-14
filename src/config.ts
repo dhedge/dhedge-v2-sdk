@@ -35,7 +35,8 @@ export const routerAddress: AddressDappNetworkMap = {
     [Dapp.ARRAKIS]: "0xc73fb100a995b33f9fa181d420f4c8d74506df66",
     [Dapp.TOROS]: "0x45b90480D6F643dE2f128db091A357C3c90399f2",
     [Dapp.ODOS]: "0x0D05a7D3448512B78fa8A9e46c4872C88C4a0D05",
-    [Dapp.KYBERSWAP]: "0x6131B5fae19EA4f9D964eAc0408E4408b66337b5"
+    [Dapp.KYBERSWAP]: "0x6131B5fae19EA4f9D964eAc0408E4408b66337b5",
+    [Dapp.COWSWAP]: "0x893223Be4e941fAA8A8DB93D0C097fCac37801ce"
   },
   [Network.OPTIMISM]: {
     [Dapp.UNISWAPV3]: "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
@@ -86,6 +87,10 @@ export const routerAddress: AddressDappNetworkMap = {
   [Network.HYPERLIQUID]: {
     [Dapp.HYPERLIQUID]: "0x6b9e773128f453f5c2c60935ee2de2cbc5390a24"
   }
+};
+
+export const gpv2SettlementAddress: Partial<Record<Network, string>> = {
+  [Network.POLYGON]: "0x9008D19f58AAbD9eD0D60971565AA8510560ab41"
 };
 
 export const dappFactoryAddress: AddressDappNetworkMap = {
