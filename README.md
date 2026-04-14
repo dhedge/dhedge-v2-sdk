@@ -13,17 +13,38 @@
 
 ## Installation
 
-### Node
-
 ```bash
+# npm
 npm install @dhedge/v2-sdk
-```
 
-### Yarn
-
-```bash
+# yarn
 yarn add @dhedge/v2-sdk
 ```
+
+## Quick Start
+
+```ts
+import { Dhedge, Dapp, Network, ethers } from "@dhedge/v2-sdk";
+
+// 1. Connect a wallet
+const provider = new ethers.providers.JsonRpcProvider("YOUR_RPC_URL");
+const wallet = new ethers.Wallet("YOUR_PRIVATE_KEY", provider);
+const dhedge = new Dhedge(wallet, Network.POLYGON);
+
+// 2. Load an existing vault and check its composition
+const vault = await dhedge.loadPool("VAULT_ADDRESS");
+const composition = await vault.getComposition();
+
+// 3. Deposit USDC into the vault
+await vault.approveDeposit("USDC_ADDRESS", ethers.constants.MaxUint256);
+await vault.deposit("USDC_ADDRESS", "1000000"); // 1 USDC (6 decimals)
+
+// 4. Trade USDC → WETH on Sushiswap (no API key needed)
+await vault.approve(Dapp.SUSHISWAP, "USDC_ADDRESS", ethers.constants.MaxUint256);
+await vault.trade(Dapp.SUSHISWAP, "USDC_ADDRESS", "WETH_ADDRESS", "1000000", 0.5);
+```
+
+> For aggregator-backed trades (1Inch, Odos), you'll need API keys — see [Initial Setup](#initial-setup).
 
 ## Usage
 
@@ -493,14 +514,15 @@ await pool.approveUniswapV3Liquidity(
   ethers.constants.MaxInt256
 );
 const tx = await pool.addLiquidityUniswapV3(
-  WETH_ADDRESS
+  Dapp.UNISWAPV3,
+  WETH_ADDRESS,
   USDC_ADDRESS,
   '430000000000000', // wethBalance
-  '100000000',     // usdcBalance
-  2000,
-  3000,
-  null,
-  null,
+  '100000000',       // usdcBalance
+  2000,              // minPrice
+  3000,              // maxPrice
+  null,              // minTick (use null when providing prices)
+  null,              // maxTick (use null when providing prices)
   FeeAmount.MEDIUM,
 )
 ```

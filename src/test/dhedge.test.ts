@@ -64,7 +64,7 @@ const testDhedge = ({ wallet, network, provider }: TestingRunParams) => {
 };
 
 testingHelper({
-  network: Network.POLYGON,
+  network: Network.ARBITRUM,
   onFork: true,
   testingRun: testDhedge
 });
