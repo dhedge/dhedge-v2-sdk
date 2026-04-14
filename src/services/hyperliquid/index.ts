@@ -6,7 +6,6 @@ import {
   LIMIT_ORDER_ACTION,
   LIMIT_ORDER_TIF_IOC,
   SEND_ASSET_ACTION,
-  SPOT_DEX_ID,
   SPOT_SEND_ACTION,
   USDC_CORE_ADDRESS,
   USDC_TOKEN_ID
@@ -50,8 +49,9 @@ export const getWithdrawSpotHyperliquidTxData = (
   );
   return coreWriter.encodeFunctionData("sendRawAction", [rawTXData]);
 };
-export const getPerpToSpotHyperliquidTxData = (
-  dexId: number,
+export const getSendAssetHyperliquidTxData = (
+  sourceDex: number,
+  destinationDex: number,
   receiver: string,
   amount: ethers.BigNumber | string
 ): string => {
@@ -63,8 +63,8 @@ export const getPerpToSpotHyperliquidTxData = (
     [
       receiver,
       ethers.constants.AddressZero,
-      dexId,
-      SPOT_DEX_ID,
+      sourceDex,
+      destinationDex,
       USDC_TOKEN_ID,
       coreAmount
     ]

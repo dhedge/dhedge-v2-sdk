@@ -100,10 +100,13 @@ import {
   getClosePositionHyperliquidTxData,
   getDepositHyperliquidTxData,
   getLimitOrderHyperliquidTxData,
-  getPerpToSpotHyperliquidTxData,
+  getSendAssetHyperliquidTxData,
   getWithdrawSpotHyperliquidTxData
 } from "../services/hyperliquid";
-import { CORE_WRITER_ADDRESS } from "../services/hyperliquid/constants";
+import {
+  CORE_WRITER_ADDRESS,
+  SPOT_DEX_ID
+} from "../services/hyperliquid/constants";
 
 export class Pool {
   public readonly poolLogic: Contract;
@@ -2220,7 +2223,38 @@ export class Pool {
       this,
       [
         CORE_WRITER_ADDRESS,
-        getPerpToSpotHyperliquidTxData(dexId, this.address, amount),
+        getSendAssetHyperliquidTxData(dexId, SPOT_DEX_ID, this.address, amount),
+        options
+      ],
+      sdkOptions
+    );
+    return tx;
+  }
+
+  /** Move USDC from HyperCore spot wallet to a trading dex.
+   *
+   * @param {number} dexId Destination dex ID where USDC will be moved to
+   *   - 0: Core Perp dex (standard perps like BTC, ETH)
+   *   - 1: xyz HIP-3 dex (builder perps like TSLA, GOLD)
+   * @param {BigNumber | string} amount USDC amount to transfer (6 decimals, e.g. "1000000" = 1 USDC)
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+
+  async spotToPerpHyperliquid(
+    dexId: number,
+    amount: BigNumber | string,
+    options: any = null,
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
+  ): Promise<any> {
+    const tx = await getPoolTxOrGasEstimate(
+      this,
+      [
+        CORE_WRITER_ADDRESS,
+        getSendAssetHyperliquidTxData(SPOT_DEX_ID, dexId, this.address, amount),
         options
       ],
       sdkOptions
