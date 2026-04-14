@@ -4,6 +4,7 @@ import { ethers } from "ethers";
 import { ApiError } from "../..";
 import { networkChainIdMap, gpv2SettlementAddress } from "../../config";
 import { Pool } from "../../entities";
+import BN from "bignumber.js";
 
 export const KIND_SELL = ethers.utils.keccak256(
   ethers.utils.toUtf8Bytes("sell")
@@ -183,9 +184,11 @@ export async function getCowSwapTxData(
 
   const { sellAmount, buyAmount, validTo } = quoteResponse.quote;
 
-  const buyAmountWithSlippage = ethers.BigNumber.from(buyAmount)
-    .mul(Math.floor((1 - slippage / 100) * 10000))
-    .div(10000);
+  const buyAmountWithSlippage = ethers.BigNumber.from(
+    new BN(buyAmount.toString())
+      .times(new BN(1).minus(new BN(slippage).div(100)))
+      .toFixed(0, BN.ROUND_DOWN)
+  );
 
   const orderValues = {
     sellToken: assetFrom,
