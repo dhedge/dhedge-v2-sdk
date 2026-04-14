@@ -510,7 +510,7 @@ export class Pool {
           encodedTypedData,
           ...(options ? [options] : [])
         );
-        const submitReceipt = await submitTx.wait();
+        const submitReceipt = await submitTx.wait(3);
         if (submitReceipt.status === 0) {
           return submitReceipt;
         }
