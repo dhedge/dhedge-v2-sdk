@@ -65,11 +65,6 @@ import {
 } from "../services/futures";
 import { getFuturesCancelOrderTxData } from "../services/futures/trade";
 import { getOneInchSwapTxData } from "../services/oneInch";
-import {
-  getCreateVestTxData,
-  getExitVestTxData,
-  getRewardsTxDta
-} from "../services/ramses/vesting";
 import { getPoolTxOrGasEstimate, isSdkOptionsBoolean } from "../utils/contract";
 import {
   cancelOrderViaFlatMoney,
@@ -696,7 +691,6 @@ export class Pool {
         ]);
         break;
       case Dapp.VELODROME:
-      case Dapp.RAMSES:
         stakeTxData = getVelodromeStakeTxData(amount, false);
         break;
       case Dapp.VELODROMEV2:
@@ -1306,12 +1300,7 @@ export class Pool {
    * @returns {Promise<any>} Transaction
    */
   async addLiquidityUniswapV3(
-    dapp:
-      | Dapp.UNISWAPV3
-      | Dapp.VELODROMECL
-      | Dapp.AERODROMECL
-      | Dapp.RAMSESCL
-      | Dapp.PANCAKECL,
+    dapp: Dapp.UNISWAPV3 | Dapp.VELODROMECL | Dapp.AERODROMECL | Dapp.PANCAKECL,
     assetA: string,
     assetB: string,
     amountA: BigNumber | string,
@@ -1383,7 +1372,6 @@ export class Pool {
     let txData;
     switch (dapp) {
       case Dapp.UNISWAPV3:
-      case Dapp.RAMSESCL:
         dappAddress = nonfungiblePositionManagerAddress[this.network][dapp];
         break;
       case Dapp.VELODROMECL:
@@ -1450,7 +1438,6 @@ export class Pool {
     let txData;
     switch (dapp) {
       case Dapp.UNISWAPV3:
-      case Dapp.RAMSESCL:
         dappAddress = nonfungiblePositionManagerAddress[this.network][dapp];
         break;
       case Dapp.VELODROMECL:
@@ -1516,7 +1503,6 @@ export class Pool {
     );
     switch (dapp) {
       case Dapp.UNISWAPV3:
-      case Dapp.RAMSESCL:
         contractAddress = nonfungiblePositionManagerAddress[this.network][dapp];
         txData = iNonfungiblePositionManager.encodeFunctionData(
           Transaction.COLLECT,
@@ -1530,7 +1516,6 @@ export class Pool {
         txData = abi.encodeFunctionData("claim_rewards()", []);
         break;
       case Dapp.VELODROME:
-      case Dapp.RAMSES:
         contractAddress = tokenId;
         txData = getVelodromeClaimTxData(this, tokenId, false);
         break;
@@ -1566,36 +1551,6 @@ export class Pool {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [contractAddress, txData, options],
-      sdkOptions
-    );
-    return tx;
-  }
-
-  /**
-   * Get rewards of an NFT position
-   * @param {Dapp} dapp Platform e.g. Ramses CL
-   * @param {string} tokenId Token Id
-   * @param {string[]} rewards Reward tokens
-   * @param {any} options Transaction option
-   * @param {SDKOptions} sdkOptions SDK options including estimateGas
-   * @returns {Promise<any>} Transaction
-   */
-  async getRewards(
-    dapp: Dapp,
-    tokenId: string,
-    rewards: string[],
-    options: any = null,
-    sdkOptions: SDKOptions = {
-      estimateGas: false
-    }
-  ): Promise<any> {
-    const tx = await getPoolTxOrGasEstimate(
-      this,
-      [
-        nonfungiblePositionManagerAddress[this.network][dapp],
-        getRewardsTxDta(tokenId, rewards),
-        options
-      ],
       sdkOptions
     );
     return tx;
@@ -1760,8 +1715,8 @@ export class Pool {
   }
 
   /**
-   * Add liquidity to Velodrome V2 or Ramses pool
-   * @param {Dapp} dapp VelodromeV2, Ramses or Aerodrome
+   * Add liquidity to Velodrome V2 or Aerodrome pool
+   * @param {Dapp} dapp VelodromeV2 or Aerodrome
    * @param {string} assetA First asset
    * @param {string} assetB Second asset
    * @param {BigNumber | string} amountA Amount first asset
@@ -1772,7 +1727,7 @@ export class Pool {
    * @returns {Promise<any>} Transaction
    */
   async addLiquidityV2(
-    dapp: Dapp.VELODROMEV2 | Dapp.RAMSES | Dapp.AERODROME,
+    dapp: Dapp.VELODROMEV2 | Dapp.AERODROME,
     assetA: string,
     assetB: string,
     amountA: BigNumber | string,
@@ -1803,8 +1758,8 @@ export class Pool {
   }
 
   /**
-   * Remove liquidity from Velodrome V2 or Ramses pool
-   * @param {Dapp} dapp VelodromeV2, Ramses or Aerodrome
+   * Remove liquidity from Velodrome V2 or Aerodrome pool
+   * @param {Dapp} dapp VelodromeV2 or Aerodrome
    * @param {string} assetA First asset
    * @param {string} assetB Second asset
    * @param {BigNumber | string} amount Amount of LP tokens
@@ -1814,7 +1769,7 @@ export class Pool {
    * @returns {Promise<any>} Transaction
    */
   async removeLiquidityV2(
-    dapp: Dapp.VELODROMEV2 | Dapp.RAMSES | Dapp.AERODROME,
+    dapp: Dapp.VELODROMEV2 | Dapp.AERODROME,
     assetA: string,
     assetB: string,
     amount: BigNumber | string,
@@ -1997,56 +1952,6 @@ export class Pool {
   async getAvailableManagerFee(): Promise<BigNumber> {
     const fee = await this.poolLogic.availableManagerFee();
     return BigNumber.from(fee);
-  }
-
-  /** Vest tokens (e.g. Ramses xoRAM)
-   *
-   * @param {string} tokenAddress Address of the token to vest
-   * @param {BigNumber | string } changeAmount Negative for short, positive for long
-   * @param {any} options Transaction options
-   * @param {SDKOptions} sdkOptions SDK options including estimateGas
-   * @returns {Promise<any>} Transaction
-   */
-  async vestTokens(
-    tokenAddress: string,
-    amount: BigNumber | string,
-    options: any = null,
-    sdkOptions: SDKOptions = {
-      estimateGas: false
-    }
-  ): Promise<any> {
-    const txData = await getCreateVestTxData(amount);
-    const tx = await getPoolTxOrGasEstimate(
-      this,
-      [tokenAddress, txData, options],
-      sdkOptions
-    );
-    return tx;
-  }
-
-  /** Exit position of vested tokens (e.g. Ramses xoRAM)
-   *
-   * @param {string} tokenAddress Address of the token to vest
-   * @param {number } id position Id of the vested tokens
-   * @param {any} options Transaction options
-   * @param {SDKOptions} sdkOptions SDK options including estimateGas
-   * @returns {Promise<any>} Transaction
-   */
-  async exitVestedToken(
-    tokenAddress: string,
-    id: number,
-    options: any = null,
-    sdkOptions: SDKOptions = {
-      estimateGas: false
-    }
-  ): Promise<any> {
-    const txData = await getExitVestTxData(id);
-    const tx = await getPoolTxOrGasEstimate(
-      this,
-      [tokenAddress, txData, options],
-      sdkOptions
-    );
-    return tx;
   }
 
   /** deposit rETH to mint UNIT via the Flat Money protocol

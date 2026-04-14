@@ -82,7 +82,7 @@ await vault.trade(Dapp.SUSHISWAP, "USDC_ADDRESS", "WETH_ADDRESS", "1000000", 0.5
               <a href="#uniswap-v3-style">Uniswap-v3 style protocols</a>
             </li>
             <li>
-              <a href="#velodromev2--ramses">VelodromeV2 / Ramses / Aerodrome</a>
+              <a href="#velodromev2--aerodrome">VelodromeV2 / Aerodrome</a>
             </li>
         </ul>
     </li>
@@ -539,7 +539,6 @@ const tx = await pool.decreaseLiquidity(
 ```
 
 Removing 100% will burn the NFT position.
-Burning a Ramses CL NFT position won't claim rewards, so `getRewards` needs to be called before.
 
 3. Increase liquidity in the existing WETH/USDC pool
 
@@ -558,22 +557,16 @@ const result = await pool.increaseLiquidity(
 const tx = await pool.claimFees(Dapp.UNISWAPV3, tokenId);
 ```
 
-4. Claim rewards (e.g. for Ramses CL)
+#### VelodromeV2 / Aerodrome
 
-```ts
-const tx = await pool.getRewards(Dapp.RAMSESCL, tokenId, [RAM_ADDRESS]);
-```
+For VelodromeV2 / Aerodrome, we use `addLiquidityV2`, `stakeInGauge`, `unstakeFromGauge`, `removeLiquidityV2`, and `claimFees`.
 
-#### VelodromeV2 / Ramses / Aerodrome
-
-For VelodromeV2 / Ramses / Aerodrome , we use `addLiquidityV2`, `stakeInGauge`, `unstakeFromGauge`, `removeLiquidityV2`, and `claimFees`.
-
-Add liquidity of 100 USDC and 0.00043 WETH to USDC/WETH Ramses pool
-(for Velodrome just use Dapp.VELODROMEV2, for Aerodrome Dapp.AERODROME). see example in the [arrakis test](https://github.com/dhedge/dhedge-v2-sdk/blob/master/src/test/ramses.test.ts), [velodromeV2 test](https://github.com/dhedge/dhedge-v2-sdk/blob/master/src/test/velodromeV2.test.ts) and [aerdodrome test](https://github.com/dhedge/dhedge-v2-sdk/blob/master/src/test/aerdodrome.test.ts)
+Add liquidity of 100 USDC and 0.00043 WETH to a USDC/WETH pool
+(for Velodrome use `Dapp.VELODROMEV2`, for Aerodrome use `Dapp.AERODROME`). See examples in the [velodromeV2 test](https://github.com/dhedge/dhedge-v2-sdk/blob/master/src/test/velodromeV2.test.ts) and [aerodrome test](https://github.com/dhedge/dhedge-v2-sdk/blob/master/src/test/aerdodrome.test.ts).
 
 ```ts
 const tx = await pool.addLiquidityV2(
-  Dapp.RAMSES,
+  Dapp.VELODROMEV2,
   USDC_ADDRESS,
   WETH_ADDRESS,
   '10000000',
