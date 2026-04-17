@@ -55,7 +55,9 @@ export const getSendAssetHyperliquidTxData = (
   receiver: string,
   amount: ethers.BigNumber | string
 ): string => {
-  const coreAmount = ethers.BigNumber.from(amount).mul(100); //USDC on Core has two more decimals
+  // Convert 6-decimal EVM USDC to 8-decimal HyperCore USDC (spot, main perp, and xyz)
+  // Transfer USDC between dexes (perp, spot, xyz)
+  const coreAmount = ethers.BigNumber.from(amount).mul(100);
   //From Perp to Spot
   const innerEncoded = ethers.utils.defaultAbiCoder.encode(
     //destination, subAccount, sourceDex, destinationDex, token, amount
