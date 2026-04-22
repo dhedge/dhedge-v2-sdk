@@ -7,7 +7,7 @@ import IERC20 from "../abi/IERC20.json";
 import IERC721 from "../abi/IERC721.json";
 import IMiniChefV2 from "../abi/IMiniChefV2.json";
 import ILendingPool from "../abi/ILendingPool.json";
-import ISynthetix from "../abi/ISynthetix.json";
+
 import IUniswapV2Router from "../abi/IUniswapV2Router.json";
 import INonfungiblePositionManager from "../abi/INonfungiblePositionManager.json";
 import IAaveIncentivesController from "../abi/IAaveIncentivesController.json";
@@ -20,7 +20,6 @@ import {
   routerAddress,
   gpv2SettlementAddress,
   stakingAddress,
-  SYNTHETIX_TRACKING_CODE,
   limitOrderAddress
 } from "../config";
 import {
@@ -59,11 +58,6 @@ import {
 import { getLyraOptionTxData } from "../services/lyra/trade";
 import { getOptionPositions } from "../services/lyra/positions";
 import { getDeadline } from "../utils/deadline";
-import {
-  getFuturesChangeMarginTxData,
-  getFuturesChangePositionTxData
-} from "../services/futures";
-import { getFuturesCancelOrderTxData } from "../services/futures/trade";
 import { getOneInchSwapTxData } from "../services/oneInch";
 import { getPoolTxOrGasEstimate, isSdkOptionsBoolean } from "../utils/contract";
 import {
@@ -420,20 +414,6 @@ export class Pool {
           amountIn,
           slippage
         );
-        break;
-      case Dapp.SYNTHETIX:
-        const iSynthetix = new ethers.utils.Interface(ISynthetix.abi);
-        const assets = [assetFrom, assetTo].map(asset =>
-          ethers.utils.formatBytes32String(asset)
-        );
-        const daoAddress = await this.factory.owner();
-        swapTxData = iSynthetix.encodeFunctionData(Transaction.SWAP_SYNTHS, [
-          assets[0],
-          amountIn,
-          assets[1],
-          daoAddress,
-          SYNTHETIX_TRACKING_CODE
-        ]);
         break;
       case Dapp.TOROS:
         swapTxData = await getEasySwapperTxData(
@@ -1865,82 +1845,6 @@ export class Pool {
    */
   async getLyraPositions(market: LyraOptionMarket): Promise<LyraPosition[]> {
     return await getOptionPositions(this, market);
-  }
-
-  /** Deposit or withdraws (negative amount) asset for Synthetix future margin trading
-   *
-   * @param {string} market Address of futures market
-   * @param {BigNumber | string } changeAmount Amount to increase/decrease margin
-   * @param {any} options Transaction options
-   * @param {SDKOptions} sdkOptions SDK options including estimateGas
-   * @returns {Promise<any>} Transaction
-   */
-  async changeFuturesMargin(
-    market: string,
-    changeAmount: BigNumber | string,
-    options: any = null,
-    sdkOptions: SDKOptions = {
-      estimateGas: false
-    }
-  ): Promise<any> {
-    const tx = await getPoolTxOrGasEstimate(
-      this,
-      [market, getFuturesChangeMarginTxData(changeAmount), options],
-      sdkOptions
-    );
-    return tx;
-  }
-
-  /** Change position in Synthetix futures market (long/short)
-   *
-   * @param {string} market Address of futures market
-   * @param {BigNumber | string } changeAmount Negative for short, positive for long
-   * @param {any} options Transaction options
-   * @param {SDKOptions} sdkOptions SDK options including estimateGas
-   * @returns {Promise<any>} Transaction
-   */
-  async changeFuturesPosition(
-    market: string,
-    changeAmount: BigNumber | string,
-    options: any = null,
-    sdkOptions: SDKOptions = {
-      estimateGas: false
-    }
-  ): Promise<any> {
-    const txData = await getFuturesChangePositionTxData(
-      changeAmount,
-      market,
-      this
-    );
-    const tx = await getPoolTxOrGasEstimate(
-      this,
-      [market, txData, options],
-      sdkOptions
-    );
-    return tx;
-  }
-
-  /** Cancels an open oder on Synthetix futures market
-   *
-   * @param {string} market Address of futures market
-   * @param {any} options Transaction options
-   * @param {SDKOptions} sdkOptions SDK options including estimateGas
-   * @returns {Promise<any>} Transaction
-   */
-  async cancelFuturesOrder(
-    market: string,
-    options: any = null,
-    sdkOptions: SDKOptions = {
-      estimateGas: false
-    }
-  ): Promise<any> {
-    const txData = await getFuturesCancelOrderTxData(this);
-    const tx = await getPoolTxOrGasEstimate(
-      this,
-      [market, txData, options],
-      sdkOptions
-    );
-    return tx;
   }
 
   /**

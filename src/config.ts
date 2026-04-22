@@ -40,7 +40,6 @@ export const routerAddress: AddressDappNetworkMap = {
   },
   [Network.OPTIMISM]: {
     [Dapp.UNISWAPV3]: "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
-    [Dapp.SYNTHETIX]: "0x8700dAec35aF8Ff88c16BdF0418774CB3D7599B4",
     [Dapp.AAVEV3]: "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
     [Dapp.ONEINCH]: "0x111111125421ca6dc452d289314280a0f8842a65",
     [Dapp.TOROS]: "0x2Ed1bd7f66e47113672f3870308b5E867C5bb743",
@@ -209,9 +208,6 @@ export const lyraNetworkMap: LyraNetworkMap = {
 };
 
 export const MaxUint128 = "0xffffffffffffffffffffffffffffffff";
-
-export const SYNTHETIX_TRACKING_CODE =
-  "0x4448454447450000000000000000000000000000000000000000000000000000";
 
 export const flatMoneyContractAddresses: Readonly<Partial<
   Record<

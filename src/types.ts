@@ -18,7 +18,6 @@ export enum Dapp {
   QUICKSWAP = "quickswap",
   BALANCER = "balancer",
   UNISWAPV3 = "uniswapV3",
-  SYNTHETIX = "synthetix",
   AAVEV3 = "aavev3",
   ARRAKIS = "arrakis",
   TOROS = "toros",
@@ -54,7 +53,6 @@ export enum Transaction {
   WITHDRAW = "withdraw",
   MINT = "mint",
   BURN = "burn",
-  SWAP_SYNTHS = "exchangeWithTracking",
   ADD_LIQUIDITY_STAKE = "addLiquidityAndStake",
   REMOVE_LIQUIDITY_UNSTAKE = "removeLiquidityAndUnstake"
 }
