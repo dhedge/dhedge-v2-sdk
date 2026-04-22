@@ -174,14 +174,16 @@ export const CONTRACT_ADDRESS = {
     USDE: "0x5d3a1ff2b6bab83b63cd9ad0787074081a52ef34",
     uniswapV3: {
       nonfungiblePositionManager: ""
-    }
+    },
+    COMPOUNDV3_WETH: ""
   },
   [Network.HYPERLIQUID]: {
     USDC: "0xb88339cb7199b77e23db6e890353e22632ba630f",
     WETH: "",
     uniswapV3: {
       nonfungiblePositionManager: ""
-    }
+    },
+    COMPOUNDV3_WETH: ""
   }
 };
 
