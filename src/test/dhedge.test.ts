@@ -7,11 +7,6 @@ import {
   beforeAfterReset
 } from "./utils/testingHelper";
 
-// To pin a block number for determinism and Hardhat disk caching, add
-// hardfork history for Polygon in hardhat.config.js and uncomment the
-// hardhat_reset call in beforeAll. Without that config, Hardhat rejects
-// historical execution on chain 137.
-
 const testDhedge = ({ wallet, network, provider }: TestingRunParams) => {
   let dhedge: Dhedge;
 
