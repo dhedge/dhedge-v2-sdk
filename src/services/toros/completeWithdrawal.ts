@@ -177,7 +177,7 @@ export const createCompleteWithdrawalTxArguments = async (
     swapTrackedAssets,
     receiveToken,
     slippage,
-    estimatedMinReceiveAmount
+    swapDestMinDestAmount
   );
 
   return {
