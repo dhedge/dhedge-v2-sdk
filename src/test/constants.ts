@@ -118,7 +118,7 @@ export const CONTRACT_ADDRESS = {
     VELO: "",
     COMPOUNDV3_WETH: "0x6f7D514bbD4aFf3BcD1140B7344b32f063dEe486",
     FLUID_WETH: "0x45df0656f8adf017590009d2f1898eeca4f0a205",
-    TOROS: ""
+    TOROS: "0xA6711f8a184E352c5A0714a48912cD33ca4a16A0" //DYTMT
   },
   [Network.BASE]: {
     USDC: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
@@ -174,7 +174,8 @@ export const CONTRACT_ADDRESS = {
     },
     COMPOUNDV3_WETH: "",
     FLUID_WETH: "",
-    UNIT: ""
+    UNIT: "",
+    TOROS: ""
   },
   [Network.HYPERLIQUID]: {
     USDC: "0xb88339cb7199b77e23db6e890353e22632ba630f",
@@ -184,7 +185,8 @@ export const CONTRACT_ADDRESS = {
     },
     COMPOUNDV3_WETH: "",
     FLUID_WETH: "",
-    UNIT: ""
+    UNIT: "",
+    TOROS: ""
   }
 };
 

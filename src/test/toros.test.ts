@@ -1,26 +1,25 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import BigNumber from "bignumber.js";
-import { ethers } from "ethers";
-import { Dhedge, Pool } from "..";
+import { Dhedge, ethers, Pool } from "..";
 
 import { Dapp, Network } from "../types";
 import { CONTRACT_ADDRESS, MAX_AMOUNT } from "./constants";
 import {
   fixOracleAggregatorStaleness,
+  runWithImpersonateAccount,
   setChainlinkTimeout,
   setUSDCAmount,
   testingHelper,
   TestingRunParams
 } from "./utils/testingHelper";
-import { allowanceDelta, balanceDelta } from "./utils/token";
+import { balanceDelta } from "./utils/token";
 import { routerAddress } from "../config";
-import PoolLogic from "../abi/PoolLogic.json";
-import PoolManagerLogic from "../abi/PoolManagerLogic.json";
 
-const testToros = ({ network, provider }: TestingRunParams) => {
+const testToros = ({ wallet, network, provider }: TestingRunParams) => {
   const USDC = CONTRACT_ADDRESS[network].USDC;
   const TOROS = CONTRACT_ADDRESS[network].TOROS;
+  const TEST_POOL_ADDRESS = "0x2d4cddd2c4fa854536593bcf61d0da3b63ed80cb";
 
   let dhedge: Dhedge;
   let pool: Pool;
@@ -28,43 +27,37 @@ const testToros = ({ network, provider }: TestingRunParams) => {
 
   describe(`pool on ${network}`, () => {
     beforeAll(async () => {
-      const poolAddress = "0x2d4cddd2c4fa854536593bcf61d0da3b63ed80cb";
-
-      // Get the pool's manager address directly from the contracts
-      const poolLogic = new ethers.Contract(
-        poolAddress,
-        PoolLogic.abi,
-        provider
-      );
-      const managerLogicAddress: string = await poolLogic.poolManagerLogic();
-      const managerLogic = new ethers.Contract(
-        managerLogicAddress,
-        PoolManagerLogic.abi,
-        provider
-      );
-      const managerAddress: string = await managerLogic.manager();
-
-      // Impersonate the pool's manager and fund with ETH for gas
-      await provider.send("hardhat_impersonateAccount", [managerAddress]);
       await provider.send("hardhat_setBalance", [
-        managerAddress,
-        ethers.utils.hexValue(ethers.utils.parseEther("100"))
+        wallet.address,
+        "0x10000000000000000"
       ]);
-
-      // Load pool with the impersonated manager signer
-      const managerSigner = provider.getSigner(managerAddress);
-      dhedge = new Dhedge((managerSigner as unknown) as ethers.Wallet, network);
-      pool = await dhedge.loadPool(poolAddress, false);
+      dhedge = new Dhedge(wallet, network);
+      pool = await dhedge.loadPool(TEST_POOL_ADDRESS);
 
       await setChainlinkTimeout({ pool, provider }, 86400 * 365);
       await fixOracleAggregatorStaleness({ pool, provider });
 
-      // Also fix the Toros vault's aggregators (in case it has different assets)
-      const torosPool = await dhedge.loadPool(TOROS);
-      await fixOracleAggregatorStaleness({ pool: torosPool, provider });
+      // Impersonate pool manager to set trader and add Toros token as asset
+      await runWithImpersonateAccount(
+        { provider, account: await pool.managerLogic.manager() },
+        async ({ signer }) => {
+          await pool.managerLogic.connect(signer).setTrader(wallet.address);
+          const newAssets = [
+            [USDC, true],
+            [TOROS, false]
+          ];
+          await pool.managerLogic.connect(signer).changeAssets(newAssets, []);
+        }
+      );
+
+      // Fix the Toros vault's oracle aggregators (has different assets with Pyth oracles)
+      if (TOROS) {
+        const torosPool = await dhedge.loadPool(TOROS);
+        await fixOracleAggregatorStaleness({ pool: torosPool, provider });
+      }
 
       // top up USDC
-      const amount = new BigNumber(100).times(1e6).toFixed(0);
+      const amount = new BigNumber(1000).times(1e6).toFixed(0);
       await setUSDCAmount({
         amount,
         userAddress: pool.address,
@@ -75,13 +68,12 @@ const testToros = ({ network, provider }: TestingRunParams) => {
 
     it("approves unlimited USDC on Toros", async () => {
       await pool.approve(Dapp.TOROS, USDC, MAX_AMOUNT);
-      const usdcAllowanceDelta = await allowanceDelta(
-        pool.address,
+      const usdcAllowance = await new ethers.Contract(
         USDC,
-        routerAddress[network].toros!,
+        ["function allowance(address,address) view returns (uint256)"],
         pool.signer
-      );
-      await expect(usdcAllowanceDelta.gt(0));
+      ).allowance(pool.address, routerAddress[network].toros!);
+      expect(usdcAllowance.gt(0)).toBe(true);
     });
 
     it("trades USDC balance into Toros Token", async () => {
@@ -92,7 +84,7 @@ const testToros = ({ network, provider }: TestingRunParams) => {
         TOROS,
         pool.signer
       );
-      expect(torosBalanceDelta.gt(0));
+      expect(torosBalanceDelta.gt(0)).toBe(true);
     });
 
     it("get Tx data for init and complete withdrawal", async () => {
@@ -120,8 +112,7 @@ const testToros = ({ network, provider }: TestingRunParams) => {
         {
           estimateGas: false,
           onlyGetTxData: true
-        },
-        tradeResult.minAmountOut
+        }
       );
       expect(completWithdrawResult.txData).toBeDefined();
     });
@@ -137,17 +128,18 @@ const testToros = ({ network, provider }: TestingRunParams) => {
         TOROS,
         pool.signer
       );
-      expect(torosBalanceDelta.lt(0));
+      expect(torosBalanceDelta.lt(0)).toBe(true);
     });
 
     it("complete withdrawal from Toros asset", async () => {
-      await pool.completeTorosWithdrawal(USDC, 5);
+      await new Promise(resolve => setTimeout(resolve, 5000)); // wait for Toros withdrawal to be ready
+      await pool.completeTorosWithdrawal(USDC, 1.5);
       const usdcBalanceDelta = await balanceDelta(
         pool.address,
         USDC,
         pool.signer
       );
-      expect(usdcBalanceDelta.gt(0));
+      expect(usdcBalanceDelta.gt(0)).toBe(true);
     });
   });
 };
