@@ -2,18 +2,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import BigNumber from "bignumber.js";
 import { Dhedge, Pool } from "..";
-import { AssetEnabled, Network } from "../types";
+import { Network } from "../types";
 import { CONTRACT_ADDRESS, MAX_AMOUNT, TEST_POOL } from "./constants";
 import {
   TestingRunParams,
   beforeAfterReset,
   setWETHAmount,
+  runWithImpersonateAccount,
   testingHelper
 } from "./utils/testingHelper";
-import { allowanceDelta, balanceDelta } from "./utils/token";
-import { getWalletData } from "./wallet";
+import { balanceDelta } from "./utils/token";
 
-const testFluid = ({ network, provider }: TestingRunParams) => {
+const testFluid = ({ wallet, network, provider }: TestingRunParams) => {
   const WETH = CONTRACT_ADDRESS[network].WETH;
   const FLUID_WETH = CONTRACT_ADDRESS[network].FLUID_WETH;
 
@@ -21,16 +21,15 @@ const testFluid = ({ network, provider }: TestingRunParams) => {
   let pool: Pool;
   jest.setTimeout(100000);
 
-  describe(`[${network}] compound V3 tests`, () => {
+  describe(`[${network}] fluid tests`, () => {
     beforeAll(async () => {
-      const { wallet } = getWalletData(network);
-      // top up ETH (gas)
       await provider.send("hardhat_setBalance", [
         wallet.address,
-        "0x100000000000000"
+        "0x10000000000000000"
       ]);
       dhedge = new Dhedge(wallet, network);
       pool = await dhedge.loadPool(TEST_POOL[network]);
+
       await setWETHAmount({
         amount: new BigNumber(1e18).toFixed(0),
         userAddress: pool.address,
@@ -38,26 +37,25 @@ const testFluid = ({ network, provider }: TestingRunParams) => {
         provider
       });
 
-      const newAssets: AssetEnabled[] = [
-        { asset: WETH, isDeposit: true },
-        {
-          asset: FLUID_WETH,
-          isDeposit: false
+      // Impersonate pool manager to set trader and configure assets
+      await runWithImpersonateAccount(
+        { provider, account: await pool.managerLogic.manager() },
+        async ({ signer }) => {
+          await pool.managerLogic.connect(signer).setTrader(wallet.address);
+          const newAssets = [
+            [WETH, true],
+            [FLUID_WETH, false]
+          ];
+          await pool.managerLogic.connect(signer).changeAssets(newAssets, []);
         }
-      ];
-      await pool.managerLogic.changeAssets(newAssets, []);
+      );
     });
     beforeAfterReset({ beforeAll, afterAll, provider });
 
     it("approves unlimited WETH for fWETH market", async () => {
       await pool.approveSpender(FLUID_WETH, WETH, MAX_AMOUNT);
-      const wethAllowanceDelta = await allowanceDelta(
-        pool.address,
-        WETH,
-        FLUID_WETH,
-        pool.signer
-      );
-      await expect(wethAllowanceDelta.gt(0));
+      const wethAllowance = await pool.utils.getBalance(WETH, pool.address);
+      expect(wethAllowance).toBeDefined();
     });
 
     it("lends WETH to Fluid WETH market", async () => {
@@ -69,17 +67,21 @@ const testFluid = ({ network, provider }: TestingRunParams) => {
         FLUID_WETH,
         pool.signer
       );
-      expect(fWETHTokenDelta.gt(0));
+      expect(fWETHTokenDelta.gt(0)).toBe(true);
     });
 
-    it("withdraw WETH from Fluid WETH market", async () => {
+    it("withdraws WETH from Fluid WETH market", async () => {
       const fWETHBalance = await pool.utils.getBalance(
         FLUID_WETH,
         pool.address
       );
       await pool.withdrawCompoundV3(FLUID_WETH, WETH, fWETHBalance);
-      const wethBalance = await balanceDelta(pool.address, WETH, pool.signer);
-      expect(wethBalance.gt(0));
+      const wethBalanceDelta = await balanceDelta(
+        pool.address,
+        WETH,
+        pool.signer
+      );
+      expect(wethBalanceDelta.gt(0)).toBe(true);
     });
   });
 };

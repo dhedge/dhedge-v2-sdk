@@ -175,7 +175,9 @@ export const CONTRACT_ADDRESS = {
     uniswapV3: {
       nonfungiblePositionManager: ""
     },
-    COMPOUNDV3_WETH: ""
+    COMPOUNDV3_WETH: "",
+    FLUID_WETH: "",
+    UNIT: ""
   },
   [Network.HYPERLIQUID]: {
     USDC: "0xb88339cb7199b77e23db6e890353e22632ba630f",
@@ -183,7 +185,9 @@ export const CONTRACT_ADDRESS = {
     uniswapV3: {
       nonfungiblePositionManager: ""
     },
-    COMPOUNDV3_WETH: ""
+    COMPOUNDV3_WETH: "",
+    FLUID_WETH: "",
+    UNIT: ""
   }
 };
 
