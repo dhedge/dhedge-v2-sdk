@@ -182,6 +182,7 @@ export const CONTRACT_ADDRESS = {
   [Network.HYPERLIQUID]: {
     USDC: "0xb88339cb7199b77e23db6e890353e22632ba630f",
     USDT: "",
+    USDE: "",
     WETH: "",
     WBTC: "",
     VELO: "",
