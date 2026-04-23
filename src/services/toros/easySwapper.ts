@@ -8,9 +8,16 @@ import { isPool, loadPool } from "./pool";
 
 import { getInitWithdrawalTxData } from "./initWithdrawal";
 
-export const LOW_USD_VALUE_FOR_WITHDRAWAL = 1; // 1 USD minimum value for withdrawal
+/** Minimum USD value of a leftover token to bother swapping during a withdrawal. */
+export const LOW_USD_VALUE_FOR_WITHDRAWAL = 1;
+/** Slippage (bps) applied to the swap of small-value leftover tokens during withdrawal. */
 export const SLIPPAGE_FOR_LOW_VALUE_SWAP = 500;
 
+/**
+ * Resolve which asset should be used to deposit into a Toros pool. Returns the
+ * caller's `investAsset` if the pool already accepts it, otherwise the pool's
+ * primary deposit asset.
+ */
 export async function getPoolDepositAsset(
   pool: Pool,
   poolAddress: string,
@@ -26,6 +33,7 @@ export async function getPoolDepositAsset(
   return composition.find(e => e.isDeposit)?.asset;
 }
 
+/** Read the current per-token price of a Toros vault from its PoolLogic. */
 export async function getTorosPoolTokenPrice(
   pool: Pool,
   poolAddress: string
@@ -34,6 +42,7 @@ export async function getTorosPoolTokenPrice(
   return await torosPool.poolLogic.tokenPrice();
 }
 
+/** Quote how many Toros vault tokens a deposit of `investAsset` would mint. */
 export async function getEasySwapperDepositQuote(
   pool: Pool,
   torosAsset: string,
@@ -49,6 +58,11 @@ export async function getEasySwapperDepositQuote(
   return await easySwapper.depositQuote(torosAsset, investAsset, amountIn);
 }
 
+/**
+ * Build the EasySwapper calldata for a Toros deposit or the start of a withdrawal.
+ * If `assetFrom` is a Toros pool, this is treated as a withdrawal and routes through
+ * `getInitWithdrawalTxData`. Otherwise it builds a `depositWithCustomCooldown` call.
+ */
 export async function getEasySwapperTxData(
   pool: Pool,
   assetFrom: string,

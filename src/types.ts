@@ -1,6 +1,8 @@
 import { Deployment } from "@lyrafinance/lyra-js";
 import { BigNumber } from "ethers";
 
+/** Networks supported by the SDK. The string value matches keys in `routerAddress`,
+ * `nonfungiblePositionManagerAddress`, etc. in `config.ts`. */
 export enum Network {
   POLYGON = "polygon",
   OPTIMISM = "optimism",
@@ -11,6 +13,8 @@ export enum Network {
   HYPERLIQUID = "hyperliquid"
 }
 
+/** Identifies a target protocol/integration for `pool.trade`, `pool.approve`, etc.
+ * Each entry maps to address registries (router, factory, gauge) in `config.ts`. */
 export enum Dapp {
   SUSHISWAP = "sushiswap",
   AAVE = "aave",
@@ -35,6 +39,8 @@ export enum Dapp {
   COWSWAP = "cowswap"
 }
 
+/** Function-name strings used when encoding ABI calls — keep in sync with the
+ * matching ABI files in `src/abi/`. */
 export enum Transaction {
   SWAP = "swapExactTokensForTokens",
   ADD_LIQUIDITY = "addLiquidity",
@@ -64,13 +70,16 @@ export type AddressDappMap = {
 
 export type AddressDappNetworkMap = Readonly<Record<Network, AddressDappMap>>;
 
+/** Tuple form `[asset, isDeposit]` accepted by the factory's `createFund`. */
 export type SupportedAsset = [string, boolean];
 
+/** Object form of a supported asset entry; preferred over `SupportedAsset` in SDK methods. */
 export type AssetEnabled = {
   asset: string;
   isDeposit: boolean;
 };
 
+/** A pool's holding of one asset returned by `pool.getComposition()`. */
 export type FundComposition = {
   asset: string;
   isDeposit: boolean;
@@ -102,14 +111,24 @@ export type LyraPosition = {
   state: number;
 };
 
+/**
+ * Options that control how SDK methods dispatch a transaction:
+ *  - `estimateGas`: simulate and return gas + minAmountOut without sending.
+ *  - `onlyGetTxData`: return the encoded calldata without sending or simulating.
+ *  - `useTraderAddressAsFrom`: send via the EOA wallet instead of the pool's
+ *    `execTransaction` (used when the SDK is acting as a non-dHEDGE caller).
+ *  - `boolean` shorthand: `true` is equivalent to `{ estimateGas: true }` (kept
+ *    for backward compatibility).
+ */
 export type SDKOptions =
   | {
       estimateGas: boolean;
       onlyGetTxData?: boolean;
       useTraderAddressAsFrom?: boolean;
     }
-  | boolean; // shorthand for { estimateGas: true/false }; for backward compatibility
+  | boolean;
 
+/** Parameters for a Toros limit order (stop-loss / take-profit) on a vault token. */
 export type LimitOrderInfo = {
   amount: BigNumber;
   stopLossPriceD18: BigNumber;

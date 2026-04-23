@@ -7,6 +7,7 @@ import { getDeadline } from "../../utils/deadline";
 import { nonfungiblePositionManagerAddress } from "../../config";
 import INonfungiblePositionManager from "../../abi/INonfungiblePositionManager.json";
 
+/** Encode Velodrome router calldata to add liquidity to a stable or volatile pair. */
 export async function getVelodromeAddLiquidityTxData(
   pool: Pool,
   assetA: string,
@@ -29,6 +30,7 @@ export async function getVelodromeAddLiquidityTxData(
   ]);
 }
 
+/** Encode Velodrome router calldata to remove liquidity from a stable or volatile pair. */
 export async function getVelodromeRemoveLiquidityTxData(
   pool: Pool,
   assetA: string,
@@ -49,6 +51,7 @@ export async function getVelodromeRemoveLiquidityTxData(
   ]);
 }
 
+/** Read the current owner of a Velodrome/Aerodrome/Pancake CL position NFT. */
 export async function getClOwner(
   pool: Pool,
   dapp: Dapp.VELODROMECL | Dapp.AERODROMECL | Dapp.PANCAKECL,

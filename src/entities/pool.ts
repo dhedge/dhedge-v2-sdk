@@ -152,7 +152,7 @@ export class Pool {
 
   /**
    * Approve the asset that can be deposited into a pool
-   * @param {string} nasset Address of deposit asset
+   * @param {string} asset Address of deposit asset
    * @param {BigNumber | string} amount Amount to be approved
    * @param {any} options Transaction options
    * @param {boolean} estimateGas Simulate/estimate gas
@@ -252,7 +252,7 @@ export class Pool {
    * Approve the liquidity pool token for staking
    * @param {Dapp} dapp Platform like Sushiswap or Uniswap
    * @param {string} asset Address of liquidity pool token
-   * @param {BigNumber | string} amount Aamount to be approved
+   * @param {BigNumber | string} amount Amount to be approved
    * @param {any} options Transaction options
    * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
@@ -280,10 +280,10 @@ export class Pool {
   }
 
   /**
-   * Approve the liquidity pool token for staking
-   * @param {Dapp} dapp Platform like Sushiswap or Uniswap
-   * @param {string} asset Address of liquidity pool token
-   * @param {BigNumber | string} amount Aamount to be approved
+   * Approve an asset for the Uniswap V3 NonfungiblePositionManager
+   * (used before mint/increase liquidity calls)
+   * @param {string} asset Address of asset to approve
+   * @param {BigNumber | string} amount Amount to be approved
    * @param {any} options Transaction options
    * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
@@ -826,7 +826,7 @@ export class Pool {
   }
 
   /**
-   * Witdraw asset from a lending pool
+   * Withdraw asset from a lending pool
    * @param {Dapp} dapp Platform like Aave
    * @param {string} asset Asset
    * @param  {BigNumber | string} amount Amount of asset to lend
@@ -858,7 +858,7 @@ export class Pool {
   }
 
   /**
-   * Witdraw asset from a Compound V3 or Fluid lending pool
+   * Withdraw asset from a Compound V3 or Fluid lending pool
    * @param {string} market Address of cToken or fToken
    * @param {string} asset Asset
    * @param  {BigNumber | string} amount Amount of asset to withdraw
@@ -1135,11 +1135,11 @@ export class Pool {
   }
 
   /**
-   * Invest into a Balancer pool
+   * Exit a Balancer pool
    * @param {string} poolId Balancer pool id
-   * @param {string[] | } assets Array of balancer pool assets
-   * @param {BigNumber | string } amount Amount of pool tokens to withdraw
-   * @param { null | number } singleExitAssetIndex Index of asset to withdraw to
+   * @param {string[]} assets Array of balancer pool assets
+   * @param {BigNumber | string} amount Amount of pool tokens to withdraw
+   * @param {null | number} singleExitAssetIndex Index of asset to withdraw to
    * @param {any} options Transaction options
    * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
@@ -1919,6 +1919,12 @@ export class Pool {
     return tx;
   }
 
+  /**
+   * Cancel a previously announced FlatMoney order (mint/redeem UNIT) before it executes
+   * @param {any} options Transaction options
+   * @param {boolean} estimateGas Simulate/estimate gas instead of sending
+   * @returns {Promise<any>} Transaction
+   */
   async cancelOrderViaFlatMoney(
     options: any = null,
     estimateGas = false
