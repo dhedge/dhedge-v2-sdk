@@ -44,7 +44,7 @@ await vault.approve(Dapp.SUSHISWAP, "USDC_ADDRESS", ethers.constants.MaxUint256)
 await vault.trade(Dapp.SUSHISWAP, "USDC_ADDRESS", "WETH_ADDRESS", "1000000", 0.5);
 ```
 
-> For aggregator-backed trades (1Inch, Odos), you'll need API keys — see [Initial Setup](#initial-setup).
+> For aggregator-backed trades (1Inch), you'll need an API key — see [Initial Setup](#initial-setup).
 
 ## Usage
 
@@ -98,22 +98,18 @@ await vault.trade(Dapp.SUSHISWAP, "USDC_ADDRESS", "WETH_ADDRESS", "1000000", 0.5
 
 ---
 
-If you want to use aggregators such as 1Inch or Odos, copy `.env.example` to `.env` and configure the API keys you need.
+If you want to use the 1Inch aggregator, copy `.env.example` to `.env` and configure the API key.
 
 ```
 ONEINCH_API_KEY=YOUR_API_KEY_FROM_1INCH
-ODOS_API_KEY=YOUR_ODOS_API_KEY
 ```
 
 - `ONEINCH_API_KEY` is required for `Dapp.ONEINCH`
-- `ODOS_API_KEY` is required for `Dapp.ODOS`
-- `ODOS_API_KEY` can also be required by `completeTorosWithdrawal(...)` when a Toros withdrawal needs Odos-backed swap data
 
 To get started:
 
 - get a 1inch API key from the [1inch Developer Portal](https://docs.1inch.io/docs/aggregation-protocol/introduction)
-- get an Odos API key via the [Odos developer docs](https://docs.odos.xyz/build/api-docs), and make sure it is valid for the Odos endpoint configured by this SDK
-- place the keys in a `.env` file at the project root before calling aggregator-backed methods
+- place the key in a `.env` file at the project root before calling aggregator-backed methods
 - if a required key is missing, the SDK will fail before transaction submission
 
 Initialize the sdk with an [ethers wallet](https://docs.ethers.io/v5/api/signer/#Wallet) and the network.
@@ -317,7 +313,7 @@ Approval model summary:
 
 #### 10. Trade vault assets
 
-Trade 1 USDC into DAI on Sushiswap (other options depend on network and configured API keys, and can include TOROS, QUICKSWAP, BALANCER, ONEINCH, and ODOS)
+Trade 1 USDC into DAI on Sushiswap (other options depend on network and configured API keys, and can include TOROS, QUICKSWAP, BALANCER, ONEINCH, and KYBERSWAP)
 
 ```ts
 const amountIn = "1000000"
@@ -359,7 +355,6 @@ Redeeming a Toros token has more prerequisites than a normal trade:
 - while that cooldown is active, redemption cannot be initiated
 - before initiating redemption, the vault must approve the Toros token for the Toros router
 - after redemption is initiated, some Toros withdrawals require a second completion step
-- `completeTorosWithdrawal(...)` can require `ODOS_API_KEY` when Odos-backed swap data is needed
 
 1. Approve the Toros token for redemption:
 

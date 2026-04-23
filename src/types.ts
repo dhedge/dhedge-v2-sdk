@@ -29,7 +29,6 @@ export enum Dapp {
   AERODROMECL = "aerodromeCL",
   PANCAKECL = "pancakeCL",
   COMPOUNDV3 = "compoundV3",
-  ODOS = "odos",
   PENDLE = "pendle",
   KYBERSWAP = "kyberswap",
   HYPERLIQUID = "hyperliquid",

@@ -75,7 +75,6 @@ import {
   getPancakeStakeTxData,
   getPancakeUnStakeTxData
 } from "../services/pancake/staking";
-import { getOdosSwapTxData } from "../services/odos";
 import { getPendleMintTxData, getPendleSwapTxData } from "../services/pendle";
 import { getCompleteWithdrawalTxData } from "../services/toros/completeWithdrawal";
 import {
@@ -423,15 +422,6 @@ export class Pool {
           ethers.BigNumber.from(amountIn),
           slippage
         );
-        break;
-      case Dapp.ODOS:
-        ({ swapTxData, minAmountOut } = await getOdosSwapTxData(
-          this,
-          assetFrom,
-          assetTo,
-          amountIn,
-          slippage
-        ));
         break;
       case Dapp.PENDLE:
         ({ swapTxData, minAmountOut } = await getPendleSwapTxData(

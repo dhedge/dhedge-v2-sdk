@@ -70,7 +70,7 @@ const testUniswapV3 = ({ wallet, network, provider }: TestingRunParams) => {
     });
 
     // Note: tradeUniswapV3 (UniswapV3RouterGuard) is deprecated on all chains.
-    // Swap tests removed. Use Dapp.ONEINCH or Dapp.ODOS for trading instead.
+    // Swap tests removed. Use Dapp.ONEINCH or Dapp.KYBERSWAP for trading instead.
 
     it("approves unlimited USDC and WETH for UniswapV3 LP", async () => {
       await pool.approveUniswapV3Liquidity(

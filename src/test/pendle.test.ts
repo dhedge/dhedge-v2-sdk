@@ -42,9 +42,9 @@ const testPendle = ({ wallet, network, provider }: TestingRunParams) => {
         network,
         provider
       });
-      await pool.approve(Dapp.ODOS, USDC, MAX_AMOUNT);
+      await pool.approve(Dapp.KYBERSWAP, USDC, MAX_AMOUNT);
       await pool.trade(
-        Dapp.ODOS,
+        Dapp.KYBERSWAP,
         USDC,
         weETH,
         "2000000000",
