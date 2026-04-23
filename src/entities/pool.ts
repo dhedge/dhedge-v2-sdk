@@ -1016,8 +1016,12 @@ export class Pool {
       try {
         await this.managerLogic.callStatic.changeAssets([], [asset]);
         removedAssets.push(asset);
-      } catch {
-        // Asset can't be removed — skip it
+      } catch (err) {
+        console.warn(
+          `changeAssets: skipping removal of ${asset} — ${
+            (err as Error).message
+          }`
+        );
       }
     }
 
