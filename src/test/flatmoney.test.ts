@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import BigNumber from "bignumber.js";
 import { Dhedge, Pool } from "../entities";
-import { AssetEnabled, Network } from "../types";
+import { Network } from "../types";
 import {
   TestingRunParams,
   runWithImpersonateAccount,
@@ -12,7 +11,6 @@ import { Contract, ethers } from "ethers";
 import { CONTRACT_ADDRESS, MAX_AMOUNT, TEST_POOL } from "./constants";
 import { flatMoneyContractAddresses } from "../config";
 import DelayedOrderAbi from "../abi/flatmoney/DelayedOrder.json";
-import { allowanceDelta } from "./utils/token";
 import { getKeeperFee } from "../services/flatmoney/keeperFee";
 
 const COLLATERAL_SLOT = 0; // same for RETH(base) and WBTC(optimism)
@@ -32,18 +30,14 @@ const testFlatMoney = ({
   let delayOrderContract: Contract;
   let COLLATERAL: string;
   jest.setTimeout(200000);
+  // FlatMoney's OracleModule reverts with ETHPriceStale() when the forked block's
+  // Chainlink ETH/USD price is older than maxAge. Re-run the fork before this suite
+  // so the oracle timestamp is fresh (there is no helper to override maxAge here).
   describe(`flatmoney on ${network}`, () => {
     beforeAll(async () => {
       await provider.send("evm_mine", []);
       dhedge = new Dhedge(wallet, network);
       pool = await dhedge.loadPool(TEST_POOL[network]);
-
-      await runWithImpersonateAccount(
-        { provider, account: await pool.managerLogic.manager() },
-        async ({ signer }) => {
-          await pool.managerLogic.connect(signer).setTrader(wallet.address);
-        }
-      );
 
       const flatMoneyContracts = flatMoneyContractAddresses[pool.network];
       if (!flatMoneyContracts) {
@@ -56,7 +50,20 @@ const testFlatMoney = ({
         pool.signer
       );
 
-      // top up gas
+      await runWithImpersonateAccount(
+        { provider, account: await pool.managerLogic.manager() },
+        async ({ signer }) => {
+          await pool.managerLogic.connect(signer).setTrader(wallet.address);
+          await pool.managerLogic.connect(signer).changeAssets(
+            [
+              [COLLATERAL, false],
+              [CONTRACT_ADDRESS[network].UNIT, false]
+            ],
+            []
+          );
+        }
+      );
+
       await provider.send("hardhat_setBalance", [
         wallet.address,
         "0x10000000000000000"
@@ -77,45 +84,24 @@ const testFlatMoney = ({
         slot: UNIT_SLOT,
         userAddress: pool.address
       });
-
-      const currentAssets: any[] = await pool.managerLogic.getSupportedAssets();
-      const exisitingAssets = currentAssets.map(item => {
-        return {
-          asset: item[0],
-          isDeposit: item[1]
-        };
-      });
-
-      const newAssets: AssetEnabled[] = [
-        ...exisitingAssets,
-        { asset: CONTRACT_ADDRESS[network].USDC, isDeposit: true },
-        { asset: CONTRACT_ADDRESS[network].WETH, isDeposit: true },
-        {
-          asset: CONTRACT_ADDRESS[network].UNIT,
-          isDeposit: false
-        },
-        {
-          asset: COLLATERAL,
-          isDeposit: false
-        }
-      ];
-      await pool.changeAssets(newAssets);
     });
 
     it("mint UNIT", async () => {
-      //approve
       await pool.approveSpender(
         delayOrderContract.address,
         COLLATERAL,
         MAX_AMOUNT
       );
-      const collateralAllowanceDelta = await allowanceDelta(
-        pool.address,
+      const iERC20 = new ethers.Contract(
         COLLATERAL,
-        delayOrderContract.address,
+        ["function allowance(address,address) view returns (uint256)"],
         pool.signer
       );
-      expect(collateralAllowanceDelta.gt(0)).toBe(true);
+      const collateralAllowance = await iERC20.allowance(
+        pool.address,
+        delayOrderContract.address
+      );
+      expect(collateralAllowance.gt(0)).toBe(true);
 
       const depositAmountStr = new BigNumber(1).times(1e18).toString();
       const estimateData = await pool.mintUnitViaFlatMoney(
