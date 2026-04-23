@@ -31,11 +31,18 @@ const testHyperliquid = ({ wallet, network }: TestingRunParams) => {
 
   describe(`pool on ${network}`, () => {
     beforeAll(async () => {
+      if (!process.env.PRIVATE_KEY || !process.env.HYPERLIQUID_URL) {
+        console.warn(
+          "Skipping hyperliquid on-chain tests: PRIVATE_KEY and HYPERLIQUID_URL env vars required"
+        );
+        return;
+      }
       dhedge = new Dhedge(wallet, network);
       pool = await dhedge.loadPool(TEST_POOL[network]);
     });
 
     it("approves unlimited USDC on Hyperliquid Core Wallet", async () => {
+      if (!process.env.PRIVATE_KEY || !process.env.HYPERLIQUID_URL) return;
       const tx = await pool.approve(
         Dapp.HYPERLIQUID,
         USDC,
@@ -56,6 +63,7 @@ const testHyperliquid = ({ wallet, network }: TestingRunParams) => {
     });
 
     it("deposits 30 USDC into Hyperliquid Core Wallet", async () => {
+      if (!process.env.PRIVATE_KEY || !process.env.HYPERLIQUID_URL) return;
       const usdcBefore = await pool.utils.getBalance(USDC, pool.address);
       const tx = await pool.depositHyperliquid(
         "30000000", // 30 USDC (6 decimals)
@@ -68,6 +76,7 @@ const testHyperliquid = ({ wallet, network }: TestingRunParams) => {
     });
 
     it("moves 5 USDC from Perp (dex 0) to Spot wallet", async () => {
+      if (!process.env.PRIVATE_KEY || !process.env.HYPERLIQUID_URL) return;
       const tx = await pool.perpToSpotHyperliquid(
         0,
         "5000000", // 5 USDC (6 decimals)
@@ -78,6 +87,7 @@ const testHyperliquid = ({ wallet, network }: TestingRunParams) => {
     });
 
     it("withdraws USDC from Hyperliquid Spot Wallet", async () => {
+      if (!process.env.PRIVATE_KEY || !process.env.HYPERLIQUID_URL) return;
       const tx = await pool.withdrawHyperliquid(
         "784577548", // 784.577548 USDC (6 decimals)
         await getTxOptions(network)
@@ -87,6 +97,7 @@ const testHyperliquid = ({ wallet, network }: TestingRunParams) => {
     });
 
     it("opens a XAUT0 spot buy order", async () => {
+      if (!process.env.PRIVATE_KEY || !process.env.HYPERLIQUID_URL) return;
       const tx = await pool.openMarketOrderHyperliquid(
         10182, // XAUT0/USDC spot asset id (10000 + spot index 182)
         true, // long
@@ -99,6 +110,7 @@ const testHyperliquid = ({ wallet, network }: TestingRunParams) => {
     });
 
     it("closes 50% of ETH perp position", async () => {
+      if (!process.env.PRIVATE_KEY || !process.env.HYPERLIQUID_URL) return;
       const tx = await pool.closePositionHyperliquid(
         1, // ETH Perp asset id
         50, // 50% to close

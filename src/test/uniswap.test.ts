@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Dhedge, ethers, Pool } from "..";
+import { nonfungiblePositionManagerAddress } from "../config";
 import { Dapp, Network } from "../types";
 import { CONTRACT_ADDRESS, TEST_POOL } from "./constants";
 import {
@@ -73,19 +74,35 @@ const testUniswapV3 = ({ wallet, network, provider }: TestingRunParams) => {
     // Swap tests removed. Use Dapp.ONEINCH or Dapp.KYBERSWAP for trading instead.
 
     it("approves unlimited USDC and WETH for UniswapV3 LP", async () => {
-      await pool.approveUniswapV3Liquidity(
+      const usdcTx = await pool.approveUniswapV3Liquidity(
         CONTRACT_ADDRESS[network].USDC,
         ethers.constants.MaxInt256
       );
-      await pool.approveUniswapV3Liquidity(
+      await usdcTx.wait(1);
+      const wethTx = await pool.approveUniswapV3Liquidity(
         CONTRACT_ADDRESS[network].WETH,
         ethers.constants.MaxInt256
       );
-      const usdcBalance = await dhedge.utils.getBalance(
+      await wethTx.wait(1);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const positionManager = nonfungiblePositionManagerAddress[network][
+        Dapp.UNISWAPV3
+      ]!;
+      const allowanceAbi = [
+        "function allowance(address,address) view returns (uint256)"
+      ];
+      const usdcAllowance = await new ethers.Contract(
         CONTRACT_ADDRESS[network].USDC,
-        pool.address
-      );
-      expect(usdcBalance.gt(0)).toBe(true);
+        allowanceAbi,
+        pool.signer
+      ).allowance(pool.address, positionManager);
+      const wethAllowance = await new ethers.Contract(
+        CONTRACT_ADDRESS[network].WETH,
+        allowanceAbi,
+        pool.signer
+      ).allowance(pool.address, positionManager);
+      expect(usdcAllowance.gt(0)).toBe(true);
+      expect(wethAllowance.gt(0)).toBe(true);
     });
 
     it("adds WETH and USDC to a new V3 pool", async () => {

@@ -71,12 +71,21 @@ const testAerodrome = ({ wallet, network, provider }: TestingRunParams) => {
     it("approves unlimited USDC and WETH for Aerodrome", async () => {
       await pool.approve(Dapp.AERODROME, USDC, MAX_AMOUNT);
       await pool.approve(Dapp.AERODROME, WETH, MAX_AMOUNT);
+      const allowanceAbi = [
+        "function allowance(address,address) view returns (uint256)"
+      ];
       const usdcAllowance = await new ethers.Contract(
         USDC,
-        ["function allowance(address,address) view returns (uint256)"],
+        allowanceAbi,
+        pool.signer
+      ).allowance(pool.address, routerAddress[network].aerodrome!);
+      const wethAllowance = await new ethers.Contract(
+        WETH,
+        allowanceAbi,
         pool.signer
       ).allowance(pool.address, routerAddress[network].aerodrome!);
       expect(usdcAllowance.gt(0)).toBe(true);
+      expect(wethAllowance.gt(0)).toBe(true);
     });
 
     it("adds USDC and WETH to an Aerodrome volatile pool", async () => {

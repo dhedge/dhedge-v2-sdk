@@ -153,16 +153,23 @@ export const runWithImpersonateAccount = async (
 // This function dynamically finds all such aggregators for a pool's supported assets and overrides
 // their maxAge fields to max uint32 (0xffffffff, ~136 years).
 //
+// Slot layouts below are written in big-endian hex order (high-order bytes first), matching the 64-char
+// string returned by eth_getStorageAt. Within a packed slot, Solidity lays fields out from the low-order
+// end in declaration order — so the first declared field ends up on the right side of the hex string.
+//
 // ChainlinkPythPriceAggregator storage layout:
 //   slot 0: asset (address)
-//   slot 1: oracleData.onchainOracle = [12 bytes padding][4 bytes maxAge][20 bytes oracleContract]
+//   slot 1: oracleData.onchainOracle = [8 bytes padding][4 bytes maxAge][20 bytes oracleContract]
+//           → maxAge at hex offset 16
 //   slot 2: oracleData.offchainOracle.priceId (bytes32)
-//   slot 3: oracleData.offchainOracle = [24 bytes padding][4 bytes minConfidenceRatio][4 bytes maxAge]
+//   slot 3: oracleData.offchainOracle = [24 bytes padding][4 bytes maxAge][4 bytes minConfidenceRatio]
+//           → maxAge at hex offset 48
 //
 // PythPriceAggregator storage layout:
 //   slot 0: asset (address)
 //   slot 1: oracleData.priceId (bytes32)
-//   slot 2: oracleData = [24 bytes padding][4 bytes minConfidenceRatio][4 bytes maxAge]
+//   slot 2: oracleData = [24 bytes padding][4 bytes maxAge][4 bytes minConfidenceRatio]
+//           → maxAge at hex offset 48
 const MAX_UINT32_HEX = "ffffffff";
 
 const overrideMaxAgeInSlot = async (
@@ -233,12 +240,10 @@ export const fixOracleAggregatorStaleness = async ({
       const agg = new Contract(aggregatorAddress, chainlinkPythAbi, provider);
       try {
         await agg.oracleData();
-        // ChainlinkPythPriceAggregator detected
-        // Slot 1: onchain maxAge at hex offset 16 (after 12 bytes padding = 24 hex, but maxAge is before address)
-        // Layout: [12 bytes padding][4 bytes maxAge][20 bytes oracleContract]
+        // ChainlinkPythPriceAggregator detected.
+        // Slot 1 layout: [8 bytes padding][4 bytes maxAge][20 bytes oracleContract] → maxAge at offset 16
         await overrideMaxAgeInSlot(provider, aggregatorAddress, "0x1", 16);
-        // Slot 3: offchain maxAge
-        // Layout: [24 bytes padding][4 bytes minConfidenceRatio][4 bytes maxAge]
+        // Slot 3 layout: [24 bytes padding][4 bytes maxAge][4 bytes minConfidenceRatio] → maxAge at offset 48
         await overrideMaxAgeInSlot(provider, aggregatorAddress, "0x3", 48);
         continue;
       } catch {
@@ -249,8 +254,8 @@ export const fixOracleAggregatorStaleness = async ({
       const pythAgg = new Contract(aggregatorAddress, pythAbi, provider);
       try {
         await pythAgg.oracleData();
-        // PythPriceAggregator detected
-        // Slot 2: [24 bytes padding][4 bytes minConfidenceRatio][4 bytes maxAge]
+        // PythPriceAggregator detected.
+        // Slot 2 layout: [24 bytes padding][4 bytes maxAge][4 bytes minConfidenceRatio] → maxAge at offset 48
         await overrideMaxAgeInSlot(provider, aggregatorAddress, "0x2", 48);
       } catch {
         // Not a PythPriceAggregator either — skip

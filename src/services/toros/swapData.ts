@@ -3,7 +3,7 @@ import { Pool } from "../..";
 import { getKyberSwapTxData } from "../kyberSwap";
 import { getOneInchSwapTxData } from "../oneInch";
 
-export const SWAPPER_ADDERSS = "0x4F754e0F0924afD74980886b0B479Fa1D7C58D0D";
+export const SWAPPER_ADDRESS = "0x4F754e0F0924afD74980886b0B479Fa1D7C58D0D";
 
 export const ROUTER_KEYS = ["ONE_INCH", "KYBER_SWAP_V2"] as const;
 
@@ -32,8 +32,8 @@ export const getSwapData = async (
       dstAsset,
       srcAmount,
       slippagePercent,
-      SWAPPER_ADDERSS,
-      SWAPPER_ADDERSS
+      SWAPPER_ADDRESS,
+      SWAPPER_ADDRESS
     );
     return swapTxData;
   } else if (routerKeyString === "ONE_INCH") {
@@ -43,8 +43,8 @@ export const getSwapData = async (
       dstAsset,
       srcAmount,
       slippagePercent,
-      SWAPPER_ADDERSS,
-      SWAPPER_ADDERSS
+      SWAPPER_ADDRESS,
+      SWAPPER_ADDRESS
     );
     return swapTxData;
   } else {

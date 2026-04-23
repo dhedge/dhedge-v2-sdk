@@ -105,7 +105,7 @@ const testToros = ({ wallet, network, provider }: TestingRunParams) => {
         }
       );
       expect(tradeResult.minAmountOut).toBeDefined();
-      const completWithdrawResult = await pool.completeTorosWithdrawal(
+      const completeWithdrawResult = await pool.completeTorosWithdrawal(
         USDC,
         5,
         null,
@@ -114,7 +114,7 @@ const testToros = ({ wallet, network, provider }: TestingRunParams) => {
           onlyGetTxData: true
         }
       );
-      expect(completWithdrawResult.txData).toBeDefined();
+      expect(completeWithdrawResult.txData).toBeDefined();
     });
 
     it("init Toros Token for withdrawal", async () => {
@@ -132,7 +132,9 @@ const testToros = ({ wallet, network, provider }: TestingRunParams) => {
     });
 
     it("complete withdrawal from Toros asset", async () => {
-      await new Promise(resolve => setTimeout(resolve, 5000)); // wait for Toros withdrawal to be ready
+      // Advance chain time past the Toros withdrawal cooldown
+      await provider.send("evm_increaseTime", [600]);
+      await provider.send("evm_mine", []);
       await pool.completeTorosWithdrawal(USDC, 1.5);
       const usdcBalanceDelta = await balanceDelta(
         pool.address,

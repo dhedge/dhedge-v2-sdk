@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import BigNumber from "bignumber.js";
+import { ethers } from "ethers";
 import { Dhedge, Pool } from "..";
 import { Network } from "../types";
 import { CONTRACT_ADDRESS, MAX_AMOUNT, TEST_POOL } from "./constants";
@@ -59,9 +60,18 @@ const testCompoundV3 = ({ wallet, network, provider }: TestingRunParams) => {
     beforeAfterReset({ beforeAll, afterAll, provider });
 
     it("approves unlimited WETH for cWETHv3 market", async () => {
-      await pool.approveSpender(COMPOUNDV3_WETH, WETH, MAX_AMOUNT);
-      const wethAllowance = await pool.utils.getBalance(WETH, pool.address);
-      expect(wethAllowance).toBeDefined();
+      const tx = await pool.approveSpender(COMPOUNDV3_WETH, WETH, MAX_AMOUNT);
+      await tx.wait(1);
+      const iERC20 = new ethers.Contract(
+        WETH,
+        ["function allowance(address,address) view returns (uint256)"],
+        pool.signer
+      );
+      const wethAllowance = await iERC20.allowance(
+        pool.address,
+        COMPOUNDV3_WETH
+      );
+      expect(wethAllowance.gt(0)).toBe(true);
     });
 
     it("lends WETH to CompoundV3 WETH market", async () => {

@@ -31,11 +31,18 @@ const testTorosOnchain = ({ wallet, network }: TestingRunParams) => {
 
   describe(`[${network}] toros on-chain withdrawal tests`, () => {
     beforeAll(async () => {
+      if (!process.env.PRIVATE_KEY || !process.env.ARBITRUM_URL) {
+        console.warn(
+          "Skipping toros on-chain tests: PRIVATE_KEY and ARBITRUM_URL env vars required"
+        );
+        return;
+      }
       dhedge = new Dhedge(wallet, network);
       pool = await dhedge.loadPool(TEST_POOL_ADDRESS);
     });
 
     it("init Toros Token for withdrawal", async () => {
+      if (!process.env.PRIVATE_KEY || !process.env.ARBITRUM_URL) return;
       const torosBalanceBefore = await pool.utils.getBalance(
         TOROS,
         pool.address
@@ -63,6 +70,7 @@ const testTorosOnchain = ({ wallet, network }: TestingRunParams) => {
     });
 
     it("complete withdrawal from Toros asset", async () => {
+      if (!process.env.PRIVATE_KEY || !process.env.ARBITRUM_URL) return;
       const usdcBalanceBefore = await pool.utils.getBalance(USDC, pool.address);
       const tx = await pool.completeTorosWithdrawal(
         USDC,
