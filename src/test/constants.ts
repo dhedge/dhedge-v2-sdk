@@ -170,6 +170,7 @@ export const CONTRACT_ADDRESS = {
     WBTC: "",
     USDT: "0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb",
     USDE: "0x5d3a1ff2b6bab83b63cd9ad0787074081a52ef34",
+    VELO: "",
     uniswapV3: {
       nonfungiblePositionManager: ""
     },
@@ -180,8 +181,10 @@ export const CONTRACT_ADDRESS = {
   },
   [Network.HYPERLIQUID]: {
     USDC: "0xb88339cb7199b77e23db6e890353e22632ba630f",
+    USDT: "",
     WETH: "",
     WBTC: "",
+    VELO: "",
     uniswapV3: {
       nonfungiblePositionManager: ""
     },
