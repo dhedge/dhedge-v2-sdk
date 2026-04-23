@@ -5,7 +5,9 @@ import { getOneInchSwapTxData } from "../oneInch";
 
 export const SWAPPER_ADDRESS = "0x4F754e0F0924afD74980886b0B479Fa1D7C58D0D";
 
-export const ROUTER_KEYS = ["ONE_INCH", "KYBER_SWAP_V2"] as const;
+// Order matters: routers are tried in sequence by init/completeWithdrawal.
+// KyberSwap is the primary route; 1inch is the fallback.
+export const ROUTER_KEYS = ["KYBER_SWAP_V2", "ONE_INCH"] as const;
 
 export type RouterKey = typeof ROUTER_KEYS[number];
 

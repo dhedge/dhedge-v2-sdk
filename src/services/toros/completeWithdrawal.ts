@@ -19,16 +19,19 @@ export interface TrackedAsset {
 
 const getSwapWithdrawData = async (
   pool: Pool,
-  trackedAssets: TrackedAsset[],
+  trackedAssets: {
+    token: string;
+    balance: ethers.BigNumber;
+    slippage: number;
+  }[],
   receiveToken: string,
-  slippage: number,
   swapDestMinDestAmount: BigNumber
 ) => {
   for (const routerKeyString of ROUTER_KEYS) {
     try {
       const srcData = [];
       const routerKey = ethers.utils.formatBytes32String(routerKeyString);
-      for (const { token, balance } of trackedAssets) {
+      for (const { token, balance, slippage } of trackedAssets) {
         if (token.toLowerCase() === receiveToken.toLowerCase()) {
           continue;
         }
@@ -145,12 +148,16 @@ export const createCompleteWithdrawalTxArguments = async (
         .div(receiveTokenPriceD18)
         .div(10 ** Number(swapTAssetDecimals.toString()))
         .times(10 ** Number(receiveTokenDecimals.toString()))
-        .times(1 - adjustedSlippage / 10000) // slippage is in basis points, so divide by 10000
+        // Outer floor stays strict on the user slippage — this is the
+        // withdrawer's safety check. Dust leniency applies only to the
+        // aggregator calldata below.
+        .times(1 - slippage / 10000) // slippage is in basis points, so divide by 10000
         .decimalPlaces(0, BigNumber.ROUND_DOWN);
 
       return {
         token: swapTAsset.token,
         balance: swapTAsset.balance,
+        slippage: adjustedSlippage,
         estimatedMinReceiveAmount
       };
     })
@@ -174,9 +181,12 @@ export const createCompleteWithdrawalTxArguments = async (
 
   const swapData = await getSwapWithdrawData(
     pool,
-    swapTrackedAssets,
+    tAssetInfos.map(({ token, balance, slippage }) => ({
+      token,
+      balance,
+      slippage
+    })),
     receiveToken,
-    slippage,
     swapDestMinDestAmount
   );
 
