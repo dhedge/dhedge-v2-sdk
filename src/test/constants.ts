@@ -177,7 +177,9 @@ export const CONTRACT_ADDRESS = {
     COMPOUNDV3_WETH: "",
     FLUID_WETH: "",
     UNIT: "",
-    TOROS: ""
+    TOROS: "",
+    SUSD: "",
+    VELODROME_CL_USDC_WETH_GAUGE: ""
   },
   [Network.HYPERLIQUID]: {
     USDC: "0xb88339cb7199b77e23db6e890353e22632ba630f",
@@ -192,7 +194,9 @@ export const CONTRACT_ADDRESS = {
     COMPOUNDV3_WETH: "",
     FLUID_WETH: "",
     UNIT: "",
-    TOROS: ""
+    TOROS: "",
+    SUSD: "",
+    VELODROME_CL_USDC_WETH_GAUGE: ""
   }
 };
 
