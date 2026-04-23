@@ -1,20 +1,23 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
+import BigNumber from "bignumber.js";
+import { ethers } from "ethers";
 import { Dhedge, Pool } from "..";
 
+import { routerAddress } from "../config";
 import { Dapp, Network } from "../types";
 import { CONTRACT_ADDRESS, MAX_AMOUNT, TEST_POOL } from "./constants";
+import { getTxOptions } from "./txOptions";
 import {
   TestingRunParams,
+  fixOracleAggregatorStaleness,
+  runWithImpersonateAccount,
+  setChainlinkTimeout,
   setUSDCAmount,
   testingHelper,
   wait
 } from "./utils/testingHelper";
-import { allowanceDelta, balanceDelta } from "./utils/token";
-import { getTxOptions } from "./txOptions";
-import BigNumber from "bignumber.js";
-import { routerAddress } from "../config";
-// import { routerAddress } from "../config";
+import { balanceDelta } from "./utils/token";
 
 const testOneInch = ({ wallet, network, provider }: TestingRunParams) => {
   const USDC = CONTRACT_ADDRESS[network].USDC;
@@ -26,22 +29,30 @@ const testOneInch = ({ wallet, network, provider }: TestingRunParams) => {
 
   describe(`pool on ${network}`, () => {
     beforeAll(async () => {
-      dhedge = new Dhedge(wallet, network);
-      pool = await dhedge.loadPool(TEST_POOL[network]);
-      // top up gas
       await provider.send("hardhat_setBalance", [
         wallet.address,
         "0x10000000000000000"
       ]);
-      await provider.send("evm_mine", []);
+      dhedge = new Dhedge(wallet, network);
+      pool = await dhedge.loadPool(TEST_POOL[network]);
 
-      const newAssets = [
-        { asset: USDC, isDeposit: true },
-        { asset: WETH, isDeposit: true }
-      ];
+      await setChainlinkTimeout({ pool, provider }, 86400 * 365);
+      await fixOracleAggregatorStaleness({ pool, provider });
 
-      await pool.managerLogic.changeAssets(newAssets, []);
-      // top up USDC
+      await runWithImpersonateAccount(
+        { provider, account: await pool.managerLogic.manager() },
+        async ({ signer }) => {
+          await pool.managerLogic.connect(signer).setTrader(wallet.address);
+          await pool.managerLogic.connect(signer).changeAssets(
+            [
+              [USDC, true],
+              [WETH, true]
+            ],
+            []
+          );
+        }
+      );
+
       await setUSDCAmount({
         amount: new BigNumber(2).times(1e6).toFixed(0),
         userAddress: pool.address,
@@ -52,13 +63,16 @@ const testOneInch = ({ wallet, network, provider }: TestingRunParams) => {
 
     it("approves unlimited USDC on 1Inch", async () => {
       await pool.approve(Dapp.ONEINCH, USDC, MAX_AMOUNT);
-      const usdcAllowanceDelta = await allowanceDelta(
-        pool.address,
+      const iERC20 = new ethers.Contract(
         USDC,
-        routerAddress[network]["1inch"]!,
+        ["function allowance(address,address) view returns (uint256)"],
         pool.signer
       );
-      expect(usdcAllowanceDelta.gt(0)).toBe(true);
+      const usdcAllowance = await iERC20.allowance(
+        pool.address,
+        routerAddress[network][Dapp.ONEINCH]!
+      );
+      expect(usdcAllowance.gt(0)).toBe(true);
     });
 
     it("gets gas estimation for 2 USDC into WETH on 1Inch", async () => {
@@ -71,7 +85,7 @@ const testOneInch = ({ wallet, network, provider }: TestingRunParams) => {
         await getTxOptions(network),
         true
       );
-      expect(gasEstimate.gas.gt(0));
+      expect(gasEstimate.gas.gt(0)).toBe(true);
       expect(gasEstimate.minAmountOut).not.toBeNull();
     });
 
@@ -110,7 +124,7 @@ const testOneInch = ({ wallet, network, provider }: TestingRunParams) => {
 };
 
 testingHelper({
-  network: Network.OPTIMISM,
+  network: Network.ARBITRUM,
   testingRun: testOneInch
 });
 
