@@ -66,7 +66,10 @@ export const CONTRACT_ADDRESS = {
     COMPOUNDV3_WETH: "",
     FLUID_WETH: "",
     TOROS: "",
-    UNIT: ""
+    UNIT: "",
+    WSTETH: "",
+    BALANCER_WSTETH_WETH_POOL: "",
+    BALANCER_WSTETH_WETH_GAUGE: ""
   },
 
   [Network.OPTIMISM]: {
@@ -90,7 +93,10 @@ export const CONTRACT_ADDRESS = {
     VELO: "0x9560e827aF36c94D2Ac33a39bCE1Fe78631088Db",
     COMPOUNDV3_WETH: "",
     FLUID_WETH: "",
-    TOROS: "0xcacb5a722a36cff6baeb359e21c098a4acbffdfa" //ETHBEAR1X
+    TOROS: "0xcacb5a722a36cff6baeb359e21c098a4acbffdfa", //ETHBEAR1X
+    WSTETH: "",
+    BALANCER_WSTETH_WETH_POOL: "",
+    BALANCER_WSTETH_WETH_GAUGE: ""
   },
   [Network.ARBITRUM]: {
     USDC: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
@@ -140,7 +146,10 @@ export const CONTRACT_ADDRESS = {
     VELO: "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
     COMPOUNDV3_WETH: "",
     FLUID_WETH: "",
-    TOROS: ""
+    TOROS: "",
+    WSTETH: "",
+    BALANCER_WSTETH_WETH_POOL: "",
+    BALANCER_WSTETH_WETH_GAUGE: ""
   },
   [Network.ETHEREUM]: {
     USDC: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
@@ -162,7 +171,10 @@ export const CONTRACT_ADDRESS = {
     COMPOUNDV3_WETH: "",
     FLUID_WETH: "",
     TOROS: "",
-    UNIT: ""
+    UNIT: "",
+    WSTETH: "",
+    BALANCER_WSTETH_WETH_POOL: "",
+    BALANCER_WSTETH_WETH_GAUGE: ""
   },
   [Network.PLASMA]: {
     USDC: "",
@@ -179,7 +191,13 @@ export const CONTRACT_ADDRESS = {
     UNIT: "",
     TOROS: "",
     SUSD: "",
-    VELODROME_CL_USDC_WETH_GAUGE: ""
+    VELODROME_CL_USDC_WETH_GAUGE: "",
+    ARRAKIS_USDC_WETH_GAUGE: "",
+    ARRAKIS_USDC_WETH_LP: "",
+    WMATIC: "",
+    WSTETH: "",
+    BALANCER_WSTETH_WETH_POOL: "",
+    BALANCER_WSTETH_WETH_GAUGE: ""
   },
   [Network.HYPERLIQUID]: {
     USDC: "0xb88339cb7199b77e23db6e890353e22632ba630f",
@@ -196,7 +214,13 @@ export const CONTRACT_ADDRESS = {
     UNIT: "",
     TOROS: "",
     SUSD: "",
-    VELODROME_CL_USDC_WETH_GAUGE: ""
+    VELODROME_CL_USDC_WETH_GAUGE: "",
+    ARRAKIS_USDC_WETH_GAUGE: "",
+    ARRAKIS_USDC_WETH_LP: "",
+    WMATIC: "",
+    WSTETH: "",
+    BALANCER_WSTETH_WETH_POOL: "",
+    BALANCER_WSTETH_WETH_GAUGE: ""
   }
 };
 

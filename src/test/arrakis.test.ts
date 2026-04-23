@@ -13,15 +13,17 @@ import {
 } from "./utils/testingHelper";
 import { allowanceDelta, balanceDelta } from "./utils/token";
 
-//const network = Network.OPTIMISM;
-const network = Network.POLYGON;
-const USDC = CONTRACT_ADDRESS[network].USDC;
-const WETH = CONTRACT_ADDRESS[network].WETH;
-jest.setTimeout(100000);
-
 const testArrakis = ({ wallet, network, provider }: TestingRunParams) => {
+  const USDC = CONTRACT_ADDRESS[network].USDC;
+  const WETH = CONTRACT_ADDRESS[network].WETH;
+  const ARRAKIS_USDC_WETH_GAUGE =
+    CONTRACT_ADDRESS[network].ARRAKIS_USDC_WETH_GAUGE;
+  const ARRAKIS_USDC_WETH_LP = CONTRACT_ADDRESS[network].ARRAKIS_USDC_WETH_LP;
+  const WMATIC = CONTRACT_ADDRESS[network].WMATIC;
+
   let dhedge: Dhedge;
   let pool: Pool;
+  jest.setTimeout(100000);
 
   describe("pool", () => {
     beforeAll(async () => {
@@ -42,16 +44,10 @@ const testArrakis = ({ wallet, network, provider }: TestingRunParams) => {
       });
 
       const newAssets: AssetEnabled[] = [
-        { asset: CONTRACT_ADDRESS[network].USDC, isDeposit: true },
-        { asset: CONTRACT_ADDRESS[network].WETH, isDeposit: true },
-        {
-          asset: CONTRACT_ADDRESS[network].ARRAKIS_USDC_WETH_GAUGE,
-          isDeposit: false
-        },
-        {
-          asset: CONTRACT_ADDRESS[network].WMATIC, // reward token
-          isDeposit: false
-        },
+        { asset: USDC, isDeposit: true },
+        { asset: WETH, isDeposit: true },
+        { asset: ARRAKIS_USDC_WETH_GAUGE, isDeposit: false },
+        { asset: WMATIC, isDeposit: false }, // reward token
         {
           asset: CONTRACT_ADDRESS[network].uniswapV3.nonfungiblePositionManager,
           isDeposit: false
@@ -90,27 +86,23 @@ const testArrakis = ({ wallet, network, provider }: TestingRunParams) => {
       const wethBalance = await pool.utils.getBalance(WETH, pool.address);
       await pool.increaseLiquidity(
         Dapp.ARRAKIS,
-        CONTRACT_ADDRESS[network].ARRAKIS_USDC_WETH_GAUGE,
+        ARRAKIS_USDC_WETH_GAUGE,
         usdcBalance,
         wethBalance
       );
       const lpBalanceDelta = await balanceDelta(
         pool.address,
-        CONTRACT_ADDRESS[network].ARRAKIS_USDC_WETH_LP,
+        ARRAKIS_USDC_WETH_LP,
         pool.signer
       );
       expect(lpBalanceDelta.gt(0)).toBe(true);
     });
 
     it("approves unlimited LP staking Token before on Arrakis", async () => {
-      await pool.approve(
-        Dapp.ARRAKIS,
-        CONTRACT_ADDRESS[network].ARRAKIS_USDC_WETH_GAUGE,
-        MAX_AMOUNT
-      );
+      await pool.approve(Dapp.ARRAKIS, ARRAKIS_USDC_WETH_GAUGE, MAX_AMOUNT);
       const gaugeAllowanceDelta = await allowanceDelta(
         pool.address,
-        CONTRACT_ADDRESS[network].ARRAKIS_USDC_WETH_GAUGE,
+        ARRAKIS_USDC_WETH_GAUGE,
         routerAddress[network].arrakis!,
         pool.signer
       );
@@ -118,14 +110,10 @@ const testArrakis = ({ wallet, network, provider }: TestingRunParams) => {
     });
 
     it("should remove liquidity from an existing pool ", async () => {
-      await pool.decreaseLiquidity(
-        Dapp.ARRAKIS,
-        CONTRACT_ADDRESS[network].ARRAKIS_USDC_WETH_GAUGE,
-        100
-      );
+      await pool.decreaseLiquidity(Dapp.ARRAKIS, ARRAKIS_USDC_WETH_GAUGE, 100);
       const wethBalanceDelta = await balanceDelta(
         pool.address,
-        CONTRACT_ADDRESS[network].WETH,
+        WETH,
         pool.signer
       );
       expect(wethBalanceDelta.gt(0)).toBe(true);
