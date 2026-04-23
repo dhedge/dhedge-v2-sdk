@@ -69,7 +69,7 @@ const testPendle = ({ wallet, network, provider }: TestingRunParams) => {
         PTweETH,
         pool.signer
       );
-      expect(ptWeEthBalanceDelta.gt(0));
+      expect(ptWeEthBalanceDelta.gt(0)).toBe(true);
     });
 
     // it("swaps PTweETH to weETH on Pendle", async () => {

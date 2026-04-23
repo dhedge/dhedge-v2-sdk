@@ -50,7 +50,7 @@ const testKyberSwap = ({ wallet, network, provider }: TestingRunParams) => {
         routerAddress[network]["kyberswap"]!,
         pool.signer
       );
-      await expect(usdcAllowanceDelta.gt(0));
+      expect(usdcAllowanceDelta.gt(0)).toBe(true);
     });
 
     it("gets only amount and txData for 2 USDC into WETH on KyberSwap", async () => {
@@ -77,7 +77,7 @@ const testKyberSwap = ({ wallet, network, provider }: TestingRunParams) => {
         WETH,
         pool.signer
       );
-      expect(wethBalanceDelta.gt(0));
+      expect(wethBalanceDelta.gt(0)).toBe(true);
     });
   });
 };

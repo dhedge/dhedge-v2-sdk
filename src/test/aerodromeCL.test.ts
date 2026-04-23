@@ -75,7 +75,7 @@ const testAerodromeCL = ({ wallet, network, provider }: TestingRunParams) => {
           AERODROME_POSITION_MANGER,
           pool.signer
         );
-        await expect(UsdcAllowanceDelta.gt(0));
+        expect(UsdcAllowanceDelta.gt(0)).toBe(true);
       });
 
       it("adds USDC and WETH to a CL (mint position)", async () => {

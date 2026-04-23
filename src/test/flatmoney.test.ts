@@ -115,7 +115,7 @@ const testFlatMoney = ({
         delayOrderContract.address,
         pool.signer
       );
-      await expect(collateralAllowanceDelta.gt(0));
+      expect(collateralAllowanceDelta.gt(0)).toBe(true);
 
       const depositAmountStr = new BigNumber(1).times(1e18).toString();
       const estimateData = await pool.mintUnitViaFlatMoney(

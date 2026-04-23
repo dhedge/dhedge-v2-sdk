@@ -72,7 +72,7 @@ const testPancakeCL = ({ wallet, network, provider }: TestingRunParams) => {
           PANCAKE_POSITION_MANGER,
           pool.signer
         );
-        await expect(UsdcAllowanceDelta.gt(0));
+        expect(UsdcAllowanceDelta.gt(0)).toBe(true);
       });
 
       it("adds USDC and USDT to a CL (mint position)", async () => {

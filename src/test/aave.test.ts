@@ -31,7 +31,7 @@ describe("pool", () => {
       routerAddress[network]["aavev3"]!,
       pool.signer
     );
-    await expect(usdcAllowanceDelta.gt(0));
+    expect(usdcAllowanceDelta.gt(0)).toBe(true);
   });
 
   it("approves unlimited WETH on Aave Lending pool", async () => {
@@ -42,7 +42,7 @@ describe("pool", () => {
       routerAddress[network]["aavev3"]!,
       pool.signer
     );
-    await expect(wethAllowanceDelta.gt(0));
+    expect(wethAllowanceDelta.gt(0)).toBe(true);
   });
 
   it("lends 5 USDC into Aave lending pool", async () => {

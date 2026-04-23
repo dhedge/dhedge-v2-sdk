@@ -36,7 +36,7 @@ describe("pool", () => {
       routerAddress[network].balancer!,
       pool.signer
     );
-    await expect(stWETHAllowanceDelta.gt(0));
+    expect(stWETHAllowanceDelta.gt(0)).toBe(true);
   });
 
   it("approves unlimited WETH on Balancer", async () => {
@@ -47,7 +47,7 @@ describe("pool", () => {
       routerAddress[network].balancer!,
       pool.signer
     );
-    await expect(wethAllowanceDelta.gt(0));
+    expect(wethAllowanceDelta.gt(0)).toBe(true);
   });
 
   it("should add liquidity in a Balancer pool", async () => {
@@ -63,7 +63,7 @@ describe("pool", () => {
       BALANCER_POOL,
       pool.signer
     );
-    expect(lpBalanceDelta.gt(0));
+    expect(lpBalanceDelta.gt(0)).toBe(true);
   });
 
   it("approves unlimited LP Token on Balancer Vault", async () => {
@@ -74,7 +74,7 @@ describe("pool", () => {
       BLANCER_GAUGE,
       pool.signer
     );
-    await expect(gaugeAllowanceDelta.gt(0));
+    expect(gaugeAllowanceDelta.gt(0)).toBe(true);
   });
 
   it("stakes LP tokens in Balancer vault", async () => {
@@ -88,7 +88,7 @@ describe("pool", () => {
       BALANCER_POOL,
       pool.signer
     );
-    expect(lpBalanceDelta.lt(0));
+    expect(lpBalanceDelta.lt(0)).toBe(true);
   });
 
   it("unstakes LP tokens from Balancer vault", async () => {
@@ -102,7 +102,7 @@ describe("pool", () => {
       BALANCER_POOL,
       pool.signer
     );
-    expect(lpBalanceDelta.gt(0));
+    expect(lpBalanceDelta.gt(0)).toBe(true);
   });
 
   it("should remove liquidity from an Balancer pool ", async () => {
@@ -121,6 +121,6 @@ describe("pool", () => {
       CONTRACT_ADDRESS[network].WETH,
       pool.signer
     );
-    expect(wethBalanceDelta.gt(0));
+    expect(wethBalanceDelta.gt(0)).toBe(true);
   });
 });

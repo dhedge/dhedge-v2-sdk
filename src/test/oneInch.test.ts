@@ -58,7 +58,7 @@ const testOneInch = ({ wallet, network, provider }: TestingRunParams) => {
         routerAddress[network]["1inch"]!,
         pool.signer
       );
-      await expect(usdcAllowanceDelta.gt(0));
+      expect(usdcAllowanceDelta.gt(0)).toBe(true);
     });
 
     it("gets gas estimation for 2 USDC into WETH on 1Inch", async () => {
@@ -104,7 +104,7 @@ const testOneInch = ({ wallet, network, provider }: TestingRunParams) => {
         WETH,
         pool.signer
       );
-      expect(wethBalanceDelta.gt(0));
+      expect(wethBalanceDelta.gt(0)).toBe(true);
     });
   });
 };

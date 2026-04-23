@@ -33,7 +33,7 @@ describe("pool", () => {
       routerAddress[network].velodrome!,
       pool.signer
     );
-    await expect(UsdcAllowanceDelta.gt(0));
+    expect(UsdcAllowanceDelta.gt(0)).toBe(true);
   });
 
   it("adds USDC and SUSD to a Velodrome stable pool", async () => {
@@ -50,7 +50,7 @@ describe("pool", () => {
       USDC_SUSD_Lp,
       pool.signer
     );
-    expect(lpTokenDelta.gt(0));
+    expect(lpTokenDelta.gt(0)).toBe(true);
   });
 
   it("should stake USDC-sUSD LP in a gauge", async () => {
@@ -62,7 +62,7 @@ describe("pool", () => {
       USDC_SUSD_Lp,
       pool.signer
     );
-    expect(gaugeBalance.gt(0));
+    expect(gaugeBalance.gt(0)).toBe(true);
   });
 
   it("should claim rewards from Gauge", async () => {
@@ -81,7 +81,7 @@ describe("pool", () => {
       USDC_SUSD_Lp,
       pool.signer
     );
-    expect(lpTokenDelta.gt(0));
+    expect(lpTokenDelta.gt(0)).toBe(true);
   });
 
   it("approves unlimited wETH/stwETH LP for Velodrome", async () => {
@@ -92,7 +92,7 @@ describe("pool", () => {
       routerAddress[network].velodrome!,
       pool.signer
     );
-    expect(lpAllowanceDelta.gt(0));
+    expect(lpAllowanceDelta.gt(0)).toBe(true);
   });
 
   it("should remove all liquidity from an existing pool ", async () => {
@@ -108,7 +108,7 @@ describe("pool", () => {
       SUSD,
       pool.signer
     );
-    expect(usdcBalanceDelta.gt(0));
-    expect(susdBalanceDelta.gt(0));
+    expect(usdcBalanceDelta.gt(0)).toBe(true);
+    expect(susdBalanceDelta.gt(0)).toBe(true);
   });
 });

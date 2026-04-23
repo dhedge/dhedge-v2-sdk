@@ -70,7 +70,7 @@ const testArrakis = ({ wallet, network, provider }: TestingRunParams) => {
         routerAddress[network].arrakis!,
         pool.signer
       );
-      await expect(usdcAllowanceDelta.gt(0));
+      expect(usdcAllowanceDelta.gt(0)).toBe(true);
       await wait(5);
     });
 
@@ -82,7 +82,7 @@ const testArrakis = ({ wallet, network, provider }: TestingRunParams) => {
         routerAddress[network].arrakis!,
         pool.signer
       );
-      await expect(wethAllowanceDelta.gt(0));
+      expect(wethAllowanceDelta.gt(0)).toBe(true);
     });
 
     it("should add liquidity and stake in an WETH/USDC Arrakis pool", async () => {
@@ -99,7 +99,7 @@ const testArrakis = ({ wallet, network, provider }: TestingRunParams) => {
         CONTRACT_ADDRESS[network].ARRAKIS_USDC_WETH_LP,
         pool.signer
       );
-      expect(lpBalanceDelta.gt(0));
+      expect(lpBalanceDelta.gt(0)).toBe(true);
     });
 
     it("approves unlimited LP staking Token before on Arrakis", async () => {
@@ -114,7 +114,7 @@ const testArrakis = ({ wallet, network, provider }: TestingRunParams) => {
         routerAddress[network].arrakis!,
         pool.signer
       );
-      await expect(gaugeAllowanceDelta.gt(0));
+      expect(gaugeAllowanceDelta.gt(0)).toBe(true);
     });
 
     it("should remove liquidity from an existing pool ", async () => {
@@ -128,7 +128,7 @@ const testArrakis = ({ wallet, network, provider }: TestingRunParams) => {
         CONTRACT_ADDRESS[network].WETH,
         pool.signer
       );
-      expect(wethBalanceDelta.gt(0));
+      expect(wethBalanceDelta.gt(0)).toBe(true);
     });
   });
 };
