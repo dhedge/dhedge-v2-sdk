@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Dhedge, ethers, Pool } from "..";
-import { routerAddress } from "../config";
-import { AssetEnabled, Dapp, Network } from "../types";
+import { nonfungiblePositionManagerAddress } from "../config";
+import { Dapp, Network } from "../types";
 import { CONTRACT_ADDRESS, TEST_POOL } from "./constants";
-import { allowanceDelta, balanceDelta } from "./utils/token";
 import {
   setUSDCAmount,
+  setWETHAmount,
+  runWithImpersonateAccount,
   testingHelper,
   TestingRunParams
 } from "./utils/testingHelper";
@@ -30,22 +31,37 @@ const testUniswapV3 = ({ wallet, network, provider }: TestingRunParams) => {
         "0x10000000000000000"
       ]);
       await provider.send("evm_mine", []);
+
+      // Fund pool with USDC and WETH
       await setUSDCAmount({
-        amount: new BigNumber(1000000).times(1e6).toFixed(0),
+        amount: new BigNumber(10000).times(1e6).toFixed(0),
+        userAddress: pool.address,
+        network,
+        provider
+      });
+      await setWETHAmount({
+        amount: new BigNumber(5).times(1e18).toFixed(0),
         userAddress: pool.address,
         network,
         provider
       });
 
-      const newAssets: AssetEnabled[] = [
-        { asset: CONTRACT_ADDRESS[network].USDC, isDeposit: true },
-        { asset: CONTRACT_ADDRESS[network].WETH, isDeposit: true },
-        {
-          asset: CONTRACT_ADDRESS[network].uniswapV3.nonfungiblePositionManager,
-          isDeposit: false
+      // Impersonate the pool manager to set trader and configure assets
+      await runWithImpersonateAccount(
+        { provider, account: await pool.managerLogic.manager() },
+        async ({ signer }) => {
+          await pool.managerLogic.connect(signer).setTrader(wallet.address);
+          const newAssets = [
+            [CONTRACT_ADDRESS[network].USDC, true],
+            [CONTRACT_ADDRESS[network].WETH, true],
+            [
+              CONTRACT_ADDRESS[network].uniswapV3.nonfungiblePositionManager,
+              false
+            ]
+          ];
+          await pool.managerLogic.connect(signer).changeAssets(newAssets, []);
         }
-      ];
-      await pool.changeAssets(newAssets);
+      );
 
       nonfungiblePositionManager = new ethers.Contract(
         CONTRACT_ADDRESS[network].uniswapV3.nonfungiblePositionManager,
@@ -54,60 +70,42 @@ const testUniswapV3 = ({ wallet, network, provider }: TestingRunParams) => {
       );
     });
 
-    it("approves unlimited USDC on for trading on UniswapV3", async () => {
-      await pool.approve(
-        Dapp.UNISWAPV3,
-        CONTRACT_ADDRESS[network].USDC,
-        ethers.constants.MaxUint256
-      );
-      const UsdcAllowanceDelta = await allowanceDelta(
-        pool.address,
-        CONTRACT_ADDRESS[network].USDC,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        routerAddress[network].uniswapV3!,
-        pool.signer
-      );
-      expect(UsdcAllowanceDelta.gte(0));
-    });
+    // Note: tradeUniswapV3 (UniswapV3RouterGuard) is deprecated on all chains.
+    // Swap tests removed. Use Dapp.ONEINCH or Dapp.KYBERSWAP for trading instead.
 
-    it("should swap 5000 USDC into WETH on UniswapV3", async () => {
-      await pool.tradeUniswapV3(
-        CONTRACT_ADDRESS[network].USDC,
-        CONTRACT_ADDRESS[network].WETH,
-        new BigNumber(5000).times(1e6).toFixed(0),
-        500,
-        0.5
-      );
-
-      const wethAllowanceDelta = await balanceDelta(
-        pool.address,
-        CONTRACT_ADDRESS[network].WETH,
-        pool.signer
-      );
-      expect(wethAllowanceDelta.gt(0));
-    });
-
-    it("approves unlimited WETH on for UniswapV3 LP", async () => {
-      await pool.approveUniswapV3Liquidity(
+    it("approves unlimited USDC and WETH for UniswapV3 LP", async () => {
+      const usdcTx = await pool.approveUniswapV3Liquidity(
         CONTRACT_ADDRESS[network].USDC,
         ethers.constants.MaxInt256
       );
-      await pool.approveUniswapV3Liquidity(
+      await usdcTx.wait(1);
+      const wethTx = await pool.approveUniswapV3Liquidity(
         CONTRACT_ADDRESS[network].WETH,
         ethers.constants.MaxInt256
       );
-      const UsdcAllowanceDelta = await allowanceDelta(
-        pool.address,
+      await wethTx.wait(1);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const positionManager = nonfungiblePositionManagerAddress[network][
+        Dapp.UNISWAPV3
+      ]!;
+      const allowanceAbi = [
+        "function allowance(address,address) view returns (uint256)"
+      ];
+      const usdcAllowance = await new ethers.Contract(
         CONTRACT_ADDRESS[network].USDC,
-        pool.address,
+        allowanceAbi,
         pool.signer
-      );
-
-      expect(UsdcAllowanceDelta).not.toBe(null);
+      ).allowance(pool.address, positionManager);
+      const wethAllowance = await new ethers.Contract(
+        CONTRACT_ADDRESS[network].WETH,
+        allowanceAbi,
+        pool.signer
+      ).allowance(pool.address, positionManager);
+      expect(usdcAllowance.gt(0)).toBe(true);
+      expect(wethAllowance.gt(0)).toBe(true);
     });
 
     it("adds WETH and USDC to a new V3 pool", async () => {
-      let result = null;
       const pool = await dhedge.loadPool(TEST_POOL[network]);
       const usdcBalance = await dhedge.utils.getBalance(
         CONTRACT_ADDRESS[network].USDC,
@@ -118,39 +116,33 @@ const testUniswapV3 = ({ wallet, network, provider }: TestingRunParams) => {
         pool.address
       );
 
-      try {
-        result = await pool.addLiquidityUniswapV3(
-          Dapp.UNISWAPV3,
-          CONTRACT_ADDRESS[network].WETH,
-          CONTRACT_ADDRESS[network].USDC,
-          wethBalance,
-          usdcBalance,
-          3500,
-          4000,
-          null,
-          null,
-          500
-          // options
-        );
-        await result.wait(1);
+      const result = await pool.addLiquidityUniswapV3(
+        Dapp.UNISWAPV3,
+        CONTRACT_ADDRESS[network].WETH,
+        CONTRACT_ADDRESS[network].USDC,
+        wethBalance,
+        usdcBalance,
+        3500,
+        4000,
+        null,
+        null,
+        500
+      );
+      await result.wait(1);
 
-        tokenId = await nonfungiblePositionManager.tokenOfOwnerByIndex(
-          pool.address,
-          0
-        );
-      } catch (e) {
-        console.log("e", e);
-      }
+      tokenId = await nonfungiblePositionManager.tokenOfOwnerByIndex(
+        pool.address,
+        0
+      );
       expect(result).not.toBe(null);
     });
 
-    it("should remove liquidity from an existing pool ", async () => {
+    it("should remove 50% liquidity from an existing pool", async () => {
       const result = await pool.decreaseLiquidity(
         Dapp.UNISWAPV3,
         tokenId.toString(),
-        50 // precent
+        50 // percent
       );
-      // console.log("result", result);
       expect(result).not.toBe(null);
     });
 
@@ -168,63 +160,20 @@ const testUniswapV3 = ({ wallet, network, provider }: TestingRunParams) => {
         Dapp.UNISWAPV3,
         tokenId.toString(),
         wethBalance,
-        usdcBalance // eth
+        usdcBalance
       );
-      // console.log("result", result);
       expect(result).not.toBe(null);
     });
 
-    it("should claim fees an existing pool", async () => {
+    it("should claim fees from an existing pool", async () => {
       const result = await pool.claimFees(Dapp.UNISWAPV3, tokenId.toString());
-      // console.log("result", result);
       expect(result).not.toBe(null);
     });
-
-    // it("approves unlimited USDC to swap on UniswapV3", async () => {
-    //   let result;
-    //   const pool = await dhedge.loadPool(TEST_POOL);
-    //   try {
-    //     result = await pool.approve(
-    //       Dapp.UNISWAPV3,
-    //       USDC,
-    //       ethers.constants.MaxInt256,
-    //       options
-    //     );
-    //     console.log(result);
-    //   } catch (e) {
-    //     console.log(e);
-    //   }
-    //   expect(result).not.toBe(null);
-    // });
-
-    // it("should swap USDC into WETH on UniswapV3 pool", async () => {
-    //   const pool = await dhedge.loadPool(TEST_POOL);
-    //   const result = await pool.tradeUniswapV3(
-    //     USDC,
-    //     WETH,
-    //     "1000000",
-    //     FeeAmount.LOW,
-    //     1,
-    //     options
-    //   );
-
-    //   console.log(result);
-    //   expect(result).not.toBe(null);
-    // });
   });
 };
 
 testingHelper({
-  network: Network.OPTIMISM,
-  testingRun: testUniswapV3
+  network: Network.ARBITRUM,
+  testingRun: testUniswapV3,
+  onFork: true
 });
-
-// testingHelper({
-//   network: Network.POLYGON,
-//   testingRun: testUniswapV3
-// });
-
-// testingHelper({
-//   network: Network.ARBITRUM,
-//   testingRun: testUniswapV3
-// });

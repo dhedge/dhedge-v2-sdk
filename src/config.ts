@@ -11,6 +11,7 @@ import { Deployment } from "@lyrafinance/lyra-js";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require("dotenv").config();
 
+/** dHEDGE PoolFactory proxy address per network — used by `Dhedge.createPool` and pool lookups. */
 export const factoryAddress: AddressNetworkMap = {
   [Network.POLYGON]: process.env.STAGING_CONTRACTS
     ? "0xDd87eCdB10cFF7004276AAbAbd30e7a08F69bb53"
@@ -23,6 +24,7 @@ export const factoryAddress: AddressNetworkMap = {
   [Network.HYPERLIQUID]: "0xe91505e2ab653dd128c71e9690eeefd28cc5b333"
 };
 
+/** Router/spender address for each (network, Dapp). Target of `pool.approve`/`pool.trade`. */
 export const routerAddress: AddressDappNetworkMap = {
   [Network.POLYGON]: {
     [Dapp.SUSHISWAP]: "0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506",
@@ -40,7 +42,6 @@ export const routerAddress: AddressDappNetworkMap = {
   },
   [Network.OPTIMISM]: {
     [Dapp.UNISWAPV3]: "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
-    [Dapp.SYNTHETIX]: "0x8700dAec35aF8Ff88c16BdF0418774CB3D7599B4",
     [Dapp.AAVEV3]: "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
     [Dapp.ONEINCH]: "0x111111125421ca6dc452d289314280a0f8842a65",
     [Dapp.TOROS]: "0x2Ed1bd7f66e47113672f3870308b5E867C5bb743",
@@ -57,7 +58,6 @@ export const routerAddress: AddressDappNetworkMap = {
     [Dapp.UNISWAPV3]: "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
     [Dapp.AAVEV3]: "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
     [Dapp.BALANCER]: "0xBA12222222228d8Ba445958a75a0704d566BF2C8",
-    [Dapp.RAMSES]: "0xaaa87963efeb6f7e0a2711f397663105acb1805e",
     [Dapp.TOROS]: "0xA5679C4272A056Bb83f039961fae7D99C48529F5",
     [Dapp.ODOS]: "0x0D05a7D3448512B78fa8A9e46c4872C88C4a0D05",
     [Dapp.PENDLE]: "0x888888888889758F76e7103c6CbF23ABbF58F946",
@@ -89,10 +89,12 @@ export const routerAddress: AddressDappNetworkMap = {
   }
 };
 
+/** CoW Protocol GPv2Settlement address per network (where pre-signed orders are submitted). */
 export const gpv2SettlementAddress: Partial<Record<Network, string>> = {
   [Network.POLYGON]: "0x9008D19f58AAbD9eD0D60971565AA8510560ab41"
 };
 
+/** Pair-factory address for each (network, Dapp). Used for LP pair lookup (e.g. Sushi/Quickswap). */
 export const dappFactoryAddress: AddressDappNetworkMap = {
   [Network.POLYGON]: {
     [Dapp.SUSHISWAP]: "0xc35DADB65012eC5796536bD9864eD8773aBc74C4",
@@ -106,6 +108,7 @@ export const dappFactoryAddress: AddressDappNetworkMap = {
   [Network.HYPERLIQUID]: {}
 };
 
+/** Staking-rewards / MasterChef / Voter address for each (network, Dapp). */
 export const stakingAddress: AddressDappNetworkMap = {
   [Network.POLYGON]: {
     [Dapp.SUSHISWAP]: "0x0769fd68dFb93167989C6f7254cd0D766Fb2841F",
@@ -129,6 +132,7 @@ export const stakingAddress: AddressDappNetworkMap = {
   [Network.HYPERLIQUID]: {}
 };
 
+/** Aave PoolAddressesProvider per network — entrypoint for Aave V2/V3 lookups. */
 export const aaveAddressProvider: AddressDappNetworkMap = {
   [Network.POLYGON]: {
     [Dapp.AAVE]: "0xd05e3E715d945B59290df0ae8eF85c1BdB684744",
@@ -152,6 +156,7 @@ export const aaveAddressProvider: AddressDappNetworkMap = {
   },
   [Network.HYPERLIQUID]: {}
 };
+/** ERC-721 NonfungiblePositionManager for each Uniswap V3-style CL Dapp. */
 export const nonfungiblePositionManagerAddress: AddressDappNetworkMap = {
   [Network.POLYGON]: {
     [Dapp.UNISWAPV3]: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88"
@@ -162,7 +167,6 @@ export const nonfungiblePositionManagerAddress: AddressDappNetworkMap = {
   },
   [Network.ARBITRUM]: {
     [Dapp.UNISWAPV3]: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
-    [Dapp.RAMSESCL]: "0xAA277CB7914b7e5514946Da92cb9De332Ce610EF",
     [Dapp.PANCAKECL]: "0x46a15b0b27311cedf172ab29e4f4766fbe7f4364"
   },
   [Network.BASE]: {
@@ -175,6 +179,7 @@ export const nonfungiblePositionManagerAddress: AddressDappNetworkMap = {
   [Network.HYPERLIQUID]: {}
 };
 
+/** EVM chain id for each `Network` — used by API quotes (1inch, Pendle, KyberSwap…). */
 export const networkChainIdMap: NetworkChainIdMap = {
   [Network.POLYGON]: 137,
   [Network.OPTIMISM]: 10,
@@ -185,6 +190,7 @@ export const networkChainIdMap: NetworkChainIdMap = {
   [Network.HYPERLIQUID]: 999
 };
 
+/** Balancer SOR subgraph URL per network (used by `Utils.getBalancerSwapTx`). */
 export const balancerSubgraph: AddressNetworkMap = {
   [Network.POLYGON]:
     "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-polygon-v2",
@@ -196,6 +202,7 @@ export const balancerSubgraph: AddressNetworkMap = {
   [Network.HYPERLIQUID]: ""
 };
 
+/** Multicall3 contract per network — used by `multicall` / `Multicaller`. */
 export const multiCallAddress: AddressNetworkMap = {
   [Network.POLYGON]: "0x275617327c958bD06b5D6b871E7f491D76113dd8",
   [Network.OPTIMISM]: "",
@@ -206,17 +213,14 @@ export const multiCallAddress: AddressNetworkMap = {
   [Network.HYPERLIQUID]: ""
 };
 
+/** Lyra deployment id per network — passed to `@lyrafinance/lyra-js` to scope queries. */
 export const lyraNetworkMap: LyraNetworkMap = {
   [Network.OPTIMISM]: Deployment.Mainnet
 };
 
 export const MaxUint128 = "0xffffffffffffffffffffffffffffffff";
-export const UNISWAPV3_QUOTER_ADDRESS =
-  "0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6";
 
-export const SYNTHETIX_TRACKING_CODE =
-  "0x4448454447450000000000000000000000000000000000000000000000000000";
-
+/** FlatMoney v1/v2 module addresses per network (DelayedOrder, FlatcoinVault, StableModule). */
 export const flatMoneyContractAddresses: Readonly<Partial<
   Record<
     Network,
@@ -251,6 +255,7 @@ export const flatMoneyContractAddresses: Readonly<Partial<
   }
 };
 
+/** Toros PoolLimitOrderManager address per network — used for stop-loss / take-profit orders. */
 export const limitOrderAddress: AddressNetworkMap = {
   [Network.POLYGON]: "0xB71410736d2C8F2DAf30dA9D332dA10534d2624d",
   [Network.OPTIMISM]: "0x3bFE2a472d2964Ea4070725b7Fb0A868b3f08b63",

@@ -35,8 +35,6 @@ export const SUSD = "0x8c6f28f2f1a3c87f0f938b96d27520d9751ec8d9";
 export const SETH = "0xE405de8F52ba7559f9df3C368500B6E6ae6Cee49";
 export const ARRAKIS_USDC_WETH_GAUGE =
   "0xb8888ea29e2f70ad62a3b69b1a1342720612a00d";
-export const KWENTA_ETH_PERP = "0xf86048dff23cf130107dfb4e6386f574231a5c65";
-export const KWENTA_ETH_PERP_V2 = "0x2b3bb4c683bfc5239b029131eef3b1d214478d93";
 
 export const TEST_POOL = {
   [Network.POLYGON]: "0x699fd4d6eadb216704c7e355cfa0a12f51813163",
@@ -68,7 +66,10 @@ export const CONTRACT_ADDRESS = {
     COMPOUNDV3_WETH: "",
     FLUID_WETH: "",
     TOROS: "",
-    UNIT: ""
+    UNIT: "",
+    WSTETH: "",
+    BALANCER_WSTETH_WETH_POOL: "",
+    BALANCER_WSTETH_WETH_GAUGE: ""
   },
 
   [Network.OPTIMISM]: {
@@ -79,7 +80,6 @@ export const CONTRACT_ADDRESS = {
     SUSD: "0x8c6f28f2f1a3c87f0f938b96d27520d9751ec8d9",
     WETH: "0x4200000000000000000000000000000000000006",
     WBTC: "0x68f180fcCe6836688e9084f035309E29Bf0A2095",
-    KWENTA_ETH_PERP_V2: "0x2b3bb4c683bfc5239b029131eef3b1d214478d93",
     uniswapV3: {
       nonfungiblePositionManager: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88"
     },
@@ -93,7 +93,10 @@ export const CONTRACT_ADDRESS = {
     VELO: "0x9560e827aF36c94D2Ac33a39bCE1Fe78631088Db",
     COMPOUNDV3_WETH: "",
     FLUID_WETH: "",
-    TOROS: "0xcacb5a722a36cff6baeb359e21c098a4acbffdfa" //ETHBEAR1X
+    TOROS: "0xcacb5a722a36cff6baeb359e21c098a4acbffdfa", //ETHBEAR1X
+    WSTETH: "",
+    BALANCER_WSTETH_WETH_POOL: "",
+    BALANCER_WSTETH_WETH_GAUGE: ""
   },
   [Network.ARBITRUM]: {
     USDC: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
@@ -121,7 +124,7 @@ export const CONTRACT_ADDRESS = {
     VELO: "",
     COMPOUNDV3_WETH: "0x6f7D514bbD4aFf3BcD1140B7344b32f063dEe486",
     FLUID_WETH: "0x45df0656f8adf017590009d2f1898eeca4f0a205",
-    TOROS: ""
+    TOROS: "0xA6711f8a184E352c5A0714a48912cD33ca4a16A0" //DYTMT
   },
   [Network.BASE]: {
     USDC: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
@@ -143,7 +146,10 @@ export const CONTRACT_ADDRESS = {
     VELO: "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
     COMPOUNDV3_WETH: "",
     FLUID_WETH: "",
-    TOROS: ""
+    TOROS: "",
+    WSTETH: "",
+    BALANCER_WSTETH_WETH_POOL: "",
+    BALANCER_WSTETH_WETH_GAUGE: ""
   },
   [Network.ETHEREUM]: {
     USDC: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
@@ -165,17 +171,56 @@ export const CONTRACT_ADDRESS = {
     COMPOUNDV3_WETH: "",
     FLUID_WETH: "",
     TOROS: "",
-    UNIT: ""
+    UNIT: "",
+    WSTETH: "",
+    BALANCER_WSTETH_WETH_POOL: "",
+    BALANCER_WSTETH_WETH_GAUGE: ""
   },
   [Network.PLASMA]: {
     USDC: "",
     WETH: "0x9895d81bb462a195b4922ed7de0e3acd007c32cb",
+    WBTC: "",
     USDT: "0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb",
-    USDE: "0x5d3a1ff2b6bab83b63cd9ad0787074081a52ef34"
+    USDE: "0x5d3a1ff2b6bab83b63cd9ad0787074081a52ef34",
+    VELO: "",
+    uniswapV3: {
+      nonfungiblePositionManager: ""
+    },
+    COMPOUNDV3_WETH: "",
+    FLUID_WETH: "",
+    UNIT: "",
+    TOROS: "",
+    SUSD: "",
+    VELODROME_CL_USDC_WETH_GAUGE: "",
+    ARRAKIS_USDC_WETH_GAUGE: "",
+    ARRAKIS_USDC_WETH_LP: "",
+    WMATIC: "",
+    WSTETH: "",
+    BALANCER_WSTETH_WETH_POOL: "",
+    BALANCER_WSTETH_WETH_GAUGE: ""
   },
   [Network.HYPERLIQUID]: {
     USDC: "0xb88339cb7199b77e23db6e890353e22632ba630f",
-    WETH: ""
+    USDT: "",
+    USDE: "",
+    WETH: "",
+    WBTC: "",
+    VELO: "",
+    uniswapV3: {
+      nonfungiblePositionManager: ""
+    },
+    COMPOUNDV3_WETH: "",
+    FLUID_WETH: "",
+    UNIT: "",
+    TOROS: "",
+    SUSD: "",
+    VELODROME_CL_USDC_WETH_GAUGE: "",
+    ARRAKIS_USDC_WETH_GAUGE: "",
+    ARRAKIS_USDC_WETH_LP: "",
+    WMATIC: "",
+    WSTETH: "",
+    BALANCER_WSTETH_WETH_POOL: "",
+    BALANCER_WSTETH_WETH_GAUGE: ""
   }
 };
 
@@ -195,7 +240,7 @@ export const WETH_BALANCEOF_SLOT = {
   [Network.OPTIMISM]: 3,
   [Network.ARBITRUM]: 51,
   [Network.POLYGON]: 0,
-  [Network.BASE]: 0,
+  [Network.BASE]: 3,
   [Network.ETHEREUM]: 3,
   [Network.PLASMA]: 1,
   [Network.HYPERLIQUID]: 1

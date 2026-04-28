@@ -19,7 +19,7 @@ import {
 } from "../../config";
 import INonfungiblePositionManager from "../../abi/INonfungiblePositionManager.json";
 import IVeldodromePositionManager from "../../abi/IVelodromeNonfungiblePositionManager.json";
-import IRamsesPositionManager from "../../abi/IRamsesNonfungiblePositionManager.json";
+
 import IArrakisV1RouterStaking from "../../abi/IArrakisV1RouterStaking.json";
 import IPancakeMasterChef from "../../abi/IPancakeMasterChefV3.json";
 import { getDeadline } from "../../utils/deadline";
@@ -72,12 +72,7 @@ export function tryParseTick(
 }
 
 export async function getUniswapV3MintTxData(
-  dapp:
-    | Dapp.UNISWAPV3
-    | Dapp.VELODROMECL
-    | Dapp.AERODROMECL
-    | Dapp.RAMSESCL
-    | Dapp.PANCAKECL,
+  dapp: Dapp.UNISWAPV3 | Dapp.VELODROMECL | Dapp.AERODROMECL | Dapp.PANCAKECL,
 
   pool: Pool,
   assetA: string,
@@ -162,27 +157,13 @@ export async function getUniswapV3MintTxData(
     mintParams.push(0);
   }
 
-  if (dapp === Dapp.RAMSESCL) {
-    iNonfungiblePositionManager = new ethers.utils.Interface(
-      IRamsesPositionManager
-    );
-    mintParams.push(0);
-  }
-
   return iNonfungiblePositionManager.encodeFunctionData(Transaction.MINT, [
     mintParams
   ]);
-
-  return;
 }
 
 export async function getUniswapV3Liquidity(
-  dapp:
-    | Dapp.UNISWAPV3
-    | Dapp.VELODROMECL
-    | Dapp.AERODROMECL
-    | Dapp.RAMSESCL
-    | Dapp,
+  dapp: Dapp,
   tokenId: string,
   pool: Pool
 ): Promise<BigNumber> {
@@ -208,7 +189,6 @@ export async function getIncreaseLiquidityTxData(
     dapp === Dapp.UNISWAPV3 ||
     dapp === Dapp.VELODROMECL ||
     dapp === Dapp.AERODROMECL ||
-    dapp === Dapp.RAMSESCL ||
     dapp === Dapp.PANCAKECL
   ) {
     const abi = new ethers.utils.Interface(INonfungiblePositionManager.abi);
@@ -245,7 +225,6 @@ export async function getDecreaseLiquidityTxData(
     dapp === Dapp.UNISWAPV3 ||
     dapp === Dapp.VELODROMECL ||
     dapp === Dapp.AERODROMECL ||
-    dapp === Dapp.RAMSESCL ||
     dapp === Dapp.PANCAKECL
   ) {
     const abi = new ethers.utils.Interface(INonfungiblePositionManager.abi);

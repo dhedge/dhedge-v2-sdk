@@ -24,6 +24,7 @@ import { getPositionSize } from "./positionData";
 const depositWallet = new ethers.utils.Interface(ICoreDepositWalletAbi);
 const coreWriter = new ethers.utils.Interface(ICoreWriterAbi);
 
+/** Encode `deposit(amount, dexId)` on the Hyperliquid CoreDepositWallet to bridge USDC into HyperCore. */
 export const getDepositHyperliquidTxData = (
   dexId: number,
   amount: ethers.BigNumber | string
@@ -31,6 +32,11 @@ export const getDepositHyperliquidTxData = (
   return depositWallet.encodeFunctionData("deposit", [amount, dexId]);
 };
 
+/**
+ * Encode a CoreWriter `sendRawAction` for SPOT_SEND that bridges USDC from the
+ * HyperCore Spot wallet back to EVM. Amount is supplied in 6 decimals (EVM USDC) and
+ * scaled up by 100 for HyperCore's 8-decimal USDC.
+ */
 export const getWithdrawSpotHyperliquidTxData = (
   amount: ethers.BigNumber | string
 ): string => {
@@ -49,6 +55,11 @@ export const getWithdrawSpotHyperliquidTxData = (
   );
   return coreWriter.encodeFunctionData("sendRawAction", [rawTXData]);
 };
+/**
+ * Encode a CoreWriter `sendRawAction` for SEND_ASSET that moves USDC between
+ * HyperCore dexes (perp/spot/xyz). Amount is supplied in 6 decimals (EVM USDC) and
+ * scaled to HyperCore's 8 decimals.
+ */
 export const getSendAssetHyperliquidTxData = (
   sourceDex: number,
   destinationDex: number,
@@ -80,6 +91,11 @@ export const getSendAssetHyperliquidTxData = (
   return coreWriter.encodeFunctionData("sendRawAction", [rawTXData]);
 };
 
+/**
+ * Encode a CoreWriter `sendRawAction` for an IOC limit order on a Hyperliquid asset.
+ * Auto-flips side and sets `reduceOnly` when `changeAmount` is negative (perp close).
+ * Price is offset by `slippage`% from the current mid in the direction of execution.
+ */
 export const getLimitOrderHyperliquidTxData = async (
   assetId: number,
   isLong: boolean,
@@ -128,6 +144,12 @@ export const getLimitOrderHyperliquidTxData = async (
   return coreWriter.encodeFunctionData("sendRawAction", [rawTXData]);
 };
 
+/**
+ * Encode a CoreWriter `sendRawAction` for an IOC limit order that closes
+ * `percentageToClose`% of the pool's current Hyperliquid position. Reads the
+ * existing position size on-chain to determine the side (buy to close shorts,
+ * sell to close longs).
+ */
 export const getClosePositionHyperliquidTxData = async (
   assetId: number,
   percentageToClose: number,

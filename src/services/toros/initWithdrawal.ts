@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Dapp, ethers, Pool } from "../..";
-import { networkChainIdMap, routerAddress } from "../../config";
+import { routerAddress } from "../../config";
 import { retry } from "./retry";
 import AaveLendingPoolAssetGuardAbi from "../../abi/IAaveLendingPoolAssetGuard.json";
 import IEasySwapperV2 from "../../abi/IEasySwapperV2.json";
 import { loadPool } from "./pool";
-import { getSwapDataViaOdos, SWAPPER_ADDERSS } from "./swapData";
+import { getSwapData, ROUTER_KEYS } from "./swapData";
 const AAVE_WITHDRAW_ONCHAIN_SWAP_SLIPPAGE = 150; // 1.5% slippage for onchain swap in Aave withdrawal
 
 const getCalculateSwapDataParams = async (
@@ -45,38 +45,46 @@ const getAaveAssetWithdrawData = async (
 ) => {
   const { srcData, dstData } = swapDataParams;
 
-  const srcDataToEncode: unknown[] = [];
-  const routerKey = ethers.utils.formatBytes32String("ODOS_V3");
-  for (const { asset, amount } of srcData) {
-    const swapData = await retry({
-      fn: () => {
-        return getSwapDataViaOdos({
-          srcAsset: asset,
-          srcAmount: amount.toString(),
-          dstAsset: dstData.asset,
-          chainId: networkChainIdMap[pool.network],
-          from: SWAPPER_ADDERSS,
-          receiver: SWAPPER_ADDERSS,
-          slippage
+  for (const routerKeyString of ROUTER_KEYS) {
+    try {
+      const srcDataToEncode: unknown[] = [];
+      const routerKey = ethers.utils.formatBytes32String(routerKeyString);
+      for (const { asset, amount } of srcData) {
+        const swapData = await retry({
+          fn: () => {
+            return getSwapData(
+              pool,
+              {
+                srcAsset: asset,
+                srcAmount: amount.toString(),
+                dstAsset: dstData.asset,
+                slippage
+              },
+              routerKeyString
+            );
+          },
+          delayMs: 1500,
+          maxRetries: 7
         });
-      },
-      delayMs: 1500,
-      maxRetries: 7
-    });
-    srcDataToEncode.push([asset, amount, [routerKey, swapData]]);
+        srcDataToEncode.push([asset, amount, [routerKey, swapData]]);
+      }
+      const coder = ethers.utils.defaultAbiCoder;
+
+      const encodedSrcData = coder.encode(
+        ["tuple(address, uint256, tuple(bytes32, bytes))[]"],
+        [srcDataToEncode]
+      );
+      const withdrawData = coder.encode(
+        ["tuple(bytes, tuple(address, uint256), uint256)"],
+        [[encodedSrcData, [dstData.asset, dstData.amount], slippage]]
+      );
+
+      return withdrawData;
+    } catch {
+      continue;
+    }
   }
-  const coder = ethers.utils.defaultAbiCoder;
-
-  const encodedSrcData = coder.encode(
-    ["tuple(address, uint256, tuple(bytes32, bytes))[]"],
-    [srcDataToEncode]
-  );
-  const withdrawData = coder.encode(
-    ["tuple(bytes, tuple(address, uint256), uint256)"],
-    [[encodedSrcData, [dstData.asset, dstData.amount], slippage]]
-  );
-
-  return withdrawData;
+  throw new Error("All swap routers failed for init withdrawal");
 };
 
 export const createWithdrawTxArguments = async (

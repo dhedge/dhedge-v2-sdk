@@ -7,7 +7,7 @@ import IERC20 from "../abi/IERC20.json";
 import IERC721 from "../abi/IERC721.json";
 import IMiniChefV2 from "../abi/IMiniChefV2.json";
 import ILendingPool from "../abi/ILendingPool.json";
-import ISynthetix from "../abi/ISynthetix.json";
+
 import IUniswapV2Router from "../abi/IUniswapV2Router.json";
 import INonfungiblePositionManager from "../abi/INonfungiblePositionManager.json";
 import IAaveIncentivesController from "../abi/IAaveIncentivesController.json";
@@ -20,7 +20,6 @@ import {
   routerAddress,
   gpv2SettlementAddress,
   stakingAddress,
-  SYNTHETIX_TRACKING_CODE,
   limitOrderAddress
 } from "../config";
 import {
@@ -43,7 +42,7 @@ import {
   getIncreaseLiquidityTxData,
   getUniswapV3MintTxData
 } from "../services/uniswap/V3Liquidity";
-import { getUniswapV3SwapTxData } from "../services/uniswap/V3Trade";
+
 import { getEasySwapperTxData } from "../services/toros/easySwapper";
 import { getAaveV3ClaimTxData } from "../services/aave/incentives";
 import {
@@ -59,17 +58,7 @@ import {
 import { getLyraOptionTxData } from "../services/lyra/trade";
 import { getOptionPositions } from "../services/lyra/positions";
 import { getDeadline } from "../utils/deadline";
-import {
-  getFuturesChangeMarginTxData,
-  getFuturesChangePositionTxData
-} from "../services/futures";
-import { getFuturesCancelOrderTxData } from "../services/futures/trade";
 import { getOneInchSwapTxData } from "../services/oneInch";
-import {
-  getCreateVestTxData,
-  getExitVestTxData,
-  getRewardsTxDta
-} from "../services/ramses/vesting";
 import { getPoolTxOrGasEstimate, isSdkOptionsBoolean } from "../utils/contract";
 import {
   cancelOrderViaFlatMoney,
@@ -164,7 +153,7 @@ export class Pool {
 
   /**
    * Approve the asset that can be deposited into a pool
-   * @param {string} nasset Address of deposit asset
+   * @param {string} asset Address of deposit asset
    * @param {BigNumber | string} amount Amount to be approved
    * @param {any} options Transaction options
    * @param {boolean} estimateGas Simulate/estimate gas
@@ -264,7 +253,7 @@ export class Pool {
    * Approve the liquidity pool token for staking
    * @param {Dapp} dapp Platform like Sushiswap or Uniswap
    * @param {string} asset Address of liquidity pool token
-   * @param {BigNumber | string} amount Aamount to be approved
+   * @param {BigNumber | string} amount Amount to be approved
    * @param {any} options Transaction options
    * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
@@ -292,10 +281,10 @@ export class Pool {
   }
 
   /**
-   * Approve the liquidity pool token for staking
-   * @param {Dapp} dapp Platform like Sushiswap or Uniswap
-   * @param {string} asset Address of liquidity pool token
-   * @param {BigNumber | string} amount Aamount to be approved
+   * Approve an asset for the Uniswap V3 NonfungiblePositionManager
+   * (used before mint/increase liquidity calls)
+   * @param {string} asset Address of asset to approve
+   * @param {BigNumber | string} amount Amount to be approved
    * @param {any} options Transaction options
    * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
@@ -425,20 +414,6 @@ export class Pool {
           amountIn,
           slippage
         );
-        break;
-      case Dapp.SYNTHETIX:
-        const iSynthetix = new ethers.utils.Interface(ISynthetix.abi);
-        const assets = [assetFrom, assetTo].map(asset =>
-          ethers.utils.formatBytes32String(asset)
-        );
-        const daoAddress = await this.factory.owner();
-        swapTxData = iSynthetix.encodeFunctionData(Transaction.SWAP_SYNTHS, [
-          assets[0],
-          amountIn,
-          assets[1],
-          daoAddress,
-          SYNTHETIX_TRACKING_CODE
-        ]);
         break;
       case Dapp.TOROS:
         swapTxData = await getEasySwapperTxData(
@@ -696,7 +671,6 @@ export class Pool {
         ]);
         break;
       case Dapp.VELODROME:
-      case Dapp.RAMSES:
         stakeTxData = getVelodromeStakeTxData(amount, false);
         break;
       case Dapp.VELODROMEV2:
@@ -862,7 +836,7 @@ export class Pool {
   }
 
   /**
-   * Witdraw asset from a lending pool
+   * Withdraw asset from a lending pool
    * @param {Dapp} dapp Platform like Aave
    * @param {string} asset Asset
    * @param  {BigNumber | string} amount Amount of asset to lend
@@ -894,7 +868,7 @@ export class Pool {
   }
 
   /**
-   * Witdraw asset from a Compound V3 or Fluid lending pool
+   * Withdraw asset from a Compound V3 or Fluid lending pool
    * @param {string} market Address of cToken or fToken
    * @param {string} asset Asset
    * @param  {BigNumber | string} amount Amount of asset to withdraw
@@ -1042,8 +1016,24 @@ export class Pool {
       e.asset.toLocaleLowerCase()
     );
     const newAssets = assets.map(e => e.asset.toLocaleLowerCase());
-    const removedAssets = currentAssets.filter(e => !newAssets.includes(e));
+    const candidateRemovals = currentAssets.filter(e => !newAssets.includes(e));
     const changedAssets = assets.map(e => [e.asset, e.isDeposit]);
+
+    // Simulate each removal to filter out assets that can't be removed
+    // (non-zero balance, guard dependency, active order, etc.)
+    const removedAssets: string[] = [];
+    for (const asset of candidateRemovals) {
+      try {
+        await this.managerLogic.callStatic.changeAssets([], [asset]);
+        removedAssets.push(asset);
+      } catch (err) {
+        console.warn(
+          `changeAssets: skipping removal of ${asset} — ${
+            (err as Error).message
+          }`
+        );
+      }
+    }
 
     if (estimateGas) {
       return await this.managerLogic.estimateGas.changeAssets(
@@ -1159,11 +1149,11 @@ export class Pool {
   }
 
   /**
-   * Invest into a Balancer pool
+   * Exit a Balancer pool
    * @param {string} poolId Balancer pool id
-   * @param {string[] | } assets Array of balancer pool assets
-   * @param {BigNumber | string } amount Amount of pool tokens to withdraw
-   * @param { null | number } singleExitAssetIndex Index of asset to withdraw to
+   * @param {string[]} assets Array of balancer pool assets
+   * @param {BigNumber | string} amount Amount of pool tokens to withdraw
+   * @param {null | number} singleExitAssetIndex Index of asset to withdraw to
    * @param {any} options Transaction options
    * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
@@ -1306,12 +1296,7 @@ export class Pool {
    * @returns {Promise<any>} Transaction
    */
   async addLiquidityUniswapV3(
-    dapp:
-      | Dapp.UNISWAPV3
-      | Dapp.VELODROMECL
-      | Dapp.AERODROMECL
-      | Dapp.RAMSESCL
-      | Dapp.PANCAKECL,
+    dapp: Dapp.UNISWAPV3 | Dapp.VELODROMECL | Dapp.AERODROMECL | Dapp.PANCAKECL,
     assetA: string,
     assetB: string,
     amountA: BigNumber | string,
@@ -1383,7 +1368,6 @@ export class Pool {
     let txData;
     switch (dapp) {
       case Dapp.UNISWAPV3:
-      case Dapp.RAMSESCL:
         dappAddress = nonfungiblePositionManagerAddress[this.network][dapp];
         break;
       case Dapp.VELODROMECL:
@@ -1450,7 +1434,6 @@ export class Pool {
     let txData;
     switch (dapp) {
       case Dapp.UNISWAPV3:
-      case Dapp.RAMSESCL:
         dappAddress = nonfungiblePositionManagerAddress[this.network][dapp];
         break;
       case Dapp.VELODROMECL:
@@ -1516,7 +1499,6 @@ export class Pool {
     );
     switch (dapp) {
       case Dapp.UNISWAPV3:
-      case Dapp.RAMSESCL:
         contractAddress = nonfungiblePositionManagerAddress[this.network][dapp];
         txData = iNonfungiblePositionManager.encodeFunctionData(
           Transaction.COLLECT,
@@ -1530,7 +1512,6 @@ export class Pool {
         txData = abi.encodeFunctionData("claim_rewards()", []);
         break;
       case Dapp.VELODROME:
-      case Dapp.RAMSES:
         contractAddress = tokenId;
         txData = getVelodromeClaimTxData(this, tokenId, false);
         break;
@@ -1566,75 +1547,6 @@ export class Pool {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [contractAddress, txData, options],
-      sdkOptions
-    );
-    return tx;
-  }
-
-  /**
-   * Get rewards of an NFT position
-   * @param {Dapp} dapp Platform e.g. Ramses CL
-   * @param {string} tokenId Token Id
-   * @param {string[]} rewards Reward tokens
-   * @param {any} options Transaction option
-   * @param {SDKOptions} sdkOptions SDK options including estimateGas
-   * @returns {Promise<any>} Transaction
-   */
-  async getRewards(
-    dapp: Dapp,
-    tokenId: string,
-    rewards: string[],
-    options: any = null,
-    sdkOptions: SDKOptions = {
-      estimateGas: false
-    }
-  ): Promise<any> {
-    const tx = await getPoolTxOrGasEstimate(
-      this,
-      [
-        nonfungiblePositionManagerAddress[this.network][dapp],
-        getRewardsTxDta(tokenId, rewards),
-        options
-      ],
-      sdkOptions
-    );
-    return tx;
-  }
-
-  /**
-   * Trade an asset into another asset
-   * @param {Dapp} dapp Platform like Sushiswap or Uniswap
-   * @param {string} assetFrom Asset to trade from
-   * @param {string} assetTo Asset to trade into
-   * @param {BigNumber | string} amountIn Amount
-   * @param { FeeAmount } feeAmount Fee tier (Low 0.05%, Medium 0.3%, High 1%)
-   * @param {number} slippage Slippage tolerance in %
-   * @param {any} options Transaction options
-   * @param {SDKOptions} sdkOptions SDK options including estimateGas
-   * @returns {Promise<any>} Transaction
-   */
-  async tradeUniswapV3(
-    assetFrom: string,
-    assetTo: string,
-    amountIn: BigNumber | string,
-    feeAmount: number,
-    slippage = 0.5,
-    options: any = null,
-    sdkOptions: SDKOptions = {
-      estimateGas: false
-    }
-  ): Promise<any> {
-    const swapxData = await getUniswapV3SwapTxData(
-      this,
-      assetFrom,
-      assetTo,
-      amountIn,
-      slippage,
-      feeAmount
-    );
-    const tx = await getPoolTxOrGasEstimate(
-      this,
-      [routerAddress[this.network][Dapp.UNISWAPV3], swapxData, options],
       sdkOptions
     );
     return tx;
@@ -1799,8 +1711,8 @@ export class Pool {
   }
 
   /**
-   * Add liquidity to Velodrome V2 or Ramses pool
-   * @param {Dapp} dapp VelodromeV2, Ramses or Aerodrome
+   * Add liquidity to Velodrome V2 or Aerodrome pool
+   * @param {Dapp} dapp VelodromeV2 or Aerodrome
    * @param {string} assetA First asset
    * @param {string} assetB Second asset
    * @param {BigNumber | string} amountA Amount first asset
@@ -1811,7 +1723,7 @@ export class Pool {
    * @returns {Promise<any>} Transaction
    */
   async addLiquidityV2(
-    dapp: Dapp.VELODROMEV2 | Dapp.RAMSES | Dapp.AERODROME,
+    dapp: Dapp.VELODROMEV2 | Dapp.AERODROME,
     assetA: string,
     assetB: string,
     amountA: BigNumber | string,
@@ -1842,8 +1754,8 @@ export class Pool {
   }
 
   /**
-   * Remove liquidity from Velodrome V2 or Ramses pool
-   * @param {Dapp} dapp VelodromeV2, Ramses or Aerodrome
+   * Remove liquidity from Velodrome V2 or Aerodrome pool
+   * @param {Dapp} dapp VelodromeV2 or Aerodrome
    * @param {string} assetA First asset
    * @param {string} assetB Second asset
    * @param {BigNumber | string} amount Amount of LP tokens
@@ -1853,7 +1765,7 @@ export class Pool {
    * @returns {Promise<any>} Transaction
    */
   async removeLiquidityV2(
-    dapp: Dapp.VELODROMEV2 | Dapp.RAMSES | Dapp.AERODROME,
+    dapp: Dapp.VELODROMEV2 | Dapp.AERODROME,
     assetA: string,
     assetB: string,
     amount: BigNumber | string,
@@ -1939,82 +1851,6 @@ export class Pool {
     return await getOptionPositions(this, market);
   }
 
-  /** Deposit or withdraws (negative amount) asset for Synthetix future margin trading
-   *
-   * @param {string} market Address of futures market
-   * @param {BigNumber | string } changeAmount Amount to increase/decrease margin
-   * @param {any} options Transaction options
-   * @param {SDKOptions} sdkOptions SDK options including estimateGas
-   * @returns {Promise<any>} Transaction
-   */
-  async changeFuturesMargin(
-    market: string,
-    changeAmount: BigNumber | string,
-    options: any = null,
-    sdkOptions: SDKOptions = {
-      estimateGas: false
-    }
-  ): Promise<any> {
-    const tx = await getPoolTxOrGasEstimate(
-      this,
-      [market, getFuturesChangeMarginTxData(changeAmount), options],
-      sdkOptions
-    );
-    return tx;
-  }
-
-  /** Change position in Synthetix futures market (long/short)
-   *
-   * @param {string} market Address of futures market
-   * @param {BigNumber | string } changeAmount Negative for short, positive for long
-   * @param {any} options Transaction options
-   * @param {SDKOptions} sdkOptions SDK options including estimateGas
-   * @returns {Promise<any>} Transaction
-   */
-  async changeFuturesPosition(
-    market: string,
-    changeAmount: BigNumber | string,
-    options: any = null,
-    sdkOptions: SDKOptions = {
-      estimateGas: false
-    }
-  ): Promise<any> {
-    const txData = await getFuturesChangePositionTxData(
-      changeAmount,
-      market,
-      this
-    );
-    const tx = await getPoolTxOrGasEstimate(
-      this,
-      [market, txData, options],
-      sdkOptions
-    );
-    return tx;
-  }
-
-  /** Cancels an open oder on Synthetix futures market
-   *
-   * @param {string} market Address of futures market
-   * @param {any} options Transaction options
-   * @param {SDKOptions} sdkOptions SDK options including estimateGas
-   * @returns {Promise<any>} Transaction
-   */
-  async cancelFuturesOrder(
-    market: string,
-    options: any = null,
-    sdkOptions: SDKOptions = {
-      estimateGas: false
-    }
-  ): Promise<any> {
-    const txData = await getFuturesCancelOrderTxData(this);
-    const tx = await getPoolTxOrGasEstimate(
-      this,
-      [market, txData, options],
-      sdkOptions
-    );
-    return tx;
-  }
-
   /**
    * mintManagerFee
    * @param {any} options Transaction options
@@ -2034,58 +1870,9 @@ export class Pool {
    * @returns {Promise<BigNumber>} fee
    */
   async getAvailableManagerFee(): Promise<BigNumber> {
-    const fee = await this.poolLogic.availableManagerFee();
+    const fundValue = await this.managerLogic.totalFundValue();
+    const fee = await this.poolLogic.calculateAvailableManagerFee(fundValue);
     return BigNumber.from(fee);
-  }
-
-  /** Vest tokens (e.g. Ramses xoRAM)
-   *
-   * @param {string} tokenAddress Address of the token to vest
-   * @param {BigNumber | string } changeAmount Negative for short, positive for long
-   * @param {any} options Transaction options
-   * @param {SDKOptions} sdkOptions SDK options including estimateGas
-   * @returns {Promise<any>} Transaction
-   */
-  async vestTokens(
-    tokenAddress: string,
-    amount: BigNumber | string,
-    options: any = null,
-    sdkOptions: SDKOptions = {
-      estimateGas: false
-    }
-  ): Promise<any> {
-    const txData = await getCreateVestTxData(amount);
-    const tx = await getPoolTxOrGasEstimate(
-      this,
-      [tokenAddress, txData, options],
-      sdkOptions
-    );
-    return tx;
-  }
-
-  /** Exit position of vested tokens (e.g. Ramses xoRAM)
-   *
-   * @param {string} tokenAddress Address of the token to vest
-   * @param {number } id position Id of the vested tokens
-   * @param {any} options Transaction options
-   * @param {SDKOptions} sdkOptions SDK options including estimateGas
-   * @returns {Promise<any>} Transaction
-   */
-  async exitVestedToken(
-    tokenAddress: string,
-    id: number,
-    options: any = null,
-    sdkOptions: SDKOptions = {
-      estimateGas: false
-    }
-  ): Promise<any> {
-    const txData = await getExitVestTxData(id);
-    const tx = await getPoolTxOrGasEstimate(
-      this,
-      [tokenAddress, txData, options],
-      sdkOptions
-    );
-    return tx;
   }
 
   /** deposit rETH to mint UNIT via the Flat Money protocol
@@ -2146,6 +1933,12 @@ export class Pool {
     return tx;
   }
 
+  /**
+   * Cancel a previously announced FlatMoney order (mint/redeem UNIT) before it executes
+   * @param {any} options Transaction options
+   * @param {boolean} estimateGas Simulate/estimate gas instead of sending
+   * @returns {Promise<any>} Transaction
+   */
   async cancelOrderViaFlatMoney(
     options: any = null,
     estimateGas = false
