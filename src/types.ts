@@ -138,3 +138,34 @@ export type LimitOrderInfo = {
   pool: string;
   pricingAsset: string;
 };
+
+/** Internal representation of a Toros limit buy order before EIP-712 signing. */
+export type LimitBuyOrder = {
+  owner: string;
+  targetVault: string;
+  pricingAsset: string;
+  minTriggerPriceD18: BigNumber;
+  maxTriggerPriceD18: BigNumber;
+  slippageToleranceBps: number;
+};
+
+/** Signed limit buy order ready for submission to the dHEDGE API. */
+export type SignedLimitBuyOrder = {
+  order: {
+    owner: string;
+    targetVault: string;
+    pricingAsset: string;
+    minTriggerPriceD18: string;
+    maxTriggerPriceD18: string;
+    slippageToleranceBps: number;
+  };
+  permit: {
+    token: string;
+    amount: string;
+    nonce: string;
+    deadline: number;
+  };
+  owner: string;
+  signature: string;
+  chainId: number;
+};

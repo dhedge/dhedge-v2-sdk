@@ -85,6 +85,10 @@ import {
   getTorosLimitOrder,
   hasActiveTorosLimitOrder
 } from "../services/toros/limitOrder";
+import {
+  createTorosLimitBuyOrder,
+  PERMIT2_ADDRESS
+} from "../services/toros/limitBuyOrder";
 import { getKyberSwapTxData } from "../services/kyberSwap";
 import { getCowSwapTxData } from "../services/cowSwap";
 import {
@@ -2373,5 +2377,67 @@ export class Pool {
     vaultAddress: string
   ): Promise<boolean> {
     return hasActiveTorosLimitOrder(this, userAddress, vaultAddress);
+  }
+
+  /**
+   * Approve an input token to the Permit2 contract for Toros limit buy orders.
+   * Must be called before createTorosLimitBuyOrder if the allowance is insufficient.
+   * @param {string} inputToken Address of the token to approve (the token being spent)
+   * @param {BigNumber | string} amount Amount to approve
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+  async approveTorosLimitBuyOrder(
+    inputToken: string,
+    amount: BigNumber | string,
+    options: any = null,
+    sdkOptions: SDKOptions = { estimateGas: false }
+  ): Promise<any> {
+    const iERC20 = new ethers.utils.Interface(IERC20.abi);
+    const approveTxData = iERC20.encodeFunctionData("approve", [
+      PERMIT2_ADDRESS,
+      amount
+    ]);
+    return getPoolTxOrGasEstimate(
+      this,
+      [inputToken, approveTxData, options],
+      sdkOptions
+    );
+  }
+
+  /**
+   * Create a Toros limit buy order — signs a Permit2 EIP-712 message and submits it to the dHEDGE API.
+   * @param {string} vaultAddress Address of the Toros vault to buy into
+   * @param {string} inputToken Address of the token to spend (the Permit2 permitted token)
+   * @param {BigNumber | string} inputAmount Amount of inputToken to spend (in token decimals)
+   * @param {string} pricingAsset Address of the pricing asset used for trigger prices
+   * @param {BigNumber | string | null | undefined} minTriggerPriceD18 Minimum vault price to trigger (D18). null/undefined = 0 (no lower bound)
+   * @param {BigNumber | string | null | undefined} maxTriggerPriceD18 Maximum vault price to trigger (D18). null/undefined = MaxUint256 (no upper bound)
+   * @param {number} slippageToleranceBps Slippage tolerance in basis points
+   * @param {number} deadlineDays Number of days from now until the order expires
+   * @returns {Promise<any>} API response from the dHEDGE GraphQL endpoint
+   */
+  async createTorosLimitBuyOrder(
+    vaultAddress: string,
+    inputToken: string,
+    inputAmount: BigNumber | string,
+    pricingAsset: string,
+    minTriggerPriceD18: BigNumber | string | null | undefined,
+    maxTriggerPriceD18: BigNumber | string | null | undefined,
+    slippageToleranceBps: number,
+    deadlineDays: number
+  ): Promise<any> {
+    return createTorosLimitBuyOrder(
+      this,
+      vaultAddress,
+      inputToken,
+      inputAmount,
+      pricingAsset,
+      minTriggerPriceD18,
+      maxTriggerPriceD18,
+      slippageToleranceBps,
+      deadlineDays
+    );
   }
 }

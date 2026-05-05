@@ -255,6 +255,11 @@ export const flatMoneyContractAddresses: Readonly<Partial<
   }
 };
 
+/** Toros LimitBuyManager address per network — used for limit buy orders via Permit2. */
+export const limitBuyManagerAddress: Partial<Record<Network, string>> = {
+  [Network.ARBITRUM]: "0x40F2978D87348250F085ACEbd680B387842a69eF"
+};
+
 /** Toros PoolLimitOrderManager address per network — used for stop-loss / take-profit orders. */
 export const limitOrderAddress: AddressNetworkMap = {
   [Network.POLYGON]: "0xB71410736d2C8F2DAf30dA9D332dA10534d2624d",
