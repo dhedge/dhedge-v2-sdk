@@ -87,6 +87,7 @@ import {
 } from "../services/toros/limitOrder";
 import { getKyberSwapTxData } from "../services/kyberSwap";
 import { getCowSwapTxData } from "../services/cowSwap";
+import { getOndoSwapTxData } from "../services/ondo";
 import {
   getClosePositionHyperliquidTxData,
   getDepositHyperliquidTxData,
@@ -448,6 +449,15 @@ export class Pool {
           assetFrom,
           assetTo,
           amountIn,
+          slippage
+        ));
+        break;
+      case Dapp.ONDO:
+        ({ swapTxData, minAmountOut } = await getOndoSwapTxData(
+          this,
+          assetFrom,
+          assetTo,
+          amountIn.toString(),
           slippage
         ));
         break;
