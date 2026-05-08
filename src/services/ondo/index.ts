@@ -50,7 +50,7 @@ async function postOndoAttestation(
 ): Promise<OndoAttestation> {
   const { data } = await axios.post(
     ONDO_API_URL,
-    { chainId: "ethereum-1", symbol, side, ...amount, duration: "long" },
+    { chainId: "ethereum-1", symbol, side, ...amount, duration: "short" },
     { headers: { "x-api-key": apiKey } }
   );
   return data as OndoAttestation;
