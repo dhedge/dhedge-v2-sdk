@@ -37,7 +37,8 @@ export enum Dapp {
   PENDLE = "pendle",
   KYBERSWAP = "kyberswap",
   HYPERLIQUID = "hyperliquid",
-  COWSWAP = "cowswap"
+  COWSWAP = "cowswap",
+  ONDO = "ondo"
 }
 
 /** Function-name strings used when encoding ABI calls — keep in sync with the
