@@ -1,7 +1,7 @@
 import axios from "axios";
 import { ethers } from "ethers";
 import BigNumber from "bignumber.js";
-import { Pool } from "../..";
+import { ApiError, Pool } from "../..";
 import IOndoGMSwap from "../../abi/ondo/IOndoGMSwap.json";
 
 const ONDO_API_URL = "https://api.gm.ondo.finance/v1/attestations";
@@ -48,12 +48,16 @@ async function postOndoAttestation(
     // Surface Ondo's structured error (e.g. ASSET_NOT_FOUND, MARKET_CLOSED)
     if (axios.isAxiosError(error) && error.response) {
       const { code, message } = error.response.data ?? {};
-      throw new Error(
+      throw new ApiError(
         `Ondo attestation request failed (${error.response.status}): ${code ??
           ""} ${message ?? JSON.stringify(error.response.data)}`.trim()
       );
     }
-    throw error;
+    throw new ApiError(
+      `Ondo attestation request failed: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
   }
 }
 
@@ -97,6 +101,10 @@ export async function getOndoSwapTxData(
 
   const signature =
     "0x" + Buffer.from(attestation.signature, "base64").toString("hex");
+  const additionalData = ethers.utils.hexZeroPad(
+    "0x" + Buffer.from(attestation.additionalData, "base64").toString("hex"),
+    32
+  );
   const quantity = new BigNumber(attestation.tokenAmount);
   const priceD18 = new BigNumber(attestation.price);
 
@@ -118,8 +126,7 @@ export async function getOndoSwapTxData(
     quantity: quantity.toFixed(0),
     expiration: attestation.expiration,
     side: Number(attestation.side),
-    // Contract requires additionalData == bytes32(0) (InvalidAdditionalData)
-    additionalData: ethers.constants.HashZero
+    additionalData
   };
 
   const swapTxData = iface.encodeFunctionData("swapExactInWithAttestation", [
