@@ -24,10 +24,11 @@ type OndoAttestation = {
 
 const iface = new ethers.utils.Interface(IOndoGMSwap);
 
+// Ondo returns userId as a left-aligned 32-byte hex (significant bytes first,
+// e.g. 0x474d...0000), so right-pad to preserve byte order and fix it to 32 bytes.
 function toBytes32(s: string): string {
-  if (!s) return "0x" + "0".repeat(64);
   const hex = s.startsWith("0x") ? s.slice(2) : s;
-  return "0x" + hex.padStart(64, "0");
+  return "0x" + hex.padEnd(64, "0").slice(0, 64);
 }
 
 async function fetchUsdcPriceD18(pool: Pool): Promise<BigNumber> {
@@ -44,16 +45,28 @@ async function fetchUsdcPriceD18(pool: Pool): Promise<BigNumber> {
 
 async function postOndoAttestation(
   symbol: string,
-  side: "BUY" | "SELL",
+  side: "buy" | "sell",
   amount: { notionalValue: string } | { tokenAmount: string },
   apiKey: string
 ): Promise<OndoAttestation> {
-  const { data } = await axios.post(
-    ONDO_API_URL,
-    { chainId: "ethereum-1", symbol, side, ...amount, duration: "short" },
-    { headers: { "x-api-key": apiKey } }
-  );
-  return data as OndoAttestation;
+  try {
+    const { data } = await axios.post(
+      ONDO_API_URL,
+      { chainId: "ethereum-1", symbol, side, ...amount, duration: "short" },
+      { headers: { "x-api-key": apiKey } }
+    );
+    return data as OndoAttestation;
+  } catch (error) {
+    // Surface Ondo's structured error (e.g. ASSET_NOT_FOUND, MARKET_CLOSED)
+    if (axios.isAxiosError(error) && error.response) {
+      const { code, message } = error.response.data ?? {};
+      throw new Error(
+        `Ondo attestation request failed (${error.response.status}): ${code ??
+          ""} ${message ?? JSON.stringify(error.response.data)}`.trim()
+      );
+    }
+    throw error;
+  }
 }
 
 export async function getOndoSwapTxData(
@@ -86,14 +99,14 @@ export async function getOndoSwapTxData(
     ? {
         notionalValue: amount
           .times(await fetchUsdcPriceD18(pool))
-          .div(1e24) // USDC amount has 6 decimals, price 18, convert to D1 with 18 decimals
+          .div(1e24) // USDC has 6 decimals, price 18; /1e24 yields a plain decimal, then 18 dp
           .toFixed(18)
       }
     : { tokenAmount: amount.div(1e18).toFixed(18) };
 
   const attestation = await postOndoAttestation(
     symbol,
-    isMint ? "BUY" : "SELL",
+    isMint ? "buy" : "sell",
     attestationAmount,
     apiKey
   );
@@ -121,7 +134,8 @@ export async function getOndoSwapTxData(
     quantity: quantity.toFixed(0),
     expiration: attestation.expiration,
     side: Number(attestation.side),
-    additionalData: toBytes32(attestation.additionalData)
+    // Contract requires additionalData == bytes32(0) (InvalidAdditionalData)
+    additionalData: ethers.constants.HashZero
   };
 
   const swapTxData = iface.encodeFunctionData("swapExactInWithAttestation", [
