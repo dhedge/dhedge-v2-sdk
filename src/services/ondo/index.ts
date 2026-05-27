@@ -31,18 +31,6 @@ function toBytes32(s: string): string {
   return "0x" + hex.padEnd(64, "0").slice(0, 64);
 }
 
-async function fetchUsdcPriceD18(pool: Pool): Promise<BigNumber> {
-  const assetHandlerAddress = await pool.factory.callStatic.getAssetHandler();
-  const assetHandler = new ethers.Contract(
-    assetHandlerAddress,
-    ["function getUSDPrice(address) view returns (uint256)"],
-    pool.signer
-  );
-  return new BigNumber(
-    (await assetHandler.getUSDPrice(USDC_ETHEREUM)).toString()
-  );
-}
-
 async function postOndoAttestation(
   symbol: string,
   side: "buy" | "sell",
@@ -91,17 +79,13 @@ export async function getOndoSwapTxData(
   );
   const symbol: string = await tokenContract.symbol();
 
-  // For mint: notionalValue = USDC_amount * USDC_USD_price, expressed in D18.
-  // Using the on-chain price accounts for any USDC depeg (e.g. 0.98$).
-  // Ondo then computes the GM token quantity internally, guaranteeing price * quantity ≤ notionalValue.
+  // For mint: notionalValue is the USD amount to subscribe. USDonManager values
+  // USDC at par (1 USDC = 1 USDon), so pass the USDC amount as-is (6dp -> decimal).
+  // Discounting by a USDC market price would strand the gap as USDon in the swapper
+  // (and revert via ExcessiveAmountIn once it exceeds the 1 USDC tolerance).
   // For redeem: pass the GM token amount directly as tokenAmount.
   const attestationAmount = isMint
-    ? {
-        notionalValue: amount
-          .times(await fetchUsdcPriceD18(pool))
-          .div(1e24) // USDC has 6 decimals, price 18; /1e24 yields a plain decimal, then 18 dp
-          .toFixed(18)
-      }
+    ? { notionalValue: amount.div(1e6).toFixed(18) }
     : { tokenAmount: amount.div(1e18).toFixed(18) };
 
   const attestation = await postOndoAttestation(
