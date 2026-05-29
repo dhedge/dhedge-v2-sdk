@@ -1,7 +1,7 @@
 import axios from "axios";
 import { ethers } from "ethers";
 import BigNumber from "bignumber.js";
-import { Pool } from "../..";
+import { ApiError, Pool } from "../..";
 import IOndoGMSwap from "../../abi/ondo/IOndoGMSwap.json";
 
 const ONDO_API_URL = "https://api.gm.ondo.finance/v1/attestations";
@@ -24,36 +24,41 @@ type OndoAttestation = {
 
 const iface = new ethers.utils.Interface(IOndoGMSwap);
 
+// Ondo returns userId as a left-aligned 32-byte hex (significant bytes first,
+// e.g. 0x474d...0000), so right-pad to preserve byte order and fix it to 32 bytes.
 function toBytes32(s: string): string {
-  if (!s) return "0x" + "0".repeat(64);
   const hex = s.startsWith("0x") ? s.slice(2) : s;
-  return "0x" + hex.padStart(64, "0");
-}
-
-async function fetchUsdcPriceD18(pool: Pool): Promise<BigNumber> {
-  const assetHandlerAddress = await pool.factory.callStatic.getAssetHandler();
-  const assetHandler = new ethers.Contract(
-    assetHandlerAddress,
-    ["function getUSDPrice(address) view returns (uint256)"],
-    pool.signer
-  );
-  return new BigNumber(
-    (await assetHandler.getUSDPrice(USDC_ETHEREUM)).toString()
-  );
+  return "0x" + hex.padEnd(64, "0").slice(0, 64);
 }
 
 async function postOndoAttestation(
   symbol: string,
-  side: "BUY" | "SELL",
+  side: "buy" | "sell",
   amount: { notionalValue: string } | { tokenAmount: string },
   apiKey: string
 ): Promise<OndoAttestation> {
-  const { data } = await axios.post(
-    ONDO_API_URL,
-    { chainId: "ethereum-1", symbol, side, ...amount, duration: "short" },
-    { headers: { "x-api-key": apiKey } }
-  );
-  return data as OndoAttestation;
+  try {
+    const { data } = await axios.post(
+      ONDO_API_URL,
+      { chainId: "ethereum-1", symbol, side, ...amount, duration: "short" },
+      { headers: { "x-api-key": apiKey } }
+    );
+    return data as OndoAttestation;
+  } catch (error) {
+    // Surface Ondo's structured error (e.g. ASSET_NOT_FOUND, MARKET_CLOSED)
+    if (axios.isAxiosError(error) && error.response) {
+      const { code, message } = error.response.data ?? {};
+      throw new ApiError(
+        `Ondo attestation request failed (${error.response.status}): ${code ??
+          ""} ${message ?? JSON.stringify(error.response.data)}`.trim()
+      );
+    }
+    throw new ApiError(
+      `Ondo attestation request failed: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
+  }
 }
 
 export async function getOndoSwapTxData(
@@ -78,28 +83,28 @@ export async function getOndoSwapTxData(
   );
   const symbol: string = await tokenContract.symbol();
 
-  // For mint: notionalValue = USDC_amount * USDC_USD_price, expressed in D18.
-  // Using the on-chain price accounts for any USDC depeg (e.g. 0.98$).
-  // Ondo then computes the GM token quantity internally, guaranteeing price * quantity ≤ notionalValue.
+  // For mint: notionalValue is the USD amount to subscribe. USDonManager values
+  // USDC at par (1 USDC = 1 USDon), so pass the USDC amount as-is (6dp -> decimal).
+  // Discounting by a USDC market price would strand the gap as USDon in the swapper
+  // (and revert via ExcessiveAmountIn once it exceeds the 1 USDC tolerance).
   // For redeem: pass the GM token amount directly as tokenAmount.
   const attestationAmount = isMint
-    ? {
-        notionalValue: amount
-          .times(await fetchUsdcPriceD18(pool))
-          .div(1e24) // USDC amount has 6 decimals, price 18, convert to D1 with 18 decimals
-          .toFixed(18)
-      }
+    ? { notionalValue: amount.div(1e6).toFixed(18) }
     : { tokenAmount: amount.div(1e18).toFixed(18) };
 
   const attestation = await postOndoAttestation(
     symbol,
-    isMint ? "BUY" : "SELL",
+    isMint ? "buy" : "sell",
     attestationAmount,
     apiKey
   );
 
   const signature =
     "0x" + Buffer.from(attestation.signature, "base64").toString("hex");
+  const additionalData = ethers.utils.hexZeroPad(
+    "0x" + Buffer.from(attestation.additionalData, "base64").toString("hex"),
+    32
+  );
   const quantity = new BigNumber(attestation.tokenAmount);
   const priceD18 = new BigNumber(attestation.price);
 
@@ -121,7 +126,7 @@ export async function getOndoSwapTxData(
     quantity: quantity.toFixed(0),
     expiration: attestation.expiration,
     side: Number(attestation.side),
-    additionalData: toBytes32(attestation.additionalData)
+    additionalData
   };
 
   const swapTxData = iface.encodeFunctionData("swapExactInWithAttestation", [

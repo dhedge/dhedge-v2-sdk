@@ -1,5 +1,19 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
+/**
+ * Ondo Global Markets on-chain tests for minting and redeeming GM tokens.
+ * These require a live chain connection (onFork: false) because each mint/redeem
+ * needs a fresh attestation signed by the Ondo API against current chain state,
+ * which cannot be reproduced on a Hardhat fork.
+ *
+ * Prerequisites:
+ *   - PRIVATE_KEY in .env (must be the pool manager or trader)
+ *   - ETHEREUM_URL in .env
+ *   - ONDO_API_KEY in .env
+ *   - The test pool must hold USDC to mint (and SPYon, from the mint, to redeem)
+ */
+
+import { ethers } from "ethers";
 import { Dhedge, Pool } from "..";
 
 import { Dapp, Network } from "../types";
@@ -7,7 +21,7 @@ import { CONTRACT_ADDRESS, MAX_AMOUNT } from "./constants";
 import { TestingRunParams, testingHelper } from "./utils/testingHelper";
 
 import { getTxOptions } from "./txOptions";
-import { allowanceDelta, balanceDelta } from "./utils/token";
+import { balanceDelta } from "./utils/token";
 
 import { routerAddress } from "../config";
 
@@ -30,13 +44,16 @@ const testOndo = ({ wallet, network }: TestingRunParams) => {
     it("approves unlimited USDC on Ondo", async () => {
       const tx = await pool.approve(Dapp.ONDO, USDC, MAX_AMOUNT);
       await tx.wait();
-      const usdcAllowanceDelta = await allowanceDelta(
-        pool.address,
+      const iERC20 = new ethers.Contract(
         USDC,
-        routerAddress[network]["ondo"]!,
+        ["function allowance(address,address) view returns (uint256)"],
         pool.signer
       );
-      expect(usdcAllowanceDelta.gt(0)).toBe(true);
+      const allowance = await iERC20.allowance(
+        pool.address,
+        routerAddress[network][Dapp.ONDO]!
+      );
+      expect(allowance.gt(0)).toBe(true);
     });
 
     it("gets gas estimation for 40 USDC into SPYon on Ondo", async () => {
@@ -49,7 +66,8 @@ const testOndo = ({ wallet, network }: TestingRunParams) => {
         await getTxOptions(network),
         true
       );
-      expect(gasEstimate.gas.gt(0));
+      expect(gasEstimate.gasEstimationError).toBeNull();
+      expect(gasEstimate.gas.gt(0)).toBe(true);
       expect(gasEstimate.minAmountOut).not.toBeNull();
     });
 
@@ -71,16 +89,19 @@ const testOndo = ({ wallet, network }: TestingRunParams) => {
       expect(spBalanceDelta.gt(0)).toBe(true);
     });
 
-    it("approves unlimited SPyon on Ondo", async () => {
+    it("approves unlimited SPYon on Ondo", async () => {
       const tx = await pool.approve(Dapp.ONDO, SPYon, MAX_AMOUNT);
       await tx.wait();
-      const spyonAllowanceDelta = await allowanceDelta(
-        pool.address,
+      const iERC20 = new ethers.Contract(
         SPYon,
-        routerAddress[network]["ondo"]!,
+        ["function allowance(address,address) view returns (uint256)"],
         pool.signer
       );
-      expect(spyonAllowanceDelta.gt(0)).toBe(true);
+      const allowance = await iERC20.allowance(
+        pool.address,
+        routerAddress[network][Dapp.ONDO]!
+      );
+      expect(allowance.gt(0)).toBe(true);
     });
 
     it("sells SPYon balance on Ondo", async () => {
