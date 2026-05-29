@@ -124,21 +124,24 @@ await vault.trade(Dapp.KYBERSWAP, "USDC_ADDRESS", "WETH_ADDRESS", "1000000", 0.5
 
 ---
 
-If you want to use aggregators such as 1Inch or Odos, copy `.env.example` to `.env` and configure the API keys you need.
+If you want to use aggregators such as 1Inch or Odos, or Ondo GM token swaps, copy `.env.example` to `.env` and configure the API keys you need.
 
 ```
 ONEINCH_API_KEY=YOUR_API_KEY_FROM_1INCH
 ODOS_API_KEY=YOUR_ODOS_API_KEY
+ONDO_API_KEY=YOUR_ONDO_API_KEY
 ```
 
 - `ONEINCH_API_KEY` is required for `Dapp.ONEINCH`
 - `ODOS_API_KEY` is required for `Dapp.ODOS`
 - `ODOS_API_KEY` can also be required by `completeTorosWithdrawal(...)` when a Toros withdrawal needs Odos-backed swap data
+- `ONDO_API_KEY` is required for Ondo GM token swaps (`Dapp.ONDO`)
 
 To get started:
 
 - get a 1inch API key from the [1inch Developer Portal](https://docs.1inch.io/docs/aggregation-protocol/introduction)
 - get an Odos API key via the [Odos developer docs](https://docs.odos.xyz/build/api-docs), and make sure it is valid for the Odos endpoint configured by this SDK
+- get an Ondo API key by contacting [onboarding@ondo.finance](mailto:onboarding@ondo.finance)
 - place the keys in a `.env` file at the project root before calling aggregator-backed methods
 - if a required key is missing, the SDK will fail before transaction submission
 
