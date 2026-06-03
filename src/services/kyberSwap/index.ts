@@ -9,7 +9,9 @@ export async function getKyberSwapTxData(
   tokenIn: string,
   tokenOut: string,
   amountIn: ethers.BigNumber | string,
-  slippage: number
+  slippage: number,
+  sender?: string,
+  receiver?: string
 ): Promise<{ swapTxData: string; minAmountOut: string }> {
   const params = {
     tokenIn,
@@ -29,8 +31,8 @@ export async function getKyberSwapTxData(
 
     const buildParams = {
       routeSummary: quoteResult.data.data.routeSummary,
-      sender: pool.address,
-      recipient: pool.address,
+      sender: sender || pool.address,
+      recipient: receiver || pool.address,
       slippageTolerance: slippage * 100 // in basis points
     };
 

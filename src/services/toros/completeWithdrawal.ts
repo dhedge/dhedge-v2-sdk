@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Dapp, ethers, Pool } from "../..";
-import { networkChainIdMap, routerAddress } from "../../config";
+import { routerAddress } from "../../config";
 import IEasySwapperV2 from "../../abi/IEasySwapperV2.json";
 import BigNumber from "bignumber.js";
 import AssetHandlerAbi from "../../abi/AssetHandler.json";
@@ -10,54 +10,65 @@ import {
   SLIPPAGE_FOR_LOW_VALUE_SWAP
 } from "./easySwapper";
 import { retry } from "./retry";
-import { getSwapDataViaOdos, SWAPPER_ADDERSS } from "./swapData";
+import { getSwapData, ROUTER_KEYS } from "./swapData";
 
 export interface TrackedAsset {
   token: string;
-  balance: ethers.BigNumber | string;
+  balance: ethers.BigNumber;
 }
 
 const getSwapWithdrawData = async (
   pool: Pool,
-  trackedAssets: TrackedAsset[],
+  trackedAssets: {
+    token: string;
+    balance: ethers.BigNumber;
+    slippage: number;
+  }[],
   receiveToken: string,
-  slippage: number
+  swapDestMinDestAmount: BigNumber
 ) => {
-  const srcData = [];
-  const routerKey = ethers.utils.formatBytes32String("ODOS_V3");
-  // const destData
-  for (const { token, balance } of trackedAssets) {
-    if (token.toLowerCase() === receiveToken.toLowerCase()) {
+  for (const routerKeyString of ROUTER_KEYS) {
+    try {
+      const srcData = [];
+      const routerKey = ethers.utils.formatBytes32String(routerKeyString);
+      for (const { token, balance, slippage } of trackedAssets) {
+        if (token.toLowerCase() === receiveToken.toLowerCase()) {
+          continue;
+        }
+        const swapData = await retry({
+          fn: () => {
+            return getSwapData(
+              pool,
+              {
+                srcAsset: token,
+                srcAmount: balance.toString(),
+                dstAsset: receiveToken,
+                slippage
+              },
+              routerKeyString
+            );
+          },
+          delayMs: 1500,
+          maxRetries: 7
+        });
+        srcData.push({
+          token,
+          amount: balance,
+          aggregatorData: { routerKey, swapData }
+        });
+      }
+      return {
+        srcData,
+        destData: {
+          destToken: receiveToken,
+          minDestAmount: swapDestMinDestAmount.toString()
+        }
+      };
+    } catch {
       continue;
     }
-    const swapData = await retry({
-      fn: () => {
-        return getSwapDataViaOdos({
-          srcAsset: token,
-          srcAmount: balance.toString(),
-          dstAsset: receiveToken,
-          chainId: networkChainIdMap[pool.network],
-          from: SWAPPER_ADDERSS,
-          receiver: SWAPPER_ADDERSS,
-          slippage
-        });
-      },
-      delayMs: 1500,
-      maxRetries: 7
-    });
-    srcData.push({
-      token,
-      amount: balance,
-      aggregatorData: { routerKey, swapData }
-    });
   }
-  return {
-    srcData,
-    destData: {
-      destToken: receiveToken,
-      minDestAmount: "0"
-    }
-  };
+  throw new Error("All swap routers failed for complete withdrawal");
 };
 
 export const createCompleteWithdrawalTxArguments = async (
@@ -141,12 +152,16 @@ export const createCompleteWithdrawalTxArguments = async (
         .div(receiveTokenPriceD18)
         .div(10 ** Number(swapTAssetDecimals.toString()))
         .times(10 ** Number(receiveTokenDecimals.toString()))
-        .times(1 - adjustedSlippage / 10000) // slippage is in basis points, so divide by 10000
+        // Outer floor stays strict on the user slippage — this is the
+        // withdrawer's safety check. Dust leniency applies only to the
+        // aggregator calldata below.
+        .times(1 - slippage / 10000) // slippage is in basis points, so divide by 10000
         .decimalPlaces(0, BigNumber.ROUND_DOWN);
 
       return {
         token: swapTAsset.token,
         balance: swapTAsset.balance,
+        slippage: adjustedSlippage,
         estimatedMinReceiveAmount
       };
     })
@@ -163,13 +178,13 @@ export const createCompleteWithdrawalTxArguments = async (
     withdrawalVaultAddress
   );
 
-  if (trackedAssets.length != 0) {
+  if (trackedAssets.length !== 0) {
     //  finds the receiveTokenErc20's balance inside trackedAssets
     const trackedAsset = trackedAssets.find(
       ({ token }) => token.toLowerCase() === receiveToken.toLowerCase()
     );
     if (trackedAsset) {
-      balanceOfReceiveToken += trackedAsset.balance;
+      balanceOfReceiveToken = balanceOfReceiveToken.add(trackedAsset.balance);
     }
   }
 
@@ -180,9 +195,13 @@ export const createCompleteWithdrawalTxArguments = async (
 
   const swapData = await getSwapWithdrawData(
     pool,
-    swapTrackedAssets,
+    tAssetInfos.map(({ token, balance, slippage }) => ({
+      token,
+      balance,
+      slippage
+    })),
     receiveToken,
-    slippage
+    swapDestMinDestAmount
   );
 
   return {

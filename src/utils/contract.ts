@@ -6,6 +6,7 @@ import { multiCallAddress } from "../config";
 import { ethers, Network, Pool, SDKOptions } from "..";
 import { Signer } from "ethers";
 
+/** Single contract read: `call = [address, methodName, params?]`. */
 export async function call(
   provider: ethers.Signer,
   abi: any[],
@@ -21,6 +22,11 @@ export async function call(
   }
 }
 
+/**
+ * Batch multiple contract reads through Multicall's `tryAggregate`.
+ * Each call entry is `[address, methodName, params]`. When `requireSuccess` is false,
+ * failing calls return `null` instead of reverting the whole batch.
+ */
 export async function multicall<T>(
   network: Network,
   provider: ethers.Signer,
@@ -59,6 +65,11 @@ export async function multicall<T>(
   }
 }
 
+/**
+ * Fluent helper for building a multicall and dispatching results into a typed object.
+ * Use `.call(path, address, fn, params)` repeatedly, then `.execute()` returns the
+ * populated object with results placed at the given lodash paths.
+ */
 export class Multicaller {
   public network: Network;
   public provider: ethers.Signer;
@@ -135,6 +146,15 @@ export const isSdkOptionsBoolean = (
   return typeof sdkOptions === "boolean";
 };
 
+/**
+ * Central executor for SDK transactions. Routes a (`to`, `data`, `txOptions`) tuple
+ * through one of four paths depending on `pool.isDhedge` and `sdkOptions`:
+ *   - dHEDGE pool:    `pool.poolLogic.execTransaction(...)` (or its gas estimate)
+ *   - non-dHEDGE/EOA: `pool.signer.sendTransaction(...)` (or its gas estimate)
+ * Honours `sdkOptions.onlyGetTxData` (returns the encoded tx without sending),
+ * `estimateGas` (returns gas + minAmountOut without sending), and
+ * `useTraderAddressAsFrom` (forces the EOA path even for dHEDGE pools).
+ */
 export const getPoolTxOrGasEstimate = async (
   pool: Pool,
   args: any[],

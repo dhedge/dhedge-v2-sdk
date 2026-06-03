@@ -50,7 +50,7 @@ const testOdos = ({ wallet, network, provider }: TestingRunParams) => {
         routerAddress[network]["odos"]!,
         pool.signer
       );
-      await expect(usdcAllowanceDelta.gt(0));
+      expect(usdcAllowanceDelta.gt(0)).toBe(true);
     });
 
     it("gets gas estimation for 10 USDC into WETH on Odos", async () => {
@@ -82,7 +82,7 @@ const testOdos = ({ wallet, network, provider }: TestingRunParams) => {
         WETH,
         pool.signer
       );
-      expect(wethBalanceDelta.gt(0));
+      expect(wethBalanceDelta.gt(0)).toBe(true);
       const wethBalanceDeltaForFeeRecipient = await balanceDelta(
         OdosSwapFeeRecipient[network],
         WETH,

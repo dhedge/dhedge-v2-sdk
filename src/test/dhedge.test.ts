@@ -1,32 +1,65 @@
 import { Dhedge } from "..";
 import { Network } from "../types";
+import { CONTRACT_ADDRESS, TEST_POOL } from "./constants";
+import {
+  testingHelper,
+  TestingRunParams,
+  beforeAfterReset
+} from "./utils/testingHelper";
 
-import { testingHelper, TestingRunParams } from "./utils/testingHelper";
-
-const testDhedge = ({ wallet, network }: TestingRunParams) => {
+const testDhedge = ({ wallet, network, provider }: TestingRunParams) => {
   let dhedge: Dhedge;
 
   jest.setTimeout(200000);
 
   describe(`dHEDGE on ${network}`, () => {
     beforeAll(async () => {
+      // Fund the test wallet with gas
+      await provider.send("hardhat_setBalance", [
+        wallet.address,
+        "0x10000000000000000"
+      ]);
       dhedge = new Dhedge(wallet, network);
     });
 
-    it("create a pool", async () => {
-      const pool = await dhedge.createPool("Test", "Test", "TEST", [
-        ["0x5d3a1ff2b6bab83b63cd9ad0787074081a52ef34", true],
-        ["0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb", false],
-        ["0x925a2A7214Ed92428B5b1B090F80b25700095e12", false]
-      ]);
-      console.log(pool.address);
+    beforeAfterReset({ beforeAll, afterAll, provider });
+
+    it("creates a pool with USDC and WETH", async () => {
+      const pool = await dhedge.createPool(
+        "Test Manager",
+        "Test Fund",
+        "TEST",
+        [
+          [CONTRACT_ADDRESS[network].USDC, true],
+          [CONTRACT_ADDRESS[network].WETH, false]
+        ]
+      );
+      expect(pool.address).toBeDefined();
       expect(pool.poolLogic.address).toBe(pool.address);
+    });
+
+    it("loads an existing pool", async () => {
+      const pool = await dhedge.loadPool(TEST_POOL[network]);
+      expect(pool.address).toBe(TEST_POOL[network]);
+      expect(pool.poolLogic.address).toBe(TEST_POOL[network]);
+    });
+
+    it("validates a real pool address", async () => {
+      const isValid = await dhedge.validatePool(TEST_POOL[network]);
+      expect(isValid).toBe(true);
+    });
+
+    it("rejects an invalid pool address", async () => {
+      const isValid = await dhedge.validatePool(
+        "0x0000000000000000000000000000000000000001"
+      );
+      expect(isValid).toBe(false);
     });
   });
 };
 
 testingHelper({
-  network: Network.PLASMA,
-  onFork: false,
+  network: Network.ARBITRUM,
+  onFork: true,
   testingRun: testDhedge
 });

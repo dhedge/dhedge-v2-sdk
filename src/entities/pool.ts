@@ -7,7 +7,7 @@ import IERC20 from "../abi/IERC20.json";
 import IERC721 from "../abi/IERC721.json";
 import IMiniChefV2 from "../abi/IMiniChefV2.json";
 import ILendingPool from "../abi/ILendingPool.json";
-import ISynthetix from "../abi/ISynthetix.json";
+
 import IUniswapV2Router from "../abi/IUniswapV2Router.json";
 import INonfungiblePositionManager from "../abi/INonfungiblePositionManager.json";
 import IAaveIncentivesController from "../abi/IAaveIncentivesController.json";
@@ -18,8 +18,9 @@ import {
   MaxUint128,
   nonfungiblePositionManagerAddress,
   routerAddress,
+  gpv2SettlementAddress,
   stakingAddress,
-  SYNTHETIX_TRACKING_CODE
+  limitOrderAddress
 } from "../config";
 import {
   Dapp,
@@ -31,7 +32,8 @@ import {
   LyraOptionType,
   LyraTradeType,
   LyraPosition,
-  SDKOptions
+  SDKOptions,
+  LimitOrderInfo
 } from "../types";
 
 import { Utils } from "./utils";
@@ -40,7 +42,7 @@ import {
   getIncreaseLiquidityTxData,
   getUniswapV3MintTxData
 } from "../services/uniswap/V3Liquidity";
-import { getUniswapV3SwapTxData } from "../services/uniswap/V3Trade";
+
 import { getEasySwapperTxData } from "../services/toros/easySwapper";
 import { getAaveV3ClaimTxData } from "../services/aave/incentives";
 import {
@@ -56,18 +58,8 @@ import {
 import { getLyraOptionTxData } from "../services/lyra/trade";
 import { getOptionPositions } from "../services/lyra/positions";
 import { getDeadline } from "../utils/deadline";
-import {
-  getFuturesChangePositionTxData,
-  getFuturesChangeMarginTxData
-} from "../services/futures";
-import { getFuturesCancelOrderTxData } from "../services/futures/trade";
 import { getOneInchSwapTxData } from "../services/oneInch";
-import {
-  getCreateVestTxData,
-  getExitVestTxData,
-  getRewardsTxDta
-} from "../services/ramses/vesting";
-import { getPoolTxOrGasEstimate } from "../utils/contract";
+import { getPoolTxOrGasEstimate, isSdkOptionsBoolean } from "../utils/contract";
 import {
   cancelOrderViaFlatMoney,
   mintUnitViaFlatMoney,
@@ -95,7 +87,28 @@ import {
   getDytmRepayTxData,
   getDytmWithdrawTxData
 } from "../services/dytm";
+
+import {
+  getCreateLimitOrderTxData,
+  getModifyLimitOrderTxData,
+  getDeleteLimitOrderTxData,
+  getTorosLimitOrder,
+  hasActiveTorosLimitOrder
+} from "../services/toros/limitOrder";
 import { getKyberSwapTxData } from "../services/kyberSwap";
+import { getCowSwapTxData } from "../services/cowSwap";
+import { getOndoSwapTxData } from "../services/ondo";
+import {
+  getClosePositionHyperliquidTxData,
+  getDepositHyperliquidTxData,
+  getLimitOrderHyperliquidTxData,
+  getSendAssetHyperliquidTxData,
+  getWithdrawSpotHyperliquidTxData
+} from "../services/hyperliquid";
+import {
+  CORE_WRITER_ADDRESS,
+  SPOT_DEX_ID
+} from "../services/hyperliquid/constants";
 
 export class Pool {
   public readonly poolLogic: Contract;
@@ -151,7 +164,7 @@ export class Pool {
 
   /**
    * Approve the asset that can be deposited into a pool
-   * @param {string} nasset Address of deposit asset
+   * @param {string} asset Address of deposit asset
    * @param {BigNumber | string} amount Amount to be approved
    * @param {any} options Transaction options
    * @param {boolean} estimateGas Simulate/estimate gas
@@ -251,7 +264,7 @@ export class Pool {
    * Approve the liquidity pool token for staking
    * @param {Dapp} dapp Platform like Sushiswap or Uniswap
    * @param {string} asset Address of liquidity pool token
-   * @param {BigNumber | string} amount Aamount to be approved
+   * @param {BigNumber | string} amount Amount to be approved
    * @param {any} options Transaction options
    * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
@@ -279,10 +292,10 @@ export class Pool {
   }
 
   /**
-   * Approve the liquidity pool token for staking
-   * @param {Dapp} dapp Platform like Sushiswap or Uniswap
-   * @param {string} asset Address of liquidity pool token
-   * @param {BigNumber | string} amount Aamount to be approved
+   * Approve an asset for the Uniswap V3 NonfungiblePositionManager
+   * (used before mint/increase liquidity calls)
+   * @param {string} asset Address of asset to approve
+   * @param {BigNumber | string} amount Amount to be approved
    * @param {any} options Transaction options
    * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
@@ -413,20 +426,6 @@ export class Pool {
           slippage
         );
         break;
-      case Dapp.SYNTHETIX:
-        const iSynthetix = new ethers.utils.Interface(ISynthetix.abi);
-        const assets = [assetFrom, assetTo].map(asset =>
-          ethers.utils.formatBytes32String(asset)
-        );
-        const daoAddress = await this.factory.owner();
-        swapTxData = iSynthetix.encodeFunctionData(Transaction.SWAP_SYNTHS, [
-          assets[0],
-          amountIn,
-          assets[1],
-          daoAddress,
-          SYNTHETIX_TRACKING_CODE
-        ]);
-        break;
       case Dapp.TOROS:
         ({ swapTxData, minAmountOut } = await getEasySwapperTxData(
           this,
@@ -463,6 +462,69 @@ export class Pool {
           slippage
         ));
         break;
+      case Dapp.ONDO:
+        ({ swapTxData, minAmountOut } = await getOndoSwapTxData(
+          this,
+          assetFrom,
+          assetTo,
+          amountIn.toString(),
+          slippage
+        ));
+        break;
+      case Dapp.COWSWAP: {
+        const cowSwapEstimateGas = isSdkOptionsBoolean(sdkOptions)
+          ? sdkOptions
+          : sdkOptions.estimateGas;
+        if (
+          cowSwapEstimateGas ||
+          (!isSdkOptionsBoolean(sdkOptions) && sdkOptions.onlyGetTxData)
+        ) {
+          throw new Error(
+            "CowSwap requires two sequential transactions (submit + preSign) and does not support estimateGas or onlyGetTxData"
+          );
+        }
+        const {
+          encodedTypedData,
+          preSignTxData,
+          minAmountOut: cowMinOut
+        } = await getCowSwapTxData(
+          this,
+          assetFrom,
+          assetTo,
+          amountIn,
+          slippage
+        );
+        // Tx 1: manager calls submit() directly on TypedStructuredDataValidator (not via pool.execTransaction)
+        const validatorContract = new Contract(
+          routerAddress[this.network][dapp] as string,
+          [
+            "function submit(address _poolLogic, uint8 _dataType, bytes memory _structuredData) external"
+          ],
+          this.signer
+        );
+        const submitTx = await validatorContract.submit(
+          this.address,
+          1 /* COWSWAP_ORDER */,
+          encodedTypedData,
+          ...(options ? [options] : [])
+        );
+        const submitReceipt = await submitTx.wait(3);
+        if (submitReceipt.status === 0) {
+          return submitReceipt;
+        }
+
+        // Tx 2: pool.execTransaction → setPreSignature() on GPv2Settlement — guard checks stored digest, solvers execute
+        return getPoolTxOrGasEstimate(
+          this,
+          [
+            gpv2SettlementAddress[this.network],
+            preSignTxData,
+            options,
+            cowMinOut
+          ],
+          sdkOptions
+        );
+      }
       default:
         const iUniswapV2Router = new ethers.utils.Interface(
           IUniswapV2Router.abi
@@ -629,7 +691,6 @@ export class Pool {
         ]);
         break;
       case Dapp.VELODROME:
-      case Dapp.RAMSES:
         stakeTxData = getVelodromeStakeTxData(amount, false);
         break;
       case Dapp.VELODROMEV2:
@@ -800,7 +861,7 @@ export class Pool {
   }
 
   /**
-   * Witdraw asset from a lending pool
+   * Withdraw asset from a lending pool
    * @param {Dapp} dapp Platform like Aave
    * @param {string} asset Asset
    * @param  {BigNumber | string} amount Amount of asset to lend
@@ -838,7 +899,7 @@ export class Pool {
   }
 
   /**
-   * Witdraw asset from a Compound V3 or Fluid lending pool
+   * Withdraw asset from a Compound V3 or Fluid lending pool
    * @param {string} market Address of cToken or fToken
    * @param {string} asset Asset
    * @param  {BigNumber | string} amount Amount of asset to withdraw
@@ -996,8 +1057,24 @@ export class Pool {
       e.asset.toLocaleLowerCase()
     );
     const newAssets = assets.map(e => e.asset.toLocaleLowerCase());
-    const removedAssets = currentAssets.filter(e => !newAssets.includes(e));
+    const candidateRemovals = currentAssets.filter(e => !newAssets.includes(e));
     const changedAssets = assets.map(e => [e.asset, e.isDeposit]);
+
+    // Simulate each removal to filter out assets that can't be removed
+    // (non-zero balance, guard dependency, active order, etc.)
+    const removedAssets: string[] = [];
+    for (const asset of candidateRemovals) {
+      try {
+        await this.managerLogic.callStatic.changeAssets([], [asset]);
+        removedAssets.push(asset);
+      } catch (err) {
+        console.warn(
+          `changeAssets: skipping removal of ${asset} — ${
+            (err as Error).message
+          }`
+        );
+      }
+    }
 
     if (estimateGas) {
       return await this.managerLogic.estimateGas.changeAssets(
@@ -1113,11 +1190,11 @@ export class Pool {
   }
 
   /**
-   * Invest into a Balancer pool
+   * Exit a Balancer pool
    * @param {string} poolId Balancer pool id
-   * @param {string[] | } assets Array of balancer pool assets
-   * @param {BigNumber | string } amount Amount of pool tokens to withdraw
-   * @param { null | number } singleExitAssetIndex Index of asset to withdraw to
+   * @param {string[]} assets Array of balancer pool assets
+   * @param {BigNumber | string} amount Amount of pool tokens to withdraw
+   * @param {null | number} singleExitAssetIndex Index of asset to withdraw to
    * @param {any} options Transaction options
    * @param {SDKOptions} sdkOptions SDK options including estimateGas
    * @returns {Promise<any>} Transaction
@@ -1260,12 +1337,7 @@ export class Pool {
    * @returns {Promise<any>} Transaction
    */
   async addLiquidityUniswapV3(
-    dapp:
-      | Dapp.UNISWAPV3
-      | Dapp.VELODROMECL
-      | Dapp.AERODROMECL
-      | Dapp.RAMSESCL
-      | Dapp.PANCAKECL,
+    dapp: Dapp.UNISWAPV3 | Dapp.VELODROMECL | Dapp.AERODROMECL | Dapp.PANCAKECL,
     assetA: string,
     assetB: string,
     amountA: BigNumber | string,
@@ -1337,7 +1409,6 @@ export class Pool {
     let txData;
     switch (dapp) {
       case Dapp.UNISWAPV3:
-      case Dapp.RAMSESCL:
         dappAddress = nonfungiblePositionManagerAddress[this.network][dapp];
         break;
       case Dapp.VELODROMECL:
@@ -1404,7 +1475,6 @@ export class Pool {
     let txData;
     switch (dapp) {
       case Dapp.UNISWAPV3:
-      case Dapp.RAMSESCL:
         dappAddress = nonfungiblePositionManagerAddress[this.network][dapp];
         break;
       case Dapp.VELODROMECL:
@@ -1470,7 +1540,6 @@ export class Pool {
     );
     switch (dapp) {
       case Dapp.UNISWAPV3:
-      case Dapp.RAMSESCL:
         contractAddress = nonfungiblePositionManagerAddress[this.network][dapp];
         txData = iNonfungiblePositionManager.encodeFunctionData(
           Transaction.COLLECT,
@@ -1484,7 +1553,6 @@ export class Pool {
         txData = abi.encodeFunctionData("claim_rewards()", []);
         break;
       case Dapp.VELODROME:
-      case Dapp.RAMSES:
         contractAddress = tokenId;
         txData = getVelodromeClaimTxData(this, tokenId, false);
         break;
@@ -1520,75 +1588,6 @@ export class Pool {
     const tx = await getPoolTxOrGasEstimate(
       this,
       [contractAddress, txData, options],
-      sdkOptions
-    );
-    return tx;
-  }
-
-  /**
-   * Get rewards of an NFT position
-   * @param {Dapp} dapp Platform e.g. Ramses CL
-   * @param {string} tokenId Token Id
-   * @param {string[]} rewards Reward tokens
-   * @param {any} options Transaction option
-   * @param {SDKOptions} sdkOptions SDK options including estimateGas
-   * @returns {Promise<any>} Transaction
-   */
-  async getRewards(
-    dapp: Dapp,
-    tokenId: string,
-    rewards: string[],
-    options: any = null,
-    sdkOptions: SDKOptions = {
-      estimateGas: false
-    }
-  ): Promise<any> {
-    const tx = await getPoolTxOrGasEstimate(
-      this,
-      [
-        nonfungiblePositionManagerAddress[this.network][dapp],
-        getRewardsTxDta(tokenId, rewards),
-        options
-      ],
-      sdkOptions
-    );
-    return tx;
-  }
-
-  /**
-   * Trade an asset into another asset
-   * @param {Dapp} dapp Platform like Sushiswap or Uniswap
-   * @param {string} assetFrom Asset to trade from
-   * @param {string} assetTo Asset to trade into
-   * @param {BigNumber | string} amountIn Amount
-   * @param { FeeAmount } feeAmount Fee tier (Low 0.05%, Medium 0.3%, High 1%)
-   * @param {number} slippage Slippage tolerance in %
-   * @param {any} options Transaction options
-   * @param {SDKOptions} sdkOptions SDK options including estimateGas
-   * @returns {Promise<any>} Transaction
-   */
-  async tradeUniswapV3(
-    assetFrom: string,
-    assetTo: string,
-    amountIn: BigNumber | string,
-    feeAmount: number,
-    slippage = 0.5,
-    options: any = null,
-    sdkOptions: SDKOptions = {
-      estimateGas: false
-    }
-  ): Promise<any> {
-    const swapxData = await getUniswapV3SwapTxData(
-      this,
-      assetFrom,
-      assetTo,
-      amountIn,
-      slippage,
-      feeAmount
-    );
-    const tx = await getPoolTxOrGasEstimate(
-      this,
-      [routerAddress[this.network][Dapp.UNISWAPV3], swapxData, options],
       sdkOptions
     );
     return tx;
@@ -1753,8 +1752,8 @@ export class Pool {
   }
 
   /**
-   * Add liquidity to Velodrome V2 or Ramses pool
-   * @param {Dapp} dapp VelodromeV2, Ramses or Aerodrome
+   * Add liquidity to Velodrome V2 or Aerodrome pool
+   * @param {Dapp} dapp VelodromeV2 or Aerodrome
    * @param {string} assetA First asset
    * @param {string} assetB Second asset
    * @param {BigNumber | string} amountA Amount first asset
@@ -1765,7 +1764,7 @@ export class Pool {
    * @returns {Promise<any>} Transaction
    */
   async addLiquidityV2(
-    dapp: Dapp.VELODROMEV2 | Dapp.RAMSES | Dapp.AERODROME,
+    dapp: Dapp.VELODROMEV2 | Dapp.AERODROME,
     assetA: string,
     assetB: string,
     amountA: BigNumber | string,
@@ -1796,8 +1795,8 @@ export class Pool {
   }
 
   /**
-   * Remove liquidity from Velodrome V2 or Ramses pool
-   * @param {Dapp} dapp VelodromeV2, Ramses or Aerodrome
+   * Remove liquidity from Velodrome V2 or Aerodrome pool
+   * @param {Dapp} dapp VelodromeV2 or Aerodrome
    * @param {string} assetA First asset
    * @param {string} assetB Second asset
    * @param {BigNumber | string} amount Amount of LP tokens
@@ -1807,7 +1806,7 @@ export class Pool {
    * @returns {Promise<any>} Transaction
    */
   async removeLiquidityV2(
-    dapp: Dapp.VELODROMEV2 | Dapp.RAMSES | Dapp.AERODROME,
+    dapp: Dapp.VELODROMEV2 | Dapp.AERODROME,
     assetA: string,
     assetB: string,
     amount: BigNumber | string,
@@ -1893,82 +1892,6 @@ export class Pool {
     return await getOptionPositions(this, market);
   }
 
-  /** Deposit or withdraws (negative amount) asset for Synthetix future margin trading
-   *
-   * @param {string} market Address of futures market
-   * @param {BigNumber | string } changeAmount Amount to increase/decrease margin
-   * @param {any} options Transaction options
-   * @param {SDKOptions} sdkOptions SDK options including estimateGas
-   * @returns {Promise<any>} Transaction
-   */
-  async changeFuturesMargin(
-    market: string,
-    changeAmount: BigNumber | string,
-    options: any = null,
-    sdkOptions: SDKOptions = {
-      estimateGas: false
-    }
-  ): Promise<any> {
-    const tx = await getPoolTxOrGasEstimate(
-      this,
-      [market, getFuturesChangeMarginTxData(changeAmount), options],
-      sdkOptions
-    );
-    return tx;
-  }
-
-  /** Change position in Synthetix futures market (long/short)
-   *
-   * @param {string} market Address of futures market
-   * @param {BigNumber | string } changeAmount Negative for short, positive for long
-   * @param {any} options Transaction options
-   * @param {SDKOptions} sdkOptions SDK options including estimateGas
-   * @returns {Promise<any>} Transaction
-   */
-  async changeFuturesPosition(
-    market: string,
-    changeAmount: BigNumber | string,
-    options: any = null,
-    sdkOptions: SDKOptions = {
-      estimateGas: false
-    }
-  ): Promise<any> {
-    const txData = await getFuturesChangePositionTxData(
-      changeAmount,
-      market,
-      this
-    );
-    const tx = await getPoolTxOrGasEstimate(
-      this,
-      [market, txData, options],
-      sdkOptions
-    );
-    return tx;
-  }
-
-  /** Cancels an open oder on Synthetix futures market
-   *
-   * @param {string} market Address of futures market
-   * @param {any} options Transaction options
-   * @param {SDKOptions} sdkOptions SDK options including estimateGas
-   * @returns {Promise<any>} Transaction
-   */
-  async cancelFuturesOrder(
-    market: string,
-    options: any = null,
-    sdkOptions: SDKOptions = {
-      estimateGas: false
-    }
-  ): Promise<any> {
-    const txData = await getFuturesCancelOrderTxData(this);
-    const tx = await getPoolTxOrGasEstimate(
-      this,
-      [market, txData, options],
-      sdkOptions
-    );
-    return tx;
-  }
-
   /**
    * mintManagerFee
    * @param {any} options Transaction options
@@ -1988,58 +1911,9 @@ export class Pool {
    * @returns {Promise<BigNumber>} fee
    */
   async getAvailableManagerFee(): Promise<BigNumber> {
-    const fee = await this.poolLogic.availableManagerFee();
+    const fundValue = await this.managerLogic.totalFundValue();
+    const fee = await this.poolLogic.calculateAvailableManagerFee(fundValue);
     return BigNumber.from(fee);
-  }
-
-  /** Vest tokens (e.g. Ramses xoRAM)
-   *
-   * @param {string} tokenAddress Address of the token to vest
-   * @param {BigNumber | string } changeAmount Negative for short, positive for long
-   * @param {any} options Transaction options
-   * @param {SDKOptions} sdkOptions SDK options including estimateGas
-   * @returns {Promise<any>} Transaction
-   */
-  async vestTokens(
-    tokenAddress: string,
-    amount: BigNumber | string,
-    options: any = null,
-    sdkOptions: SDKOptions = {
-      estimateGas: false
-    }
-  ): Promise<any> {
-    const txData = await getCreateVestTxData(amount);
-    const tx = await getPoolTxOrGasEstimate(
-      this,
-      [tokenAddress, txData, options],
-      sdkOptions
-    );
-    return tx;
-  }
-
-  /** Exit position of vested tokens (e.g. Ramses xoRAM)
-   *
-   * @param {string} tokenAddress Address of the token to vest
-   * @param {number } id position Id of the vested tokens
-   * @param {any} options Transaction options
-   * @param {SDKOptions} sdkOptions SDK options including estimateGas
-   * @returns {Promise<any>} Transaction
-   */
-  async exitVestedToken(
-    tokenAddress: string,
-    id: number,
-    options: any = null,
-    sdkOptions: SDKOptions = {
-      estimateGas: false
-    }
-  ): Promise<any> {
-    const txData = await getExitVestTxData(id);
-    const tx = await getPoolTxOrGasEstimate(
-      this,
-      [tokenAddress, txData, options],
-      sdkOptions
-    );
-    return tx;
   }
 
   /** deposit rETH to mint UNIT via the Flat Money protocol
@@ -2100,6 +1974,12 @@ export class Pool {
     return tx;
   }
 
+  /**
+   * Cancel a previously announced FlatMoney order (mint/redeem UNIT) before it executes
+   * @param {any} options Transaction options
+   * @param {boolean} estimateGas Simulate/estimate gas instead of sending
+   * @returns {Promise<any>} Transaction
+   */
   async cancelOrderViaFlatMoney(
     options: any = null,
     estimateGas = false
@@ -2179,5 +2059,363 @@ export class Pool {
       sdkOptions
     );
     return tx;
+  }
+
+  /** Deposit USDC from EVM to a HyperCore trading dex via the CoreDepositWallet.
+   *  This bridges USDC on-chain to Hyperliquid for perp/spot trading.
+   *
+   * @param {BigNumber | string} amount USDC amount to deposit (6 decimals, e.g. "1000000" = 1 USDC)
+   * @param {number} dexId Destination dex ID where USDC will be available (default 0)
+   *   - 0: Core Perp dex (standard perps like BTC, ETH)
+   *   - 1: xyz HIP-3 dex (builder perps like TSLA, GOLD)
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+  async depositHyperliquid(
+    amount: BigNumber | string,
+    dexId = 0,
+    options: any = null,
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
+  ): Promise<any> {
+    const tx = await getPoolTxOrGasEstimate(
+      this,
+      [
+        routerAddress[this.network][Dapp.HYPERLIQUID],
+        getDepositHyperliquidTxData(dexId, amount),
+        options
+      ],
+      sdkOptions
+    );
+    return tx;
+  }
+
+  /** Move USDC from a HyperCore trading dex to the Spot wallet.
+   *  Required before calling withdrawHyperliquid() to bridge USDC back to EVM.
+   *
+   * @param {number} dexId Source dex ID where USDC currently sits
+   *   - 0: Core Perp dex (standard perps like BTC, ETH)
+   *   - 1: xyz HIP-3 dex (builder perps like TSLA, GOLD)
+   * @param {BigNumber | string} amount USDC amount to transfer (6 decimals, e.g. "1000000" = 1 USDC)
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+
+  async perpToSpotHyperliquid(
+    dexId: number,
+    amount: BigNumber | string,
+    options: any = null,
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
+  ): Promise<any> {
+    const tx = await getPoolTxOrGasEstimate(
+      this,
+      [
+        CORE_WRITER_ADDRESS,
+        getSendAssetHyperliquidTxData(dexId, SPOT_DEX_ID, this.address, amount),
+        options
+      ],
+      sdkOptions
+    );
+    return tx;
+  }
+
+  /** Move USDC from HyperCore spot wallet to a trading dex.
+   *
+   * @param {number} dexId Destination dex ID where USDC will be moved to
+   *   - 0: Core Perp dex (standard perps like BTC, ETH)
+   *   - 1: xyz HIP-3 dex (builder perps like TSLA, GOLD)
+   * @param {BigNumber | string} amount USDC amount to transfer (6 decimals, e.g. "1000000" = 1 USDC)
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+
+  async spotToPerpHyperliquid(
+    dexId: number,
+    amount: BigNumber | string,
+    options: any = null,
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
+  ): Promise<any> {
+    const tx = await getPoolTxOrGasEstimate(
+      this,
+      [
+        CORE_WRITER_ADDRESS,
+        getSendAssetHyperliquidTxData(SPOT_DEX_ID, dexId, this.address, amount),
+        options
+      ],
+      sdkOptions
+    );
+    return tx;
+  }
+
+  /** Withdraw USDC from Hyperliquid Spot wallet back to EVM.
+   *  USDC must be in the Spot wallet first — use perpToSpotHyperliquid() to move it from a trading dex.
+   *
+   * @param {BigNumber | string} amount USDC amount to withdraw (6 decimals, e.g. "1000000" = 1 USDC)
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+
+  async withdrawHyperliquid(
+    amount: BigNumber | string,
+    options: any = null,
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
+  ): Promise<any> {
+    const tx = await getPoolTxOrGasEstimate(
+      this,
+      [CORE_WRITER_ADDRESS, getWithdrawSpotHyperliquidTxData(amount), options],
+      sdkOptions
+    );
+    return tx;
+  }
+
+  /** Open a market order on Hyperliquid
+   *  @param {number} assetId Asset id
+   * @param {boolean} isLong Long or short (Note: Spot assets only support long positions)
+   * @param {number} value Order value in base asset units (positive for opening/increasing,
+   *        negative for closing/reducing or selling spot)
+   * @param {number } slippage Slippage tolerance in %
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+  async openMarketOrderHyperliquid(
+    assetId: number,
+    isLong: boolean,
+    value: number,
+    slippage = 0.5,
+    options: any = null,
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
+  ): Promise<any> {
+    const tx = await getPoolTxOrGasEstimate(
+      this,
+      [
+        CORE_WRITER_ADDRESS,
+        await getLimitOrderHyperliquidTxData(assetId, isLong, value, slippage),
+        options
+      ],
+      sdkOptions
+    );
+    return tx;
+  }
+
+  /** Close a position on Hyperliquid
+   *  @param {number} assetId Asset id
+   * @param {number} percentageToClose Percentage of position to close (0-100)
+   * @param {number } slippage Slippage tolerance in %
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+  async closePositionHyperliquid(
+    assetId: number,
+    percentageToClose = 100,
+    slippage = 0.5,
+    options: any = null,
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
+  ): Promise<any> {
+    const tx = await getPoolTxOrGasEstimate(
+      this,
+      [
+        CORE_WRITER_ADDRESS,
+        await getClosePositionHyperliquidTxData(
+          assetId,
+          percentageToClose,
+          slippage,
+          this.address
+        ),
+        options
+      ],
+      sdkOptions
+    );
+    return tx;
+  }
+
+  /**
+   * Approve the Toros vault token for the PoolLimitOrderManager
+   * Must be called before createTorosLimitOrder
+   * @param {string} vaultAddress Address of the Toros vault token to approve
+   * @param {BigNumber | string} amount Amount to approve
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+  async approveTorosLimitOrder(
+    vaultAddress: string,
+    amount: BigNumber | string,
+    options: any = null,
+    sdkOptions: SDKOptions = { estimateGas: false }
+  ): Promise<any> {
+    const managerAddress = limitOrderAddress[this.network];
+    const iERC20 = new ethers.utils.Interface(IERC20.abi);
+    const approveTxData = iERC20.encodeFunctionData("approve", [
+      managerAddress,
+      amount
+    ]);
+    return getPoolTxOrGasEstimate(
+      this,
+      [vaultAddress, approveTxData, options],
+      sdkOptions
+    );
+  }
+
+  /**
+   * Create a Toros limit order (stop-loss / take-profit)
+   * @param {string} vaultAddress Address of the Toros vault token
+   * @param {BigNumber | string} amount Vault token amount (18 decimals)
+   * @param {BigNumber | string | null | undefined} stopLossPriceD18 Stop-loss price in D18 (0 or null/undefined = disabled)
+   * @param {BigNumber | string | null | undefined} takeProfitPriceD18 Take-profit price in D18 (MaxUint256 or null/undefined = disabled)
+   * @param {string} pricingAsset Address of the pricing asset (e.g. USDC)
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+  async createTorosLimitOrder(
+    vaultAddress: string,
+    amount: BigNumber | string,
+    stopLossPriceD18: BigNumber | string | null | undefined,
+    takeProfitPriceD18: BigNumber | string | null | undefined,
+    pricingAsset: string,
+    options: any = null,
+    sdkOptions: SDKOptions = { estimateGas: false }
+  ): Promise<any> {
+    const managerAddress = limitOrderAddress[this.network];
+    if (!managerAddress) {
+      throw new Error(`Limit orders not supported on ${this.network}`);
+    }
+    const resolvedStopLoss =
+      stopLossPriceD18 == null
+        ? BigNumber.from(0)
+        : BigNumber.from(stopLossPriceD18);
+    const resolvedTakeProfit =
+      takeProfitPriceD18 == null
+        ? ethers.constants.MaxUint256
+        : BigNumber.from(takeProfitPriceD18);
+    const info: LimitOrderInfo = {
+      amount: BigNumber.from(amount),
+      stopLossPriceD18: resolvedStopLoss,
+      takeProfitPriceD18: resolvedTakeProfit,
+      user: this.address,
+      pool: vaultAddress,
+      pricingAsset
+    };
+    const txData = getCreateLimitOrderTxData(info);
+    return getPoolTxOrGasEstimate(
+      this,
+      [managerAddress, txData, options],
+      sdkOptions
+    );
+  }
+
+  /**
+   * Modify an existing Toros limit order
+   * @param {string} vaultAddress Address of the Toros vault token
+   * @param {BigNumber | string} amount New vault token amount (18 decimals)
+   * @param {BigNumber | string | null | undefined} stopLossPriceD18 New stop-loss price in D18 (0 or null/undefined = disabled)
+   * @param {BigNumber | string | null | undefined} takeProfitPriceD18 New take-profit price in D18 (MaxUint256 or null/undefined = disabled)
+   * @param {string} pricingAsset Address of the pricing asset
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+  async modifyTorosLimitOrder(
+    vaultAddress: string,
+    amount: BigNumber | string,
+    stopLossPriceD18: BigNumber | string | null | undefined,
+    takeProfitPriceD18: BigNumber | string | null | undefined,
+    pricingAsset: string,
+    options: any = null,
+    sdkOptions: SDKOptions = { estimateGas: false }
+  ): Promise<any> {
+    const managerAddress = limitOrderAddress[this.network];
+    if (!managerAddress) {
+      throw new Error(`Limit orders not supported on ${this.network}`);
+    }
+    const resolvedStopLoss =
+      stopLossPriceD18 == null
+        ? BigNumber.from(0)
+        : BigNumber.from(stopLossPriceD18);
+    const resolvedTakeProfit =
+      takeProfitPriceD18 == null
+        ? ethers.constants.MaxUint256
+        : BigNumber.from(takeProfitPriceD18);
+    const info: LimitOrderInfo = {
+      amount: BigNumber.from(amount),
+      stopLossPriceD18: resolvedStopLoss,
+      takeProfitPriceD18: resolvedTakeProfit,
+      user: this.address,
+      pool: vaultAddress,
+      pricingAsset
+    };
+    const txData = getModifyLimitOrderTxData(info);
+    return getPoolTxOrGasEstimate(
+      this,
+      [managerAddress, txData, options],
+      sdkOptions
+    );
+  }
+
+  /**
+   * Delete an existing Toros limit order
+   * @param {string} vaultAddress Address of the Toros vault token
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+  async deleteTorosLimitOrder(
+    vaultAddress: string,
+    options: any = null,
+    sdkOptions: SDKOptions = { estimateGas: false }
+  ): Promise<any> {
+    const managerAddress = limitOrderAddress[this.network];
+    if (!managerAddress) {
+      throw new Error(`Limit orders not supported on ${this.network}`);
+    }
+    const txData = getDeleteLimitOrderTxData(vaultAddress);
+    return getPoolTxOrGasEstimate(
+      this,
+      [managerAddress, txData, options],
+      sdkOptions
+    );
+  }
+
+  /**
+   * Fetch a Toros limit order for a given user and vault
+   * @param {string} userAddress Address of the order owner (the dHEDGE pool)
+   * @param {string} vaultAddress Address of the Toros vault token
+   * @returns {Promise<LimitOrderInfo | null>} Order info, or null if none exists
+   */
+  async getTorosLimitOrder(
+    userAddress: string,
+    vaultAddress: string
+  ): Promise<LimitOrderInfo | null> {
+    return getTorosLimitOrder(this, userAddress, vaultAddress);
+  }
+
+  /**
+   * Check whether an active Toros limit order exists for a given user and vault
+   * @param {string} userAddress Address of the order owner (the dHEDGE pool)
+   * @param {string} vaultAddress Address of the Toros vault token
+   * @returns {Promise<boolean>}
+   */
+  async hasActiveTorosLimitOrder(
+    userAddress: string,
+    vaultAddress: string
+  ): Promise<boolean> {
+    return hasActiveTorosLimitOrder(this, userAddress, vaultAddress);
   }
 }

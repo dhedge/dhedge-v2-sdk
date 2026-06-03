@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import BigNumber from "bignumber.js";
-import { Dhedge, Pool } from "..";
+import { Dhedge, ethers, Pool } from "..";
 import { routerAddress } from "../config";
 import { Dapp, Network } from "../types";
 import { CONTRACT_ADDRESS, MAX_AMOUNT, TEST_POOL } from "./constants";
@@ -9,12 +9,13 @@ import {
   TestingRunParams,
   beforeAfterReset,
   setUSDCAmount,
+  setWETHAmount,
+  runWithImpersonateAccount,
   testingHelper
 } from "./utils/testingHelper";
 import { allowanceDelta, balanceDelta } from "./utils/token";
-import { getWalletData } from "./wallet";
 
-const testAerodrome = ({ network, provider }: TestingRunParams) => {
+const testAerodrome = ({ wallet, network, provider }: TestingRunParams) => {
   const WETH_USDC_Lp = "0xcDAC0d6c6C59727a65F871236188350531885C43";
   const WETH_USDC__Gauge = "0x519BBD1Dd8C6A94C46080E24f316c14Ee758C025";
 
@@ -28,38 +29,66 @@ const testAerodrome = ({ network, provider }: TestingRunParams) => {
 
   describe(`[${network}] aerodrome tests`, () => {
     beforeAll(async () => {
-      const { wallet } = getWalletData(network);
       // top up ETH (gas)
       await provider.send("hardhat_setBalance", [
         wallet.address,
-        "0x100000000000000"
+        "0x10000000000000000"
       ]);
       dhedge = new Dhedge(wallet, network);
       pool = await dhedge.loadPool(TEST_POOL[network]);
+
+      // Fund pool with USDC and WETH
       await setUSDCAmount({
-        amount: new BigNumber(10).times(1e6).toFixed(0),
+        amount: new BigNumber(10000).times(1e6).toFixed(0),
         userAddress: pool.address,
         network,
         provider
       });
-      await pool.approve(Dapp.ONEINCH, USDC, MAX_AMOUNT);
-      await pool.trade(Dapp.ONEINCH, USDC, WETH, (5 * 1e6).toString());
+      await setWETHAmount({
+        amount: new BigNumber(5).times(1e18).toFixed(0),
+        userAddress: pool.address,
+        network,
+        provider
+      });
+
+      // Impersonate the pool manager to set trader and configure assets
+      await runWithImpersonateAccount(
+        { provider, account: await pool.managerLogic.manager() },
+        async ({ signer }) => {
+          await pool.managerLogic.connect(signer).setTrader(wallet.address);
+          const newAssets = [
+            [USDC, true],
+            [WETH, true],
+            [WETH_USDC_Lp, false],
+            [AERO, false]
+          ];
+          await pool.managerLogic.connect(signer).changeAssets(newAssets, []);
+        }
+      );
     });
     beforeAfterReset({ beforeAll, afterAll, provider });
 
-    it("approves unlimited USDC and swETH on for Aerodrome", async () => {
+    it("approves unlimited USDC and WETH for Aerodrome", async () => {
       await pool.approve(Dapp.AERODROME, USDC, MAX_AMOUNT);
       await pool.approve(Dapp.AERODROME, WETH, MAX_AMOUNT);
-      const UsdcAllowanceDelta = await allowanceDelta(
-        pool.address,
+      const allowanceAbi = [
+        "function allowance(address,address) view returns (uint256)"
+      ];
+      const usdcAllowance = await new ethers.Contract(
         USDC,
-        routerAddress[network].aerodrome!,
+        allowanceAbi,
         pool.signer
-      );
-      await expect(UsdcAllowanceDelta.gt(0));
+      ).allowance(pool.address, routerAddress[network].aerodrome!);
+      const wethAllowance = await new ethers.Contract(
+        WETH,
+        allowanceAbi,
+        pool.signer
+      ).allowance(pool.address, routerAddress[network].aerodrome!);
+      expect(usdcAllowance.gt(0)).toBe(true);
+      expect(wethAllowance.gt(0)).toBe(true);
     });
 
-    it("adds USDC and WETH to a Aerodrome volatile pool", async () => {
+    it("adds USDC and WETH to an Aerodrome volatile pool", async () => {
       const usdcBalance = await pool.utils.getBalance(USDC, pool.address);
       const wethBalance = await pool.utils.getBalance(WETH, pool.address);
       await pool.addLiquidityV2(
@@ -76,7 +105,7 @@ const testAerodrome = ({ network, provider }: TestingRunParams) => {
         WETH_USDC_Lp,
         pool.signer
       );
-      expect(lpTokenDelta.gt(0));
+      expect(lpTokenDelta.gt(0)).toBe(true);
     });
 
     it("should stake WETH-USDC LP in a gauge", async () => {
@@ -88,7 +117,7 @@ const testAerodrome = ({ network, provider }: TestingRunParams) => {
         WETH_USDC__Gauge,
         pool.signer
       );
-      expect(gaugeBalance.gt(0));
+      expect(gaugeBalance.gt(0)).toBe(true);
     });
 
     it("should claim rewards from Gauge", async () => {
@@ -101,10 +130,10 @@ const testAerodrome = ({ network, provider }: TestingRunParams) => {
         AERO,
         pool.signer
       );
-      expect(aeroBalanceDelta.gt(0));
+      expect(aeroBalanceDelta.gt(0)).toBe(true);
     });
 
-    it("should unStakeWETH-USDC LP from a gauge", async () => {
+    it("should unstake WETH-USDC LP from a gauge", async () => {
       const gaugeBalance = await dhedge.utils.getBalance(
         WETH_USDC__Gauge,
         pool.address
@@ -115,7 +144,7 @@ const testAerodrome = ({ network, provider }: TestingRunParams) => {
         WETH_USDC_Lp,
         pool.signer
       );
-      expect(lpTokenDelta.gt(0));
+      expect(lpTokenDelta.gt(0)).toBe(true);
     });
 
     it("approves unlimited WETH-USDC LP for Aerodrome", async () => {
@@ -126,10 +155,10 @@ const testAerodrome = ({ network, provider }: TestingRunParams) => {
         routerAddress[network].aerodrome!,
         pool.signer
       );
-      expect(lpAllowanceDelta.gt(0));
+      expect(lpAllowanceDelta.gt(0)).toBe(true);
     });
 
-    it("should remove all liquidity from an existing pool ", async () => {
+    it("should remove all liquidity from an existing pool", async () => {
       const balance = await dhedge.utils.getBalance(WETH_USDC_Lp, pool.address);
       await pool.removeLiquidityV2(Dapp.AERODROME, WETH, USDC, balance, false);
       const usdcBalanceDelta = await balanceDelta(
@@ -142,8 +171,8 @@ const testAerodrome = ({ network, provider }: TestingRunParams) => {
         WETH,
         pool.signer
       );
-      expect(usdcBalanceDelta.gt(0));
-      expect(wethBalanceDelta.gt(0));
+      expect(usdcBalanceDelta.gt(0)).toBe(true);
+      expect(wethBalanceDelta.gt(0)).toBe(true);
     });
   });
 };

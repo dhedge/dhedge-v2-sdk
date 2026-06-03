@@ -11,6 +11,7 @@ import { Deployment } from "@lyrafinance/lyra-js";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require("dotenv").config();
 
+/** dHEDGE PoolFactory proxy address per network — used by `Dhedge.createPool` and pool lookups. */
 export const factoryAddress: AddressNetworkMap = {
   [Network.POLYGON]: process.env.STAGING_CONTRACTS
     ? "0xDd87eCdB10cFF7004276AAbAbd30e7a08F69bb53"
@@ -19,9 +20,11 @@ export const factoryAddress: AddressNetworkMap = {
   [Network.ARBITRUM]: "0xfffb5fb14606eb3a548c113026355020ddf27535",
   [Network.BASE]: "0x49Afe3abCf66CF09Fab86cb1139D8811C8afe56F",
   [Network.ETHEREUM]: "0x96D33bCF84DdE326014248E2896F79bbb9c13D6d",
-  [Network.PLASMA]: "0xAec4975Fc8ad911464D2948D771488b30F6eEE87"
+  [Network.PLASMA]: "0xAec4975Fc8ad911464D2948D771488b30F6eEE87",
+  [Network.HYPERLIQUID]: "0xe91505e2ab653dd128c71e9690eeefd28cc5b333"
 };
 
+/** Router/spender address for each (network, Dapp). Target of `pool.approve`/`pool.trade`. */
 export const routerAddress: AddressDappNetworkMap = {
   [Network.POLYGON]: {
     [Dapp.SUSHISWAP]: "0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506",
@@ -34,11 +37,11 @@ export const routerAddress: AddressDappNetworkMap = {
     [Dapp.ARRAKIS]: "0xc73fb100a995b33f9fa181d420f4c8d74506df66",
     [Dapp.TOROS]: "0x45b90480D6F643dE2f128db091A357C3c90399f2",
     [Dapp.ODOS]: "0x0D05a7D3448512B78fa8A9e46c4872C88C4a0D05",
-    [Dapp.KYBERSWAP]: "0x6131B5fae19EA4f9D964eAc0408E4408b66337b5"
+    [Dapp.KYBERSWAP]: "0x6131B5fae19EA4f9D964eAc0408E4408b66337b5",
+    [Dapp.COWSWAP]: "0x893223Be4e941fAA8A8DB93D0C097fCac37801ce"
   },
   [Network.OPTIMISM]: {
     [Dapp.UNISWAPV3]: "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
-    [Dapp.SYNTHETIX]: "0x8700dAec35aF8Ff88c16BdF0418774CB3D7599B4",
     [Dapp.AAVEV3]: "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
     [Dapp.ONEINCH]: "0x111111125421ca6dc452d289314280a0f8842a65",
     [Dapp.TOROS]: "0x2Ed1bd7f66e47113672f3870308b5E867C5bb743",
@@ -55,7 +58,6 @@ export const routerAddress: AddressDappNetworkMap = {
     [Dapp.UNISWAPV3]: "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
     [Dapp.AAVEV3]: "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
     [Dapp.BALANCER]: "0xBA12222222228d8Ba445958a75a0704d566BF2C8",
-    [Dapp.RAMSES]: "0xaaa87963efeb6f7e0a2711f397663105acb1805e",
     [Dapp.TOROS]: "0xA5679C4272A056Bb83f039961fae7D99C48529F5",
     [Dapp.ODOS]: "0x0D05a7D3448512B78fa8A9e46c4872C88C4a0D05",
     [Dapp.PENDLE]: "0x888888888889758F76e7103c6CbF23ABbF58F946",
@@ -76,15 +78,25 @@ export const routerAddress: AddressDappNetworkMap = {
     [Dapp.ODOS]: "0x0D05a7D3448512B78fa8A9e46c4872C88C4a0D05",
     [Dapp.PENDLE]: "0x888888888889758F76e7103c6CbF23ABbF58F946",
     [Dapp.ONEINCH]: "0x111111125421ca6dc452d289314280a0f8842a65",
-    [Dapp.KYBERSWAP]: "0x6131B5fae19EA4f9D964eAc0408E4408b66337b5"
+    [Dapp.KYBERSWAP]: "0x6131B5fae19EA4f9D964eAc0408E4408b66337b5",
+    [Dapp.ONDO]: "0xde41399145F23936b03dD1474eC16c1519c0DC2a"
   },
   [Network.PLASMA]: {
     [Dapp.AAVEV3]: "0x925a2A7214Ed92428B5b1B090F80b25700095e12",
     [Dapp.PENDLE]: "0x888888888889758F76e7103c6CbF23ABbF58F946",
     [Dapp.KYBERSWAP]: "0x6131B5fae19EA4f9D964eAc0408E4408b66337b5"
+  },
+  [Network.HYPERLIQUID]: {
+    [Dapp.HYPERLIQUID]: "0x6b9e773128f453f5c2c60935ee2de2cbc5390a24"
   }
 };
 
+/** CoW Protocol GPv2Settlement address per network (where pre-signed orders are submitted). */
+export const gpv2SettlementAddress: Partial<Record<Network, string>> = {
+  [Network.POLYGON]: "0x9008D19f58AAbD9eD0D60971565AA8510560ab41"
+};
+
+/** Pair-factory address for each (network, Dapp). Used for LP pair lookup (e.g. Sushi/Quickswap). */
 export const dappFactoryAddress: AddressDappNetworkMap = {
   [Network.POLYGON]: {
     [Dapp.SUSHISWAP]: "0xc35DADB65012eC5796536bD9864eD8773aBc74C4",
@@ -94,9 +106,11 @@ export const dappFactoryAddress: AddressDappNetworkMap = {
   [Network.ARBITRUM]: {},
   [Network.BASE]: {},
   [Network.ETHEREUM]: {},
-  [Network.PLASMA]: {}
+  [Network.PLASMA]: {},
+  [Network.HYPERLIQUID]: {}
 };
 
+/** Staking-rewards / MasterChef / Voter address for each (network, Dapp). */
 export const stakingAddress: AddressDappNetworkMap = {
   [Network.POLYGON]: {
     [Dapp.SUSHISWAP]: "0x0769fd68dFb93167989C6f7254cd0D766Fb2841F",
@@ -116,9 +130,11 @@ export const stakingAddress: AddressDappNetworkMap = {
     [Dapp.PANCAKECL]: "0xC6A2Db661D5a5690172d8eB0a7DEA2d3008665A3"
   },
   [Network.ETHEREUM]: {},
-  [Network.PLASMA]: {}
+  [Network.PLASMA]: {},
+  [Network.HYPERLIQUID]: {}
 };
 
+/** Aave PoolAddressesProvider per network — entrypoint for Aave V2/V3 lookups. */
 export const aaveAddressProvider: AddressDappNetworkMap = {
   [Network.POLYGON]: {
     [Dapp.AAVE]: "0xd05e3E715d945B59290df0ae8eF85c1BdB684744",
@@ -139,8 +155,10 @@ export const aaveAddressProvider: AddressDappNetworkMap = {
   },
   [Network.PLASMA]: {
     [Dapp.AAVEV3]: "0x061D8e131F26512348ee5FA42e2DF1bA9d6505E9"
-  }
+  },
+  [Network.HYPERLIQUID]: {}
 };
+/** ERC-721 NonfungiblePositionManager for each Uniswap V3-style CL Dapp. */
 export const nonfungiblePositionManagerAddress: AddressDappNetworkMap = {
   [Network.POLYGON]: {
     [Dapp.UNISWAPV3]: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88"
@@ -151,7 +169,6 @@ export const nonfungiblePositionManagerAddress: AddressDappNetworkMap = {
   },
   [Network.ARBITRUM]: {
     [Dapp.UNISWAPV3]: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
-    [Dapp.RAMSESCL]: "0xAA277CB7914b7e5514946Da92cb9De332Ce610EF",
     [Dapp.PANCAKECL]: "0x46a15b0b27311cedf172ab29e4f4766fbe7f4364"
   },
   [Network.BASE]: {
@@ -160,18 +177,22 @@ export const nonfungiblePositionManagerAddress: AddressDappNetworkMap = {
     [Dapp.PANCAKECL]: "0x46A15B0b27311cedF172AB29E4f4766fbE7F4364"
   },
   [Network.ETHEREUM]: {},
-  [Network.PLASMA]: {}
+  [Network.PLASMA]: {},
+  [Network.HYPERLIQUID]: {}
 };
 
+/** EVM chain id for each `Network` — used by API quotes (1inch, Pendle, KyberSwap…). */
 export const networkChainIdMap: NetworkChainIdMap = {
   [Network.POLYGON]: 137,
   [Network.OPTIMISM]: 10,
   [Network.ARBITRUM]: 42161,
   [Network.BASE]: 8453,
   [Network.ETHEREUM]: 1,
-  [Network.PLASMA]: 9745
+  [Network.PLASMA]: 9745,
+  [Network.HYPERLIQUID]: 999
 };
 
+/** Balancer SOR subgraph URL per network (used by `Utils.getBalancerSwapTx`). */
 export const balancerSubgraph: AddressNetworkMap = {
   [Network.POLYGON]:
     "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-polygon-v2",
@@ -179,29 +200,29 @@ export const balancerSubgraph: AddressNetworkMap = {
   [Network.ARBITRUM]: "",
   [Network.BASE]: "",
   [Network.ETHEREUM]: "",
-  [Network.PLASMA]: ""
+  [Network.PLASMA]: "",
+  [Network.HYPERLIQUID]: ""
 };
 
+/** Multicall3 contract per network — used by `multicall` / `Multicaller`. */
 export const multiCallAddress: AddressNetworkMap = {
   [Network.POLYGON]: "0x275617327c958bD06b5D6b871E7f491D76113dd8",
   [Network.OPTIMISM]: "",
   [Network.ARBITRUM]: "",
   [Network.BASE]: "",
   [Network.ETHEREUM]: "",
-  [Network.PLASMA]: ""
+  [Network.PLASMA]: "",
+  [Network.HYPERLIQUID]: ""
 };
 
+/** Lyra deployment id per network — passed to `@lyrafinance/lyra-js` to scope queries. */
 export const lyraNetworkMap: LyraNetworkMap = {
   [Network.OPTIMISM]: Deployment.Mainnet
 };
 
 export const MaxUint128 = "0xffffffffffffffffffffffffffffffff";
-export const UNISWAPV3_QUOTER_ADDRESS =
-  "0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6";
 
-export const SYNTHETIX_TRACKING_CODE =
-  "0x4448454447450000000000000000000000000000000000000000000000000000";
-
+/** FlatMoney v1/v2 module addresses per network (DelayedOrder, FlatcoinVault, StableModule). */
 export const flatMoneyContractAddresses: Readonly<Partial<
   Record<
     Network,
@@ -236,13 +257,25 @@ export const flatMoneyContractAddresses: Readonly<Partial<
   }
 };
 
+/** Toros PoolLimitOrderManager address per network — used for stop-loss / take-profit orders. */
+export const limitOrderAddress: AddressNetworkMap = {
+  [Network.POLYGON]: "0xB71410736d2C8F2DAf30dA9D332dA10534d2624d",
+  [Network.OPTIMISM]: "0x3bFE2a472d2964Ea4070725b7Fb0A868b3f08b63",
+  [Network.ARBITRUM]: "0x26a687e8244f1866E9Aa2D400c8b9957Aa8e6Ad4",
+  [Network.BASE]: "0xFcBEc28c43E356693971a24bf3F2Fd7D965E2ebA",
+  [Network.ETHEREUM]: "0x95B19De479bc693721cab39Da98FfECE062f5Ea4",
+  [Network.PLASMA]: "",
+  [Network.HYPERLIQUID]: ""
+};
+
 export const OdosSwapFeeRecipient = {
   [Network.POLYGON]: "0x090e7fbD87A673eE3D0B6ccACf0e1d94fB90DA59",
   [Network.OPTIMISM]: "0x813123A13d01d3F07d434673Fdc89cBBA523f14d",
   [Network.ARBITRUM]: "0xfbD2B4216f422DC1eEe1Cff4Fb64B726F099dEF5",
   [Network.BASE]: "0x5619AD05b0253a7e647Bd2E4C01c7f40CEaB0879",
   [Network.ETHEREUM]: "0xfbD2B4216f422DC1eEe1Cff4Fb64B726F099dEF5",
-  [Network.PLASMA]: ""
+  [Network.PLASMA]: "",
+  [Network.HYPERLIQUID]: ""
 };
 
 export const dytmContractAddresses: Readonly<Partial<

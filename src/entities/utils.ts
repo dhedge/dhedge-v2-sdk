@@ -199,6 +199,11 @@ export class Utils {
     );
   }
 
+  /**
+   * Build calldata for a Balancer swap. Routes through the Balancer SOR — picks
+   * a single `swap` for direct hops or `batchSwap` for multi-hop routes.
+   * `slippage` is in % (e.g. 0.5 = 0.5%).
+   */
   async getBalancerSwapTx(
     pool: Pool,
     assetFrom: string,
@@ -275,6 +280,7 @@ export class Utils {
     }
   }
 
+  /** Build calldata to join a Balancer pool by depositing the given asset amounts. */
   async getBalancerJoinPoolTx(
     pool: Pool,
     balancerPoolId: string,
@@ -307,6 +313,11 @@ export class Utils {
     return joinPoolTx;
   }
 
+  /**
+   * Build calldata to exit a Balancer pool. If `singleExitAssetIndex` is null
+   * the exit is proportional across all `assets`; otherwise the BPT is redeemed
+   * into the single asset at that index.
+   */
   async getBalancerExitPoolTx(
     pool: Pool,
     balancerPoolId: string,
@@ -339,10 +350,12 @@ export class Utils {
     return exitPoolTx;
   }
 
+  /** List available expiry timestamps for a Lyra option market. */
   async getLyraOptionExpiries(market: LyraOptionMarket): Promise<number[]> {
     return await getExpiries(this.network, market);
   }
 
+  /** List available strikes for a Lyra option market at a given expiry. */
   async getLyraOptionStrikes(
     market: LyraOptionMarket,
     expiry: number
@@ -350,6 +363,7 @@ export class Utils {
     return await getStrikes(this.network, market, expiry);
   }
 
+  /** Resolve a single Lyra strike by its strike price for a market/expiry. */
   async getLyraOptionStrike(
     market: LyraOptionMarket,
     expiry: number,
@@ -358,6 +372,7 @@ export class Utils {
     return await getStrike(this.network, market, expiry, strike);
   }
 
+  /** Get a Lyra option quote (premium, fees, slippage) for a strike/type/size. */
   async getLyraOptionQuote(
     strike: Strike,
     type: LyraOptionType,

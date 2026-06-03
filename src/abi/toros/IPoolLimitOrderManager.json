@@ -1,0 +1,78 @@
+[
+  {
+    "inputs": [
+      {
+        "components": [
+          { "internalType": "uint256", "name": "amount", "type": "uint256" },
+          { "internalType": "uint256", "name": "stopLossPriceD18", "type": "uint256" },
+          { "internalType": "uint256", "name": "takeProfitPriceD18", "type": "uint256" },
+          { "internalType": "address", "name": "user", "type": "address" },
+          { "internalType": "address", "name": "pool", "type": "address" },
+          { "internalType": "address", "name": "pricingAsset", "type": "address" }
+        ],
+        "internalType": "struct IPoolLimitOrderManager.LimitOrderInfo",
+        "name": "limitOrderInfo",
+        "type": "tuple"
+      }
+    ],
+    "name": "createLimitOrder",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          { "internalType": "uint256", "name": "amount", "type": "uint256" },
+          { "internalType": "uint256", "name": "stopLossPriceD18", "type": "uint256" },
+          { "internalType": "uint256", "name": "takeProfitPriceD18", "type": "uint256" },
+          { "internalType": "address", "name": "user", "type": "address" },
+          { "internalType": "address", "name": "pool", "type": "address" },
+          { "internalType": "address", "name": "pricingAsset", "type": "address" }
+        ],
+        "internalType": "struct IPoolLimitOrderManager.LimitOrderInfo",
+        "name": "limitOrderInfo",
+        "type": "tuple"
+      }
+    ],
+    "name": "modifyLimitOrder",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "pool_", "type": "address" }
+    ],
+    "name": "deleteLimitOrder",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getAllLimitOrderIds",
+    "outputs": [
+      { "internalType": "bytes32[]", "name": "", "type": "bytes32[]" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "bytes32", "name": "orderId", "type": "bytes32" }
+    ],
+    "name": "limitOrders",
+    "outputs": [
+      { "internalType": "uint256", "name": "amount", "type": "uint256" },
+      { "internalType": "uint256", "name": "stopLossPriceD18", "type": "uint256" },
+      { "internalType": "uint256", "name": "takeProfitPriceD18", "type": "uint256" },
+      { "internalType": "address", "name": "user", "type": "address" },
+      { "internalType": "address", "name": "pool", "type": "address" },
+      { "internalType": "address", "name": "pricingAsset", "type": "address" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
