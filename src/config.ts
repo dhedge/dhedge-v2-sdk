@@ -79,7 +79,8 @@ export const routerAddress: AddressDappNetworkMap = {
     [Dapp.PENDLE]: "0x888888888889758F76e7103c6CbF23ABbF58F946",
     [Dapp.ONEINCH]: "0x111111125421ca6dc452d289314280a0f8842a65",
     [Dapp.KYBERSWAP]: "0x6131B5fae19EA4f9D964eAc0408E4408b66337b5",
-    [Dapp.ONDO]: "0xde41399145F23936b03dD1474eC16c1519c0DC2a"
+    [Dapp.ONDO]: "0xde41399145F23936b03dD1474eC16c1519c0DC2a",
+    [Dapp.DYTM]: "0x0ff1ce991105DD1a8e26bC8a974Fd0154398Df0f"
   },
   [Network.PLASMA]: {
     [Dapp.AAVEV3]: "0x925a2A7214Ed92428B5b1B090F80b25700095e12",
@@ -288,5 +289,8 @@ export const dytmContractAddresses: Readonly<Partial<
 >> = {
   [Network.ARBITRUM]: {
     Periphery: "0x1FBe7Bb394BE505C08e9ee419Dd166c71004e51B"
+  },
+  [Network.ETHEREUM]: {
+    Periphery: "0xbc632a1A4bD878D7e7D14ea6CfE0DDe3Fc291D1a"
   }
 };
