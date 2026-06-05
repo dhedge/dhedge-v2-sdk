@@ -36,6 +36,7 @@ export enum Dapp {
   ODOS = "odos",
   PENDLE = "pendle",
   KYBERSWAP = "kyberswap",
+  DYTM = "dytm",
   HYPERLIQUID = "hyperliquid",
   COWSWAP = "cowswap",
   ONDO = "ondo"

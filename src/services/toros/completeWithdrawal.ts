@@ -70,19 +70,23 @@ const getSwapWithdrawData = async (
   }
   throw new Error("All swap routers failed for complete withdrawal");
 };
+
 export const createCompleteWithdrawalTxArguments = async (
   pool: Pool,
   receiveToken: string,
-  slippage: number
+  slippage: number,
+  _trackedAssets: TrackedAsset[]
 ): Promise<any> => {
   const easySwapper = new ethers.Contract(
     routerAddress[pool.network][Dapp.TOROS] as string,
     IEasySwapperV2,
     pool.signer
   );
-  const trackedAssets: TrackedAsset[] = await easySwapper.getTrackedAssets(
-    pool.address
-  );
+
+  let trackedAssets: TrackedAsset[] = _trackedAssets;
+  if (trackedAssets.length === 0) {
+    trackedAssets = await easySwapper.getTrackedAssets(pool.address);
+  }
 
   if (
     trackedAssets.length === 0 ||
@@ -170,9 +174,19 @@ export const createCompleteWithdrawalTxArguments = async (
   const withdrawalVaultAddress = await easySwapper.withdrawalContracts(
     pool.address
   );
-  const balanceOfReceiveToken = await receiveTokenErc20.balanceOf(
+  let balanceOfReceiveToken = await receiveTokenErc20.balanceOf(
     withdrawalVaultAddress
   );
+
+  if (trackedAssets.length !== 0) {
+    //  finds the receiveTokenErc20's balance inside trackedAssets
+    const trackedAsset = trackedAssets.find(
+      ({ token }) => token.toLowerCase() === receiveToken.toLowerCase()
+    );
+    if (trackedAsset) {
+      balanceOfReceiveToken = balanceOfReceiveToken.add(trackedAsset.balance);
+    }
+  }
 
   // complete withdraw _expectedDestTokenAmount
   const estimatedMinReceiveAmount = swapDestMinDestAmount.plus(
@@ -201,12 +215,14 @@ export const getCompleteWithdrawalTxData = async (
   pool: Pool,
   receiveToken: string,
   slippage: number,
-  useOnChainSwap: boolean
+  useOnChainSwap: boolean,
+  trackedAssets: TrackedAsset[]
 ): Promise<string> => {
   const completeWithdrawTxArguments = await createCompleteWithdrawalTxArguments(
     pool,
     receiveToken,
-    slippage
+    slippage,
+    trackedAssets
   );
 
   const isSwapNeeded = completeWithdrawTxArguments.isSwapNeeded;
