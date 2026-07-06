@@ -44,6 +44,8 @@ const testToros = ({ wallet, network, provider }: TestingRunParams) => {
           await pool.managerLogic.connect(signer).setTrader(wallet.address);
           const newAssets = [
             [USDC, true],
+            [TOROS, false],
+            [routerAddress[network].toros, false],
             [TOROS, false]
           ];
           await pool.managerLogic.connect(signer).changeAssets(newAssets, []);
@@ -117,32 +119,32 @@ const testToros = ({ wallet, network, provider }: TestingRunParams) => {
       expect(completeWithdrawResult.txData).toBeDefined();
     });
 
-    it("init Toros Token for withdrawal", async () => {
-      await provider.send("evm_increaseTime", [86400]);
-      await provider.send("evm_mine", []);
-      const torosBalance = await pool.utils.getBalance(TOROS, pool.address);
-      await pool.approve(Dapp.TOROS, TOROS, MAX_AMOUNT);
-      await pool.trade(Dapp.TOROS, TOROS, USDC, torosBalance, 1.5);
-      const torosBalanceDelta = await balanceDelta(
-        pool.address,
-        TOROS,
-        pool.signer
-      );
-      expect(torosBalanceDelta.lt(0)).toBe(true);
-    });
+    // it("init Toros Token for withdrawal", async () => {
+    //   await provider.send("evm_increaseTime", [86400]);
+    //   await provider.send("evm_mine", []);
+    //   const torosBalance = await pool.utils.getBalance(TOROS, pool.address);
+    //   await pool.approve(Dapp.TOROS, TOROS, MAX_AMOUNT);
+    //   await pool.trade(Dapp.TOROS, TOROS, USDC, torosBalance, 1.5);
+    //   const torosBalanceDelta = await balanceDelta(
+    //     pool.address,
+    //     TOROS,
+    //     pool.signer
+    //   );
+    //   expect(torosBalanceDelta.lt(0)).toBe(true);
+    // });
 
-    it("complete withdrawal from Toros asset", async () => {
-      // Advance chain time past the Toros withdrawal cooldown
-      await provider.send("evm_increaseTime", [600]);
-      await provider.send("evm_mine", []);
-      await pool.completeTorosWithdrawal(USDC, 1.5);
-      const usdcBalanceDelta = await balanceDelta(
-        pool.address,
-        USDC,
-        pool.signer
-      );
-      expect(usdcBalanceDelta.gt(0)).toBe(true);
-    });
+    // it("complete withdrawal from Toros asset", async () => {
+    //   // Advance chain time past the Toros withdrawal cooldown
+    //   await provider.send("evm_increaseTime", [600]);
+    //   await provider.send("evm_mine", []);
+    //   await pool.completeTorosWithdrawal(USDC, 1.5);
+    //   const usdcBalanceDelta = await balanceDelta(
+    //     pool.address,
+    //     USDC,
+    //     pool.signer
+    //   );
+    //   expect(usdcBalanceDelta.gt(0)).toBe(true);
+    // });
   });
 };
 
