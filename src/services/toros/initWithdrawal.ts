@@ -24,12 +24,13 @@ const getCalculateSwapDataParams = async (
   const aaveAssetGuard = new ethers.Contract(
     aaveAssetGuardAddress,
     AaveLendingPoolAssetGuardAbi,
-    pool.signer
+    pool.signer.provider
   );
   const swapDataParams = await aaveAssetGuard.callStatic.calculateSwapDataParams(
     torosAsset,
     amountIn,
-    slippage
+    slippage,
+    { from: ethers.constants.AddressZero }
   );
 
   return {
