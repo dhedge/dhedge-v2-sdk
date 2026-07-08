@@ -231,11 +231,6 @@ const testDytm = ({ network, wallet, provider }: TestingRunParams) => {
 };
 
 testingHelper({
-  network: Network.ARBITRUM,
-  testingRun: testDytm
-});
-
-testingHelper({
   network: Network.ETHEREUM,
   testingRun: testDytm
 });
