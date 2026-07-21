@@ -229,7 +229,7 @@ export const MAX_AMOUNT = ethers.constants.MaxUint256;
 export const USDC_BALANCEOF_SLOT = {
   [Network.OPTIMISM]: 9,
   [Network.ARBITRUM]: 9,
-  [Network.POLYGON]: 0,
+  [Network.POLYGON]: 9,
   [Network.BASE]: 9,
   [Network.ETHEREUM]: 9,
   [Network.PLASMA]: 9,

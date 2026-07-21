@@ -269,16 +269,6 @@ export const limitOrderAddress: AddressNetworkMap = {
   [Network.HYPERLIQUID]: ""
 };
 
-export const OdosSwapFeeRecipient = {
-  [Network.POLYGON]: "0x090e7fbD87A673eE3D0B6ccACf0e1d94fB90DA59",
-  [Network.OPTIMISM]: "0x813123A13d01d3F07d434673Fdc89cBBA523f14d",
-  [Network.ARBITRUM]: "0xfbD2B4216f422DC1eEe1Cff4Fb64B726F099dEF5",
-  [Network.BASE]: "0x5619AD05b0253a7e647Bd2E4C01c7f40CEaB0879",
-  [Network.ETHEREUM]: "0xfbD2B4216f422DC1eEe1Cff4Fb64B726F099dEF5",
-  [Network.PLASMA]: "",
-  [Network.HYPERLIQUID]: ""
-};
-
 export const dytmContractAddresses: Readonly<Partial<
   Record<
     Network,

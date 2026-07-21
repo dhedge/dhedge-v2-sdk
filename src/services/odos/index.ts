@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from "axios";
 import { ApiError, ethers } from "../..";
-import { networkChainIdMap, OdosSwapFeeRecipient } from "../../config";
+import { networkChainIdMap } from "../../config";
 import { Pool } from "../../entities";
 import OdosRouterV3Abi from "../../abi/odos/OdosRouterV3.json";
 import BigNumber from "bignumber.js";
@@ -37,8 +37,6 @@ export async function getOdosSwapTxData(
   }
   const ODOS_API_KEY = process.env.ODOS_API_KEY;
 
-  const referralFeeBips = 2; // 2 basis points = 0.02%
-
   const quoteParams = {
     chainId: networkChainIdMap[pool.network],
     inputTokens: [
@@ -56,8 +54,8 @@ export async function getOdosSwapTxData(
     slippageLimitPercent: slippage,
     userAddr: pool.address,
     compact: false,
-    referralFeeRecipient: OdosSwapFeeRecipient[pool.network],
-    referralFee: referralFeeBips // 0.02% fee
+    // OdosV3ContractGuard requires referral fee == 0
+    referralFee: 0
   };
   try {
     const quoteResult = await axios.post(
@@ -98,20 +96,9 @@ export async function getOdosSwapTxData(
     const executor = decodedData.args[2] as string;
     const referralInfo = decodedData.args[3] as SwapReferralInfo;
 
-    if (
-      referralInfo.fee.lte(
-        ethers.BigNumber.from((referralFeeBips * 1e18) / 10000)
-      )
-    ) {
-      // Referral fee is already correct, return original txData
-      return {
-        swapTxData: assembleResult.data.transaction.data,
-        minAmountOut: assembleResult.data.outputTokens[0].amount
-      };
-    }
-
+    // Force referral fee to 0 and scale outputQuote up accordingly.
     const FEE_DENOM = new BigNumber(1e18);
-    const correctedFee = new BigNumber((referralFeeBips * 1e18) / 10000);
+    const correctedFee = new BigNumber(0);
     const factor = 1.1;
     const correctedOutputQuote = new BigNumber(tokenInfo.outputQuote.toString())
       .times(
@@ -121,8 +108,6 @@ export async function getOdosSwapTxData(
       )
       .times(factor);
 
-    // example referralInfo.fee could be 0.0005 * 1e18 = 500000000000000, which is 0.05%
-    // Create corrected referral info
     const correctedTxData = iface.encodeFunctionData(decodedData.name, [
       {
         ...tokenInfo,
@@ -132,7 +117,7 @@ export async function getOdosSwapTxData(
       executor,
       {
         code: referralInfo.code,
-        fee: correctedFee.toFixed(0), // align with referralFeeBips
+        fee: correctedFee.toFixed(0),
         feeRecipient: referralInfo.feeRecipient
       }
     ]);
