@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import { Dhedge, Pool } from "..";
+import { Dhedge, Pool, ethers } from "..";
 
 import { Dapp, Network } from "../types";
 import { CONTRACT_ADDRESS, MAX_AMOUNT, TEST_POOL } from "./constants";
@@ -8,12 +8,17 @@ import {
   TestingRunParams,
   setUSDCAmount,
   testingHelper,
-  wait
+  wait,
+  runWithImpersonateAccount
 } from "./utils/testingHelper";
 import { allowanceDelta, balanceDelta } from "./utils/token";
 import { getTxOptions } from "./txOptions";
 import BigNumber from "bignumber.js";
-import { OdosSwapFeeRecipient, routerAddress } from "../config";
+import { routerAddress } from "../config";
+import { getOdosSwapTxData } from "../services/odos";
+import OdosRouterV3Abi from "../abi/odos/OdosRouterV3.json";
+import PoolLogicAbi from "../abi/PoolLogic.json";
+import PoolManagerLogicAbi from "../abi/PoolManagerLogic.json";
 
 const testOdos = ({ wallet, network, provider }: TestingRunParams) => {
   const USDC = CONTRACT_ADDRESS[network].USDC;
@@ -27,6 +32,36 @@ const testOdos = ({ wallet, network, provider }: TestingRunParams) => {
     beforeAll(async () => {
       dhedge = new Dhedge(wallet, network);
       pool = await dhedge.loadPool(TEST_POOL[network]);
+      // fork-only: authorize the test wallet by impersonating the pool manager
+      // and setting the wallet as trader (avoids dh24 unauthorized executor)
+      const poolLogic = new ethers.Contract(
+        pool.address,
+        PoolLogicAbi.abi,
+        provider
+      );
+      const pmlAddress: string = await poolLogic.poolManagerLogic();
+      const poolManagerLogic = new ethers.Contract(
+        pmlAddress,
+        PoolManagerLogicAbi.abi,
+        provider
+      );
+      const manager: string = await poolManagerLogic.manager();
+      const wethSupported: boolean = await poolManagerLogic.isSupportedAsset(
+        WETH
+      );
+      await runWithImpersonateAccount(
+        { account: manager, provider },
+        async ({ signer }) => {
+          await poolManagerLogic.connect(signer).setTrader(wallet.address);
+          // fork-only: ensure WETH is a supported (destination) asset so the
+          // Odos guard's isSupportedAsset check passes
+          if (!wethSupported) {
+            await poolManagerLogic
+              .connect(signer)
+              .changeAssets([{ asset: WETH, isDeposit: false }], []);
+          }
+        }
+      );
       // top up gas
       await provider.send("hardhat_setBalance", [
         wallet.address,
@@ -69,6 +104,20 @@ const testOdos = ({ wallet, network, provider }: TestingRunParams) => {
 
     it("trades 10 USDC into WETH on Odos", async () => {
       await wait(1);
+      // inspect the swap txData: referral fee must be 0 (OdosV3ContractGuard)
+      const { swapTxData } = await getOdosSwapTxData(
+        pool,
+        USDC,
+        WETH,
+        "10000000",
+        0.5
+      );
+      const referralInfo = new ethers.utils.Interface(
+        OdosRouterV3Abi.abi
+      ).parseTransaction({ data: swapTxData }).args[3];
+      expect(referralInfo.fee.isZero()).toBe(true);
+      const feeRecipient: string = referralInfo.feeRecipient;
+
       await pool.trade(
         Dapp.ODOS,
         USDC,
@@ -83,37 +132,20 @@ const testOdos = ({ wallet, network, provider }: TestingRunParams) => {
         pool.signer
       );
       expect(wethBalanceDelta.gt(0)).toBe(true);
-      const wethBalanceDeltaForFeeRecipient = await balanceDelta(
-        OdosSwapFeeRecipient[network],
-        WETH,
-        pool.signer
-      );
-
-      // diffRatio  = (1 - fee) / (0.8 * fee)
-      // 0.8 is the split percentage for fee recipient
-      // e.g. for 0.02% fee, diffRatio = 0.9998 / 0.00016 = 6248.75
-      // e.g. for 0.03% fee, diffRatio = 0.9997 / 0.00024 = 4165.42
-      // e.g. for 0.04% fee, diffRatio = 0.9996 / 0.00032 = 3123.75
-      // e.g. for 0.05% fee, diffRatio = 0.9995 / 0.00040 = 2498.75
-      const diffRatio = wethBalanceDelta.div(wethBalanceDeltaForFeeRecipient);
-      console.log("diff ratio:", diffRatio.toString());
-      expect(diffRatio.gt(6200)).toBe(true);
-      expect(diffRatio.lt(6260)).toBe(true);
+      // no WETH skimmed to the Odos router
       const wethBalanceDeltaForRouter = await balanceDelta(
         routerAddress[network]["odos"]!,
         WETH,
         pool.signer
       );
-      // diffRatio  = (1 - fee) / (0.2 * fee)
-      // 0.2 is the split percentage for router
-      // e.g. for 0.02% fee, diffRatio = 0.9998 / 0.00004 = 24995
-      // e.g. for 0.03% fee, diffRatio = 0.9997 / 0.00006 = 16661.67
-      // e.g. for 0.04% fee, diffRatio = 0.9996 / 0.00008 = 12495
-      // e.g. for 0.05% fee, diffRatio = 0.9995 / 0.00010 = 9995
-      const diffRatioRouter = wethBalanceDelta.div(wethBalanceDeltaForRouter);
-      console.log("diff ratio router:", diffRatioRouter.toString());
-      expect(diffRatioRouter.gt(24000)).toBe(true);
-      expect(diffRatioRouter.lt(26000)).toBe(true);
+      expect(wethBalanceDeltaForRouter.eq(0)).toBe(true);
+      // no WETH skimmed to the referral fee recipient encoded in the txData
+      const wethBalanceDeltaForFeeRecipient = await balanceDelta(
+        feeRecipient,
+        WETH,
+        pool.signer
+      );
+      expect(wethBalanceDeltaForFeeRecipient.eq(0)).toBe(true);
     });
   });
 };
@@ -123,19 +155,27 @@ const testOdos = ({ wallet, network, provider }: TestingRunParams) => {
 //   testingRun: testOdos
 // });
 
-testingHelper({
-  network: Network.ARBITRUM,
-  testingRun: testOdos
-});
+// testingHelper({
+//   network: Network.ARBITRUM,
+//   testingRun: testOdos
+// });
 
 // testingHelper({
 //   network: Network.POLYGON,
-//   onFork: false,
 //   testingRun: testOdos
 // });
 
 // testingHelper({
 //   network: Network.BASE,
-//   onFork: false,
+//   testingRun: testOdos
+// });
+
+testingHelper({
+  network: Network.ETHEREUM,
+  testingRun: testOdos
+});
+
+// testingHelper({
+//   network: Network.BASE,
 //   testingRun: testOdos
 // });
