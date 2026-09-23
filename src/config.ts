@@ -21,7 +21,7 @@ export const factoryAddress: AddressNetworkMap = {
   [Network.BASE]: "0x49Afe3abCf66CF09Fab86cb1139D8811C8afe56F",
   [Network.ETHEREUM]: "0x96D33bCF84DdE326014248E2896F79bbb9c13D6d",
   [Network.PLASMA]: "0xAec4975Fc8ad911464D2948D771488b30F6eEE87",
-  [Network.HYPERLIQUID]: "0xe91505e2ab653dd128c71e9690eeefd28cc5b333"
+  [Network.HYPERLIQUID]: "0x615037C2Df6FA97634c5aD2d8144708b9dd3B176"
 };
 
 /** Router/spender address for each (network, Dapp). Target of `pool.approve`/`pool.trade`. */
