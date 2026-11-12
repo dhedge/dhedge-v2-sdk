@@ -4,7 +4,10 @@ import ICoreWriterAbi from "../../abi/hyperliquid/ICoreWriter.json";
 import {
   HYPERLIQUID_VERSION,
   LIMIT_ORDER_ACTION,
+  LIMIT_ORDER_TIF_ALO,
+  LIMIT_ORDER_TIF_GTC,
   LIMIT_ORDER_TIF_IOC,
+  OID_CANCEL_ACTION,
   SEND_ASSET_ACTION,
   SPOT_SEND_ACTION,
   USDC_CORE_ADDRESS,
@@ -91,6 +94,37 @@ export const getSendAssetHyperliquidTxData = (
   return coreWriter.encodeFunctionData("sendRawAction", [rawTXData]);
 };
 
+/** Encode a CoreWriter `sendRawAction` for a LIMIT_ORDER action. */
+const encodeLimitOrder = (
+  assetId: number,
+  isBuy: boolean,
+  price: string,
+  size: string,
+  reduceOnly: boolean,
+  tif: number
+): string => {
+  const innerEncoded = ethers.utils.defaultAbiCoder.encode(
+    //assetIndex, isBuy, price, size, reduceOnly, tif, clientOrderId
+    ["uint32", "bool", "uint64", "uint64", "bool", "uint8", "uint128"],
+    [
+      assetId,
+      isBuy,
+      price,
+      size,
+      reduceOnly,
+      tif,
+      ethers.BigNumber.from(0) //client order id
+    ]
+  );
+
+  const rawTXData = ethers.utils.solidityPack(
+    ["uint8", "uint24", "bytes"],
+    [HYPERLIQUID_VERSION, LIMIT_ORDER_ACTION, innerEncoded]
+  );
+
+  return coreWriter.encodeFunctionData("sendRawAction", [rawTXData]);
+};
+
 /**
  * Encode a CoreWriter `sendRawAction` for an IOC limit order on a Hyperliquid asset.
  * Auto-flips side and sets `reduceOnly` when `changeAmount` is negative (perp close).
@@ -122,23 +156,85 @@ export const getLimitOrderHyperliquidTxData = async (
   );
   const size = calculateSize(szDecimals, changeAmount, midPrice);
 
+  return encodeLimitOrder(
+    assetId,
+    isBuy,
+    price,
+    size,
+    reduceOnly,
+    LIMIT_ORDER_TIF_IOC
+  );
+};
+
+export type HyperliquidRestingTif = "GTC" | "ALO";
+
+/**
+ * Encode a CoreWriter `sendRawAction` for a resting (GTC or ALO) limit order at an
+ * absolute `limitPrice`, e.g. a perp buy below market or a take-profit sell above it.
+ * Side/reduceOnly follow the same convention as `getLimitOrderHyperliquidTxData`:
+ * a negative `changeAmount` flips the side and sets `reduceOnly` for perps.
+ * `changeAmount` is a USD value converted to size at `limitPrice`.
+ * The dHEDGE CoreWriter guard rejects resting spot buys, so they are rejected here too.
+ */
+export const getRestingLimitOrderHyperliquidTxData = async (
+  assetId: number,
+  isLong: boolean,
+  changeAmount: number,
+  limitPrice: number,
+  tif: HyperliquidRestingTif
+): Promise<string> => {
+  if (!(limitPrice > 0)) throw new Error("limitPrice must be positive");
+
+  let isBuy = isLong;
+  let reduceOnly = false;
+  if (changeAmount < 0) {
+    changeAmount = changeAmount * -1;
+    isBuy = !isLong;
+    reduceOnly = !isSpotAsset(assetId);
+  }
+  if (isBuy && isSpotAsset(assetId)) {
+    throw new Error("Resting spot buy orders are not supported");
+  }
+
+  const { szDecimals } = await getAssetInfo(assetId);
+  // Zero slippage: only applies Hyperliquid's price rounding rules
+  const price = calculatePrice(
+    isSpotAsset(assetId),
+    szDecimals,
+    limitPrice,
+    isBuy,
+    0
+  );
+  const size = calculateSize(szDecimals, changeAmount, limitPrice);
+  if (size === "0") throw new Error("Order size rounds to zero");
+
+  return encodeLimitOrder(
+    assetId,
+    isBuy,
+    price,
+    size,
+    reduceOnly,
+    tif === "ALO" ? LIMIT_ORDER_TIF_ALO : LIMIT_ORDER_TIF_GTC
+  );
+};
+
+/**
+ * Encode a CoreWriter `sendRawAction` that cancels an open order by its
+ * Hyperliquid order id (oid), as returned by the `openOrders` info endpoint.
+ */
+export const getCancelOrderHyperliquidTxData = (
+  assetId: number,
+  oid: number | string
+): string => {
   const innerEncoded = ethers.utils.defaultAbiCoder.encode(
-    //assetIndex, isBuy, price, size, reduceOnly, tif, clientOrderId
-    ["uint32", "bool", "uint64", "uint64", "bool", "uint8", "uint128"],
-    [
-      assetId,
-      isBuy,
-      price,
-      size,
-      reduceOnly,
-      LIMIT_ORDER_TIF_IOC, // immediate or cancel
-      ethers.BigNumber.from(0) //client order id
-    ]
+    //assetIndex, oid
+    ["uint32", "uint64"],
+    [assetId, oid]
   );
 
   const rawTXData = ethers.utils.solidityPack(
     ["uint8", "uint24", "bytes"],
-    [HYPERLIQUID_VERSION, LIMIT_ORDER_ACTION, innerEncoded]
+    [HYPERLIQUID_VERSION, OID_CANCEL_ACTION, innerEncoded]
   );
 
   return coreWriter.encodeFunctionData("sendRawAction", [rawTXData]);
@@ -177,24 +273,12 @@ export const getClosePositionHyperliquidTxData = async (
     slippage
   );
 
-  const innerEncoded = ethers.utils.defaultAbiCoder.encode(
-    //assetIndex, isBuy, price, size, reduceOnly, tif, clientOrderId
-    ["uint32", "bool", "uint64", "uint64", "bool", "uint8", "uint128"],
-    [
-      assetId,
-      positionSize < 0, // if position size is negative, we need to buy to close, otherwise sell
-      price,
-      sizeRaw,
-      !isSpot,
-      LIMIT_ORDER_TIF_IOC, // immediate or cancel
-      ethers.BigNumber.from(0) //client order id
-    ]
+  return encodeLimitOrder(
+    assetId,
+    isBuy,
+    price,
+    sizeRaw,
+    !isSpot,
+    LIMIT_ORDER_TIF_IOC
   );
-
-  const rawTXData = ethers.utils.solidityPack(
-    ["uint8", "uint24", "bytes"],
-    [HYPERLIQUID_VERSION, LIMIT_ORDER_ACTION, innerEncoded]
-  );
-
-  return coreWriter.encodeFunctionData("sendRawAction", [rawTXData]);
 };
