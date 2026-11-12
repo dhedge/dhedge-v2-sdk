@@ -99,11 +99,14 @@ import { getKyberSwapTxData } from "../services/kyberSwap";
 import { getCowSwapTxData } from "../services/cowSwap";
 import { getOndoSwapTxData } from "../services/ondo";
 import {
+  getCancelOrderHyperliquidTxData,
   getClosePositionHyperliquidTxData,
   getDepositHyperliquidTxData,
   getLimitOrderHyperliquidTxData,
+  getRestingLimitOrderHyperliquidTxData,
   getSendAssetHyperliquidTxData,
-  getWithdrawSpotHyperliquidTxData
+  getWithdrawSpotHyperliquidTxData,
+  HyperliquidRestingTif
 } from "../services/hyperliquid";
 import {
   CORE_WRITER_ADDRESS,
@@ -2204,6 +2207,76 @@ export class Pool {
       [
         CORE_WRITER_ADDRESS,
         await getLimitOrderHyperliquidTxData(assetId, isLong, value, slippage),
+        options
+      ],
+      sdkOptions
+    );
+    return tx;
+  }
+
+  /** Place a resting (GTC or ALO) limit order on Hyperliquid at an absolute price,
+   *  e.g. a perp buy below market or a take-profit sell above market.
+   *  Resting spot buys are not supported (rejected by the dHEDGE guard).
+   *  Buys should be priced below market and sells above; orders priced through the book revert.
+   *  @param {number} assetId Asset id
+   * @param {boolean} isLong Long or short (Note: Spot assets only support long positions)
+   * @param {number} value Order value in USD, converted to size at limitPrice (positive for
+   *        opening/increasing, negative for closing/reducing or selling spot)
+   * @param {number} limitPrice Absolute limit price in USD
+   * @param {HyperliquidRestingTif} tif "GTC" (good-til-cancelled) or "ALO" (post-only)
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+  async openLimitOrderHyperliquid(
+    assetId: number,
+    isLong: boolean,
+    value: number,
+    limitPrice: number,
+    tif: HyperliquidRestingTif = "GTC",
+    options: any = null,
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
+  ): Promise<any> {
+    const tx = await getPoolTxOrGasEstimate(
+      this,
+      [
+        CORE_WRITER_ADDRESS,
+        await getRestingLimitOrderHyperliquidTxData(
+          assetId,
+          isLong,
+          value,
+          limitPrice,
+          tif
+        ),
+        options
+      ],
+      sdkOptions
+    );
+    return tx;
+  }
+
+  /** Cancel an open Hyperliquid order by its order id (oid)
+   *  @param {number} assetId Asset id of the order
+   * @param {number | string} oid Hyperliquid order id
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+  async cancelOrderHyperliquid(
+    assetId: number,
+    oid: number | string,
+    options: any = null,
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
+  ): Promise<any> {
+    const tx = await getPoolTxOrGasEstimate(
+      this,
+      [
+        CORE_WRITER_ADDRESS,
+        getCancelOrderHyperliquidTxData(assetId, oid),
         options
       ],
       sdkOptions

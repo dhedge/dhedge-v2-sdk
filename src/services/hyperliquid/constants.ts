@@ -9,6 +9,7 @@ export const HYPERLIQUID_VERSION = 1;
 export const SPOT_SEND_ACTION = 6;
 export const SEND_ASSET_ACTION = 13;
 export const LIMIT_ORDER_ACTION = 1;
+export const OID_CANCEL_ACTION = 10;
 
 //Order Time In Force options
 export const LIMIT_ORDER_TIF_ALO = 1;
