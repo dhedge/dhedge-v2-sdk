@@ -19,7 +19,7 @@ export const spotAssetIndex = (assetId: number): number => {
 };
 
 export const isSpotAsset = (assetId: number): boolean => {
-  return assetId > 10000 && assetId < 100000;
+  return assetId >= 10000 && assetId < 100000;
 };
 
 export const getMidPrice = async (
@@ -120,7 +120,12 @@ export const calculatePrice = (
   // 1. Apply slippage
   const price = midPrice * (isBuy ? 1 + slippage / 100 : 1 - slippage / 100);
 
-  // 2. Round to 5 significant figures
+  // Integer prices are valid regardless of the number of significant figures.
+  if (Number.isInteger(price)) {
+    return new BigNumber(price).times(1e8).toFixed(0);
+  }
+
+  // 2. Round fractional prices to 5 significant figures
   const roundedSignificant = parseFloat(price.toPrecision(5));
 
   // 3. For perp base decimals = 6
