@@ -2,6 +2,7 @@ import { ethers } from "ethers";
 import ICoreDepositWalletAbi from "../../abi/hyperliquid/ICoreDepositWallet.json";
 import ICoreWriterAbi from "../../abi/hyperliquid/ICoreWriter.json";
 import {
+  CLOID_CANCEL_ACTION,
   HYPERLIQUID_VERSION,
   LIMIT_ORDER_ACTION,
   LIMIT_ORDER_TIF_ALO,
@@ -94,16 +95,7 @@ export const getSendAssetHyperliquidTxData = (
   return coreWriter.encodeFunctionData("sendRawAction", [rawTXData]);
 };
 
-/** Encode a CoreWriter `sendRawAction` for a LIMIT_ORDER action. */
-const encodeLimitOrder = (
-  assetId: number,
-  isBuy: boolean,
-  price: string,
-  size: string,
-  reduceOnly: boolean,
-  tif: number,
-  cloid: string | number = 0
-): string => {
+const normalizeCloid = (cloid: string | number = 0): ethers.BigNumber => {
   const clientOrderId = cloid || 0;
   const isValidCloid =
     typeof clientOrderId === "number"
@@ -115,6 +107,19 @@ const encodeLimitOrder = (
     );
   }
 
+  return ethers.BigNumber.from(clientOrderId.toString());
+};
+
+/** Encode a CoreWriter `sendRawAction` for a LIMIT_ORDER action. */
+const encodeLimitOrder = (
+  assetId: number,
+  isBuy: boolean,
+  price: string,
+  size: string,
+  reduceOnly: boolean,
+  tif: number,
+  cloid: string | number = 0
+): string => {
   const innerEncoded = ethers.utils.defaultAbiCoder.encode(
     //assetIndex, isBuy, price, size, reduceOnly, tif, clientOrderId
     ["uint32", "bool", "uint64", "uint64", "bool", "uint8", "uint128"],
@@ -125,7 +130,7 @@ const encodeLimitOrder = (
       size,
       reduceOnly,
       tif,
-      ethers.BigNumber.from(clientOrderId.toString()) //client order id
+      normalizeCloid(cloid) //client order id
     ]
   );
 
@@ -191,13 +196,16 @@ export type HyperliquidRestingTif = "GTC" | "ALO";
  * a negative `changeAmount` flips the side and sets `reduceOnly` for perps.
  * `changeAmount` is a USD value converted to size at `limitPrice`.
  * The dHEDGE CoreWriter guard rejects resting spot buys, so they are rejected here too.
+ * Optional `cloid` is a non-negative safe integer or a 16-byte hex string.
+ * Falsy values encode 0 (no client order ID).
  */
 export const getRestingLimitOrderHyperliquidTxData = async (
   assetId: number,
   isLong: boolean,
   changeAmount: number,
   limitPrice: number,
-  tif: HyperliquidRestingTif
+  tif: HyperliquidRestingTif,
+  cloid: string | number = 0
 ): Promise<string> => {
   if (!(limitPrice > 0)) throw new Error("limitPrice must be positive");
 
@@ -230,7 +238,8 @@ export const getRestingLimitOrderHyperliquidTxData = async (
     price,
     size,
     reduceOnly,
-    tif === "ALO" ? LIMIT_ORDER_TIF_ALO : LIMIT_ORDER_TIF_GTC
+    tif === "ALO" ? LIMIT_ORDER_TIF_ALO : LIMIT_ORDER_TIF_GTC,
+    cloid
   );
 };
 
@@ -256,17 +265,42 @@ export const getCancelOrderHyperliquidTxData = (
   return coreWriter.encodeFunctionData("sendRawAction", [rawTXData]);
 };
 
+/** Encode a CoreWriter `sendRawAction` that cancels an order by its nonzero client order ID. */
+export const getCancelOrderByCloidHyperliquidTxData = (
+  assetId: number,
+  cloid: string | number
+): string => {
+  const clientOrderId = normalizeCloid(cloid);
+  if (clientOrderId.isZero()) {
+    throw new Error("cloid must be non-zero for cancellation");
+  }
+
+  const innerEncoded = ethers.utils.defaultAbiCoder.encode(
+    ["uint32", "uint128"],
+    [assetId, clientOrderId]
+  );
+  const rawTXData = ethers.utils.solidityPack(
+    ["uint8", "uint24", "bytes"],
+    [HYPERLIQUID_VERSION, CLOID_CANCEL_ACTION, innerEncoded]
+  );
+
+  return coreWriter.encodeFunctionData("sendRawAction", [rawTXData]);
+};
+
 /**
  * Encode a CoreWriter `sendRawAction` for an IOC limit order that closes
  * `percentageToClose`% of the pool's current Hyperliquid position. Reads the
  * existing position size on-chain to determine the side (buy to close shorts,
  * sell to close longs).
+ * Optional `cloid` is a non-negative safe integer or a 16-byte hex string.
+ * Falsy values encode 0 (no client order ID).
  */
 export const getClosePositionHyperliquidTxData = async (
   assetId: number,
   percentageToClose: number,
   slippage: number,
-  poolAddress: string
+  poolAddress: string,
+  cloid: string | number = 0
 ): Promise<string> => {
   const isSpot = isSpotAsset(assetId);
   const { assetName, szDecimals, baseTokenName } = await getAssetInfo(assetId);
@@ -295,6 +329,7 @@ export const getClosePositionHyperliquidTxData = async (
     price,
     sizeRaw,
     !isSpot,
-    LIMIT_ORDER_TIF_IOC
+    LIMIT_ORDER_TIF_IOC,
+    cloid
   );
 };

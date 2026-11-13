@@ -265,6 +265,18 @@ if (result.gasEstimationError) {
 
 <br>
 
+#### Hyperliquid client order IDs
+
+These methods accept a client order ID (CLOID) before the transaction options:
+
+- `openMarketOrderHyperliquidWithCloid(assetId, isLong, value, slippage, cloid, options, sdkOptions)`
+- `openLimitOrderHyperliquidWithCloid(assetId, isLong, value, limitPrice, tif, cloid, options, sdkOptions)`
+- `closePositionHyperliquidWithCloid(assetId, percentageToClose, slippage, cloid, options, sdkOptions)`
+
+CLOIDs may be nonnegative safe-integer numbers or 16-byte hex strings such as `0x1234567890abcdef1234567890abcdef`. Placement defaults to `0` (no CLOID), and falsy values also encode zero. Choose and store a distinct CLOID for each order you want to track.
+
+Use `cancelOrderByCloidHyperliquid(assetId, cloid, options, sdkOptions)` to cancel using a nonzero CLOID. The existing `cancelOrderHyperliquid(...)` cancels using HyperCore's OID. The original trading methods retain their existing argument order and place orders without a CLOID.
+
 ### General Vault Management
 
 ---
