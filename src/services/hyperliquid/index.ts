@@ -101,8 +101,20 @@ const encodeLimitOrder = (
   price: string,
   size: string,
   reduceOnly: boolean,
-  tif: number
+  tif: number,
+  cloid: string | number = 0
 ): string => {
+  const clientOrderId = cloid || 0;
+  const isValidCloid =
+    typeof clientOrderId === "number"
+      ? Number.isSafeInteger(clientOrderId) && clientOrderId >= 0
+      : ethers.utils.isHexString(clientOrderId, 16);
+  if (!isValidCloid) {
+    throw new Error(
+      "cloid must be a non-negative safe integer or a 16-byte hex string"
+    );
+  }
+
   const innerEncoded = ethers.utils.defaultAbiCoder.encode(
     //assetIndex, isBuy, price, size, reduceOnly, tif, clientOrderId
     ["uint32", "bool", "uint64", "uint64", "bool", "uint8", "uint128"],
@@ -113,7 +125,7 @@ const encodeLimitOrder = (
       size,
       reduceOnly,
       tif,
-      ethers.BigNumber.from(0) //client order id
+      ethers.BigNumber.from(clientOrderId.toString()) //client order id
     ]
   );
 
@@ -129,12 +141,15 @@ const encodeLimitOrder = (
  * Encode a CoreWriter `sendRawAction` for an IOC limit order on a Hyperliquid asset.
  * Auto-flips side and sets `reduceOnly` when `changeAmount` is negative (perp close).
  * Price is offset by `slippage`% from the current mid in the direction of execution.
+ * Optional `cloid` is a non-negative safe integer or a 16-byte hex string.
+ * Falsy values encode 0 (no client order ID).
  */
 export const getLimitOrderHyperliquidTxData = async (
   assetId: number,
   isLong: boolean,
   changeAmount: number,
-  slippage: number
+  slippage: number,
+  cloid: string | number = 0
 ): Promise<string> => {
   let isBuy = isLong;
   let reduceOnly = false;
@@ -162,7 +177,8 @@ export const getLimitOrderHyperliquidTxData = async (
     price,
     size,
     reduceOnly,
-    LIMIT_ORDER_TIF_IOC
+    LIMIT_ORDER_TIF_IOC,
+    cloid
   );
 };
 
