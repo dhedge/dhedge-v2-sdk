@@ -99,6 +99,7 @@ import { getKyberSwapTxData } from "../services/kyberSwap";
 import { getCowSwapTxData } from "../services/cowSwap";
 import { getOndoSwapTxData } from "../services/ondo";
 import {
+  getCancelOrderByCloidHyperliquidTxData,
   getCancelOrderHyperliquidTxData,
   getClosePositionHyperliquidTxData,
   getDepositHyperliquidTxData,
@@ -2298,6 +2299,50 @@ export class Pool {
     return tx;
   }
 
+  /** Place a resting (GTC or ALO) Hyperliquid limit order with an optional client order ID.
+   * @param {number} assetId Asset id
+   * @param {boolean} isLong Long or short (Note: Spot assets only support long positions)
+   * @param {number} value Estimated order value in USD (positive for opening/increasing,
+   *        negative for closing/reducing or selling spot)
+   * @param {number} limitPrice Absolute limit price in USD
+   * @param {HyperliquidRestingTif} tif "GTC" or "ALO"; resting spot buys are not supported
+   * @param {string | number} cloid Optional uint128 client order ID as a non-negative safe integer
+   *        or a 16-byte hex string; falsy values encode 0
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+  async openLimitOrderHyperliquidWithCloid(
+    assetId: number,
+    isLong: boolean,
+    value: number,
+    limitPrice: number,
+    tif: HyperliquidRestingTif = "GTC",
+    cloid: string | number = 0,
+    options: any = null,
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
+  ): Promise<any> {
+    const tx = await getPoolTxOrGasEstimate(
+      this,
+      [
+        CORE_WRITER_ADDRESS,
+        await getRestingLimitOrderHyperliquidTxData(
+          assetId,
+          isLong,
+          value,
+          limitPrice,
+          tif,
+          cloid
+        ),
+        options
+      ],
+      sdkOptions
+    );
+    return tx;
+  }
+
   /** Cancel an open Hyperliquid order by its order id (oid)
    *  @param {number} assetId Asset id of the order
    * @param {number | string} oid Hyperliquid order id
@@ -2318,6 +2363,33 @@ export class Pool {
       [
         CORE_WRITER_ADDRESS,
         getCancelOrderHyperliquidTxData(assetId, oid),
+        options
+      ],
+      sdkOptions
+    );
+    return tx;
+  }
+
+  /** Cancel an open Hyperliquid order by its nonzero client order ID (cloid).
+   * @param {number} assetId Asset id of the order
+   * @param {string | number} cloid A positive safe integer or a nonzero 16-byte hex client order ID
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+  async cancelOrderByCloidHyperliquid(
+    assetId: number,
+    cloid: string | number,
+    options: any = null,
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
+  ): Promise<any> {
+    const tx = await getPoolTxOrGasEstimate(
+      this,
+      [
+        CORE_WRITER_ADDRESS,
+        getCancelOrderByCloidHyperliquidTxData(assetId, cloid),
         options
       ],
       sdkOptions
@@ -2351,6 +2423,44 @@ export class Pool {
           percentageToClose,
           slippage,
           this.address
+        ),
+        options
+      ],
+      sdkOptions
+    );
+    return tx;
+  }
+
+  /** Close a Hyperliquid position with an optional client order ID.
+   * @param {number} assetId Asset id
+   * @param {number} percentageToClose Percentage of position to close (0-100)
+   * @param {number} slippage Slippage tolerance in %
+   * @param {string | number} cloid Optional uint128 client order ID as a non-negative safe integer
+   *        or a 16-byte hex string; falsy values encode 0
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+  async closePositionHyperliquidWithCloid(
+    assetId: number,
+    percentageToClose = 100,
+    slippage = 0.5,
+    cloid: string | number = 0,
+    options: any = null,
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
+  ): Promise<any> {
+    const tx = await getPoolTxOrGasEstimate(
+      this,
+      [
+        CORE_WRITER_ADDRESS,
+        await getClosePositionHyperliquidTxData(
+          assetId,
+          percentageToClose,
+          slippage,
+          this.address,
+          cloid
         ),
         options
       ],
