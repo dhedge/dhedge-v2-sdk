@@ -2185,7 +2185,7 @@ export class Pool {
   /** Open a market order on Hyperliquid
    *  @param {number} assetId Asset id
    * @param {boolean} isLong Long or short (Note: Spot assets only support long positions)
-   * @param {number} value Order value in base asset units (positive for opening/increasing,
+   * @param {number} value Estimated order value in USD (positive for opening/increasing,
    *        negative for closing/reducing or selling spot)
    * @param {number } slippage Slippage tolerance in %
    * @param {any} options Transaction options
@@ -2207,6 +2207,47 @@ export class Pool {
       [
         CORE_WRITER_ADDRESS,
         await getLimitOrderHyperliquidTxData(assetId, isLong, value, slippage),
+        options
+      ],
+      sdkOptions
+    );
+    return tx;
+  }
+
+  /** Open a market order on Hyperliquid with an optional client order ID.
+   * @param {number} assetId Asset id
+   * @param {boolean} isLong Long or short (Note: Spot assets only support long positions)
+   * @param {number} value Estimated order value in USD (positive for opening/increasing,
+   *        negative for closing/reducing or selling spot)
+   * @param {number} slippage Slippage tolerance in %
+   * @param {string | number} cloid Optional uint128 client order ID as a non-negative safe integer
+   *        or a 16-byte hex string; falsy values encode 0
+   * @param {any} options Transaction options
+   * @param {SDKOptions} sdkOptions SDK options including estimateGas
+   * @returns {Promise<any>} Transaction
+   */
+  async openMarketOrderHyperliquidWithCloid(
+    assetId: number,
+    isLong: boolean,
+    value: number,
+    slippage = 0.5,
+    cloid: string | number = 0,
+    options: any = null,
+    sdkOptions: SDKOptions = {
+      estimateGas: false
+    }
+  ): Promise<any> {
+    const tx = await getPoolTxOrGasEstimate(
+      this,
+      [
+        CORE_WRITER_ADDRESS,
+        await getLimitOrderHyperliquidTxData(
+          assetId,
+          isLong,
+          value,
+          slippage,
+          cloid
+        ),
         options
       ],
       sdkOptions
